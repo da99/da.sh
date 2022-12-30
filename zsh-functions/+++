@@ -1,0 +1,5 @@
+
+git push
+if ! da.sh repo is clean; then
+  git status
+fi
