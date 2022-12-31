@@ -27,13 +27,29 @@ case "$(echo "$@" | xargs)" in
       chmod 600 $HOME/.ssh/*
       chmod 644 $HOME/.ssh/*.pub
     fi
+
+    ;;
+
+  "update sshd")
+    # --- SSHD config check
+    sshd_config="/etc/ssh/sshd_config"
+    my_config="$HOME/config/sshd_config"
+    if ! sudo sshd -t -f "$my_config" ; then
+      exit 1
+    fi
+    if ! diff "$sshd_config" "$my_config"  ; then
+      echo
+      echo "!!! sudo cp -i $my_config $sshd_config"
+      exit 1
+    fi
     ;;
 
   "update")
     "$0" check dirs
-    "$0" update progs
+    "$0" git pull progs
     "$0" install dev packages
     "$0" update .ssh
+    "$0" update sshd
 
     if which apt >/dev/null ; then
       echo "=== APT ===" >&2
@@ -75,7 +91,7 @@ case "$(echo "$@" | xargs)" in
       sudo apt install fish neovim \
         wget \
         tree git-all curl smplayer ripgrep tree zsh htop \
-        make gcc bat
+        make gcc bat openssh-server
 
       if ! which bat >/dev/null ; then
         mkdir -p $HOME/bin
