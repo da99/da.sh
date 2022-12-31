@@ -5,6 +5,20 @@ set -u -e -o pipefail
 
 
 case "$(echo "$@" | xargs)" in
+  "hud "*)
+    shift
+    counter=0
+    for x in $("$@") ; do
+      if [[ counter -lt 1 ]]; then
+        echo -n "$x"
+      else
+        echo -n " | $x"
+      fi
+      counter="$((counter + 1))"
+    done
+    echo
+    ;;
+
   "update .ssh")
     if test -d ~/.ssh ; then
       echo "=== chmod .ssh"
