@@ -17,10 +17,10 @@ autoload -Uz /apps/da.sh/zsh-functions/*
 # =================================================================
 # The following lines were added by compinstall
 zstyle ':completion:*' completer _expand _complete _ignored _match _correct _approximate
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle :compinstall filename '/home/da/.zshrc'
 
-autoload -Uz compinit
-compinit
+autoload -Uz compinit && compinit
 # End of lines added by compinstall
 # =================================================================
 
