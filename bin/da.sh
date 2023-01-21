@@ -5,7 +5,11 @@ set -u -e -o pipefail
 
 
 case "$(echo "$@" | xargs)" in
-  "hud "*)
+  help)
+    grep ') #' "$0" | tail -n -1 | cut -d'#' -f2-
+    ;;
+
+  "hud "*) # hud cmd...
     shift
     counter=0
     for x in $("$@") ; do
@@ -19,7 +23,7 @@ case "$(echo "$@" | xargs)" in
     echo
     ;;
 
-  "update .ssh")
+  "update .ssh") # update .ssh
     if test -d ~/.ssh ; then
       echo "=== chmod .ssh"
       chmod 700 $HOME/.ssh
@@ -30,7 +34,7 @@ case "$(echo "$@" | xargs)" in
 
     ;;
 
-  "update sshd")
+  "update sshd") # update sshd
     # --- SSHD config check
     sshd_config="/etc/ssh/sshd_config"
     my_config="$HOME/config/sshd_config"
@@ -44,7 +48,7 @@ case "$(echo "$@" | xargs)" in
     fi
     ;;
 
-  "update")
+  "update") # update
     "$0" check dirs
     "$0" git pull progs
     "$0" install dev packages
@@ -58,7 +62,7 @@ case "$(echo "$@" | xargs)" in
     fi
     ;;
 
-  "git pull progs")
+  "git pull progs") # git pull progs
     cd /progs
     for repo in zsh-syntax-highlighting zsh-autosuggestions zsh-history-substring-search ; do
       if ! test -d "/progs/$repo"; then
@@ -76,7 +80,7 @@ case "$(echo "$@" | xargs)" in
     done < <(find /progs/ -mindepth 2 -maxdepth 2 -type d -name .git)
     ;;
 
-  "check dirs")
+  "check dirs") # check dirs
     for dir in progs apps ; do
       if ! test -e "/$dir"; then
         echo "!!! Does not exist: $dir" >&2
@@ -85,7 +89,7 @@ case "$(echo "$@" | xargs)" in
     done
     ;;
 
-  "install dev packages")
+  "install dev packages") # install dev packages
     if which apt >/dev/null; then
       echo "=== Installing packages... ==="
       sudo apt install fish neovim \
@@ -144,11 +148,14 @@ case "$(echo "$@" | xargs)" in
   # GIT
   # =========================================================================
 
-  "repo pull all")
+  "repo pull all") # repo pull all
     "$0" git pull progs
-    cd /apps/da.sh
-    echo "=== git pull in $PWD ===" >&2
-    git pull
+    for dir in $($0 repo list) ; do
+      cd "$dir"
+      echo "=== git pull in $PWD ===" >&2
+      git pull
+    done
+
 
     ;;
 
