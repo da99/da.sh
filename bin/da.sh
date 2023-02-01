@@ -6,10 +6,12 @@ set -u -e -o pipefail
 
 case "$(echo "$@" | xargs)" in
   help)
-    grep ') #' "$0" | tail -n -1 | cut -d'#' -f2-
+    cmd="da.sh"
+    echo "$cmd hud my cmd with args"
+    echo "         Takes output and replace newlines with '|'"
     ;;
 
-  "hud "*) # hud cmd...
+  "hud "*)
     shift
     counter=0
     for x in $("$@") ; do
@@ -95,7 +97,7 @@ case "$(echo "$@" | xargs)" in
       sudo apt install fish neovim \
         wget \
         tree git-all curl smplayer ripgrep tree zsh htop \
-        make gcc bat openssh-server
+        make gcc bat openssh-server xsel
 
       if ! which bat >/dev/null ; then
         mkdir -p $HOME/bin
