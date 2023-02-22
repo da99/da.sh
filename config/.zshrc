@@ -7,6 +7,7 @@ export LC_CTYPE="en_US.UTF-8"
 export TZ=:/etc/localtime
 export TERM='xterm-256color'
 
+
 fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
 
@@ -68,5 +69,7 @@ alias devcheck="git commit -m 'Development checkpoint.'"
 alias gc="git clone --depth 1"
 # =================================================================
 
-PROMPT='%F{108}%n%F{240}@%F{108}%m%f %F{222}%~%f ${git_prompt}%(?.. %S%F{9}$?%f%s )%F{8}%#$f '
+
+autoload -U colors && colors
+PROMPT='%{$fg[green]%}%n%{$reset_color%}@%{$fg[green]%}%m%{$reset_color%} %{$fg[yellow]%}%~%{$reset_color%} ${git_prompt}%(?.. %S%F{9}$?%f%s )%#%{$reset_color%} '
 

@@ -122,6 +122,7 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "zsh git prompt")
+    autoload -U colors && colors
     if ! git -C $PWD rev-parse 2> /dev/null; then
       echo ''
       exit 0
@@ -139,7 +140,7 @@ case "$(echo "$@" | xargs)" in
           ;;
       esac
     else
-      git_prompt='[%S%F{9}'${current_branch}'%f%s]'
+      git_prompt="[%{$fg[red]%}${current_branch}%{$reset_color%}]"
     fi
     if test -n "$git_prompt"; then
       echo "${git_prompt} "
