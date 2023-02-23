@@ -8,7 +8,14 @@ case "$(echo "$@" | xargs)" in
   help)
     cmd="da.sh"
     echo "$cmd hud my cmd with args"
-    echo "         Takes output and replace newlines with '|'"
+    echo "       Takes output and replace newlines with '|'"
+    echo "$cmd screen sleep"
+    echo "       Waits 2 seconds and shuts off monitor."
+    echo "$cmd new zsh [new/file]"
+    ;;
+
+  "screen sleep")
+    sleep 2s && xset dpms force off;
     ;;
 
   "hud "*)
