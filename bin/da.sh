@@ -12,6 +12,48 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd screen sleep"
     echo "       Waits 2 seconds and shuts off monitor."
     echo "$cmd new zsh [new/file]"
+    echo "$cmd bspwm config"
+    echo "       Runs command BSPwm config optiosn via bspc."
+    ;;
+
+  "bspwm config")
+    set -x
+    bspc rule -a '*' state=floating
+    bspc config border_width 4
+    bspc config focused_border_color '#f46200'
+    bspc config click_to_focus button1
+
+    bspc config pointer_modifier mod4
+    bspc config pointer_action1 move
+    bspc config pointer_action2 none
+    bspc config pointer_action3 resize_corner
+    bspc config focus_follows_pointer false
+
+    # ---------------------------------------------------------
+    bspc rule -a Gnome-calculator state=floating
+    bspc rule -a Galculator state=floating
+    bspc rule -a Gpick state=floating
+    bspc rule -a GParted state=floating center=true
+    bspc rule -a File-roller state=floating
+    bspc rule -a Nitrogen state=floating
+    bspc rule -a Lxappearance state=floating center=true
+    bspc rule -a Lxrandr state=floating
+    bspc rule -a Pavucontrol state=floating center=true
+    bspc rule -a Timeshift-gtk state=floating
+    bspc rule -a qt5ct state=floating rectangle=700x470+0+0 center=on
+    bspc rule -a SimpleScreenRecorder state=floating
+    bspc rule -a Sxiv state=floating
+    bspc rule -a Viewnior state=floating
+    bspc rule -a mpv state=floating
+
+    bspc rule -a 'Onboard' border=off focus=off manage=off state=floating
+    bscp rule -a 'Polybar' manage=off border=off
+    bscp rulle -a 'Plank' manage=off border=off focus=off state=floating
+    bspc rule -a Tint2 border=off manage=off layer=above state=floating
+    bspc rule -a '*:Kunst' sticky=on layer=below border=off focus=off
+
+    bspc rule -a Docky layer=above manage=on border=off focus=off locked=on
+    bspc rule -a xfce4-notes floating=on
     ;;
 
   "screen sleep")
