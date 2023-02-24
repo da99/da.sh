@@ -218,11 +218,6 @@ case "$(echo "$@" | xargs)" in
     test -z "$(git status --porcelain --ignore-submodules)" && [[ "$(git status)" = *"Your branch is up to date with 'origin/"* ]]
     ;;
 
-  "repo list")
-    echo "$HOME"
-    find /apps/ -mindepth 1 -maxdepth 1 -type d
-    ;;
-
   "repo list dirty")
     for x in $($0 repo list); do
       cd "$x"
@@ -230,6 +225,13 @@ case "$(echo "$@" | xargs)" in
         echo "$x"
       fi
     done
+    ;;
+
+  "repo list")
+    if test -e "$HOME/.git" ; then
+      echo "$HOME"
+    fi
+    find -L /apps /media-lib -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
     ;;
 
   *)
