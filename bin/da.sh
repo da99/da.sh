@@ -17,9 +17,10 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "bspwm config")
+    # ---------------------------------------------------------
     set -x
-    bspc rule -a '*' state=floating
     bspc config border_width 4
+    bspc config window_gap  5
     bspc config focused_border_color '#f46200'
     bspc config click_to_focus button1
 
@@ -27,9 +28,10 @@ case "$(echo "$@" | xargs)" in
     bspc config pointer_action1 move
     bspc config pointer_action2 none
     bspc config pointer_action3 resize_corner
-    bspc config focus_follows_pointer false
-
+    bspc config focus_follows_pointer false || echo "error: $?"
+    set +x
     # ---------------------------------------------------------
+    bspc rule -a '*' state=floating
     bspc rule -a Gnome-calculator state=floating
     bspc rule -a Galculator state=floating
     bspc rule -a Gpick state=floating
@@ -47,13 +49,15 @@ case "$(echo "$@" | xargs)" in
     bspc rule -a mpv state=floating
 
     bspc rule -a 'Onboard' border=off focus=off manage=off state=floating
-    bscp rule -a 'Polybar' manage=off border=off
-    bscp rulle -a 'Plank' manage=off border=off focus=off state=floating
+    bspc rule -a 'Polybar' manage=off border=off
+    bspc rule -a 'Plank' manage=off border=off focus=off state=floating
     bspc rule -a Tint2 border=off manage=off layer=above state=floating
     bspc rule -a '*:Kunst' sticky=on layer=below border=off focus=off
 
     bspc rule -a Docky layer=above manage=on border=off focus=off locked=on
     bspc rule -a xfce4-notes floating=on
+
+    bspc rule -l
     ;;
 
   "screen sleep")
