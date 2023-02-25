@@ -19,8 +19,8 @@ case "$(echo "$@" | xargs)" in
   "bspwm config")
     # ---------------------------------------------------------
     set -x
-    bspc config border_width 4
-    bspc config window_gap  5
+    bspc config border_width 2
+    bspc config window_gap  4
     bspc config focused_border_color '#f46200'
     bspc config click_to_focus button1
 
