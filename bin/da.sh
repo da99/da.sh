@@ -14,6 +14,9 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd new zsh [new/file]"
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
+    echo "$cmd install packages"
+    echo "       packages for software development."
+    echo "$cmd edit packages"
     ;;
 
   "bspwm config")
@@ -106,7 +109,7 @@ case "$(echo "$@" | xargs)" in
   "update") # update
     "$0" check dirs
     "$0" git pull progs
-    "$0" install dev packages
+    "$0" install packages
     "$0" update .ssh
     "$0" update sshd
 
@@ -144,19 +147,19 @@ case "$(echo "$@" | xargs)" in
     done
     ;;
 
-  "install dev packages") # install dev packages
-    if which apt >/dev/null; then
-      echo "=== Installing packages... ==="
-      sudo apt install fish neovim \
-        wget \
-        tree git-all curl smplayer ripgrep tree zsh htop \
-        make gcc bat openssh-server xsel
+  "install packages"|"install dev packages")
+    if which xbps-install ; then
+      cd "$(dirname "$0")"/..
+      set -x
+      sudo xbps-install -S $(cat config/void.packages.txt | tr '\n' ' ')
+    fi
+    ;;
 
-      if ! which bat >/dev/null ; then
-        mkdir -p $HOME/bin
-        ln -s "$(which batcat)" $HOME/bin/bat
-      fi
-    fi # which apt
+  "edit packages")
+    if which xbps-install ; then
+      cd "$(dirname "$0")"/..
+      lvim config/void.packages.txt || nvim config/void.packages.txt
+    fi
     ;;
 
   "new zsh "*)

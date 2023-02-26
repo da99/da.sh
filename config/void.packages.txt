@@ -1,0 +1,21 @@
+fish-shell neovim
+wget
+tree git gitk curl smplayer ripgrep tree zsh htop
+make gcc bat openssh xsel
+xdotool
+wmctrl
+ruby rust cargo
+thunar-archive-plugin
+pipewire libspa-bluetooth wireplumber
+network-manager-applet
+qlipper network-manager-applet pa-applet
+exfatprogs
+polybar
+noto-fonts-emoji
+xdg-desktop-portal
+xdg-desktop-portal-gnome
+xdg-desktop-portal-gtk
+xdg-desktop-portal-kde
+xdg-desktop-portal-lxqt
+xdg-desktop-portal-wlr
+libX11-devel libXcursor-devel
