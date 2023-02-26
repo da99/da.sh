@@ -17,5 +17,4 @@ xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
 xdg-desktop-portal-kde
 xdg-desktop-portal-lxqt
-xdg-desktop-portal-wlr
 libX11-devel libXcursor-devel
