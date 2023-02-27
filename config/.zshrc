@@ -12,12 +12,6 @@ fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
 
 # =================================================================
-# Highlighting: https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md
-# NOTE: zsh-syntax-highlighting must be the last plugin sourced.
-source /progs/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-# =================================================================
-
-# =================================================================
 # History
 HISTFILE=~/.zsh.histfile
 HISTSIZE=500
@@ -26,7 +20,6 @@ setopt appendhistory
 # =================================================================
 HISTORY_SUBSTRING_SEARCH_FUZZY="true"
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE="true"
-source /progs/zsh-history-substring-search/zsh-history-substring-search.zsh
  bindkey '^[[A' history-substring-search-up
  bindkey '^[[B' history-substring-search-down
 # bindkey '^[[1;5A' history-substring-search-up
@@ -71,5 +64,13 @@ autoload -Uz compinit && compinit
 # =================================================================
 
 autoload -U colors && colors
+
+# =================================================================
+# Highlighting: https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md
+# NOTE: zsh-syntax-highlighting must be the last plugin sourced.
+source /progs/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# NOTE: zsh-history-substring-search must be sourced after syntax highlighting.
+source /progs/zsh-history-substring-search/zsh-history-substring-search.zsh
+# =================================================================
 PROMPT='%{$fg[green]%}%n%{$reset_color%}@%{$fg[green]%}%m%{$reset_color%} %{$fg[yellow]%}%~%{$reset_color%} ${git_prompt}%(?.. %S%F{9}$?%f%s )%#%{$reset_color%} '
 
