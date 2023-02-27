@@ -18,3 +18,4 @@ xdg-desktop-portal-gtk
 xdg-desktop-portal-kde
 xdg-desktop-portal-lxqt
 libX11-devel libXcursor-devel
+bluez blueman bluedevil
