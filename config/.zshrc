@@ -56,7 +56,7 @@ alias gc="git clone --depth 1"
 # The following lines were added by compinstall
 zstyle ':completion:*' completer _expand _complete _ignored _match _correct _approximate
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-zstyle ':completion:*' rehash true
+# zstyle ':completion:*' rehash true
 zstyle :compinstall filename "/home/$USER/.zshrc"
 
 autoload -Uz compinit && compinit
