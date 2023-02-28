@@ -19,3 +19,5 @@ xdg-desktop-portal-kde
 xdg-desktop-portal-lxqt
 libX11-devel libXcursor-devel
 bluez blueman bluedevil
+gdk-pixbuf-devel gdk-pixbuf-xlib-devel pango-devel cairo-devel libgcc-devel
+atk-devel atkmm-devel gtk+3-devel
