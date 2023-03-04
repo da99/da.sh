@@ -11,6 +11,8 @@ case "$(echo "$@" | xargs)" in
     echo "       Takes output and replace newlines with '|'"
     echo "$cmd screen sleep"
     echo "       Waits 2 seconds and shuts off monitor."
+    echo "$cmd all screens tear free"
+    echo "       Waits 2 seconds and shuts off monitor."
     echo "$cmd new zsh [new/file]"
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
@@ -64,7 +66,14 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "screen sleep")
-    sleep 2s && xset dpms force off;
+    sleep 5s && xset dpms force off;
+    ;;
+
+  "all screens tear free")
+    xrandr | grep ' connected' | cut -f 1 -d ' ' | while read display; do
+      echo "xrandr --output $display --set TearFree on"
+      xrandr --output $display --set TearFree on
+    done
     ;;
 
   "hud "*)
