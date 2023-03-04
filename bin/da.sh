@@ -70,6 +70,7 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "all screens tear free")
+    # from: https://linuxreviews.org/HOWTO_fix_screen_tearing
     xrandr | grep ' connected' | cut -f 1 -d ' ' | while read display; do
       echo "xrandr --output $display --set TearFree on"
       xrandr --output $display --set TearFree on
