@@ -1,5 +1,13 @@
 #/usr/bin/env zsh
 
+if test -z "$@" ; then
+  selected="$( { da.sh repo list; da.sh progs list } | da.sh list select)"
+  if test -n "$selected" && test -d "$selected"; then
+    cd "$selected"
+  fi
+  return 0
+fi
+
 dir="$1"
 if test -d "/apps/$dir"; then
   cd "/apps/$dir"

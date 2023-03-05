@@ -7,6 +7,8 @@ set -u -e -o pipefail
 case "$(echo "$@" | xargs)" in
   help)
     cmd="da.sh"
+    echo "$cmd list select"
+    echo "       fzf with customized options."
     echo "$cmd hud my cmd with args"
     echo "       Takes output and replace newlines with '|'"
     echo "$cmd screen sleep"
@@ -19,6 +21,7 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd install packages"
     echo "       packages for software development."
     echo "$cmd edit packages"
+    echo "$cmd progs list"
     ;;
 
   "bspwm config")
@@ -89,6 +92,10 @@ case "$(echo "$@" | xargs)" in
       counter="$((counter + 1))"
     done
     echo
+    ;;
+
+  "list select")
+    exec fzf --preview="tree -L 2 -a {}" --tabstop=2 -i
     ;;
 
   "update .ssh") # update .ssh
@@ -171,6 +178,12 @@ case "$(echo "$@" | xargs)" in
       lvim config/void.packages.txt || nvim config/void.packages.txt
     fi
     ;;
+
+  # ----------------------------------------------------------------
+  "progs list")
+    find -L /progs -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
+  ;;
+  # ----------------------------------------------------------------
 
   "new zsh "*)
     this_bin="${0:a:h}/.."
