@@ -3,6 +3,8 @@
 #
 set -u -e -o pipefail
 
+THIS_DIR="${0:a:h}/.."
+THIS_MAIN_RB="$THIS_DIR/src/main.rb"
 
 case "$(echo "$@" | xargs)" in
   help)
@@ -22,6 +24,11 @@ case "$(echo "$@" | xargs)" in
     echo "       packages for software development."
     echo "$cmd edit packages"
     echo "$cmd progs list"
+    echo
+    echo "$cmd node latest"
+    echo "$cmd node latest install"
+    echo "$cmd node latest remote file"
+    echo "$cmd node is latest"
     ;;
 
   "bspwm config")
@@ -178,6 +185,32 @@ case "$(echo "$@" | xargs)" in
       lvim config/void.packages.txt || nvim config/void.packages.txt
     fi
     ;;
+  # ----------------------------------------------------------------
+
+
+  # ----------------------------------------------------------------
+  "node latest install")
+  if $0 node is latest ; then
+    exit 0
+  fi
+  cd "$HOME"
+  mkdir -p bin
+  cd bin
+  latest="$("$THIS_MAIN_RB" node latest)"
+  remote_file="$("$THIS_MAIN_RB" node latest remote file)"
+  set -x
+  rm -f "$remote_file"
+  wget "$remote_file"
+  tar -xf "$(basename "$remote_file")"
+  rm -f node
+  ln -s "$(basename "$remote_file" .tar.xz)" node
+  set +x
+  echo
+  echo "--- Installed: $PWD"
+  node/bin/node --version
+  ls node/bin
+  ;;
+  # ----------------------------------------------------------------
 
   # ----------------------------------------------------------------
   "progs list")
@@ -265,8 +298,6 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   *)
-    # === It's an error:
-    echo "!!! Unknown action for $0: $@" 1>&2
-    exit 1
+    "$THIS_MAIN_RB" $@
     ;;
 esac
