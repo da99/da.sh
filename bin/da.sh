@@ -5,6 +5,7 @@ set -u -e -o pipefail
 
 THIS_DIR="${0:a:h}/.."
 THIS_MAIN_RB="$THIS_DIR/src/main.rb"
+THIS_SRC="$THIS_DIR/src"
 
 case "$(echo "$@" | xargs)" in
   help)
@@ -29,6 +30,8 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd node latest install"
     echo "$cmd node latest remote file"
     echo "$cmd node is latest"
+    echo
+    echo "$cmd nvim is latest"
     ;;
 
   "bspwm config")
@@ -189,7 +192,7 @@ case "$(echo "$@" | xargs)" in
 
 
   # ----------------------------------------------------------------
-  "node latest install")
+  "node install latest")
   if $0 node is latest ; then
     exit 0
   fi
@@ -258,6 +261,13 @@ case "$(echo "$@" | xargs)" in
       echo "${git_prompt} "
     fi
     ;;
+
+  # =========================================================================
+  # NVIM
+  # =========================================================================
+  "nvim "*)
+    "$THIS_SRC"/nvim.rb $@
+  ;;
 
   # =========================================================================
   # GIT
