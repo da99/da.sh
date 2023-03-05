@@ -4,7 +4,7 @@
 set -u -e -o pipefail
 
 THIS_DIR="${0:a:h}/.."
-THIS_MAIN_RB="$THIS_DIR/src/main.rb"
+THIS_NODE_RB="$THIS_DIR/src/node.rb"
 THIS_SRC="$THIS_DIR/src"
 
 case "$(echo "$@" | xargs)" in
@@ -199,8 +199,8 @@ case "$(echo "$@" | xargs)" in
   cd "$HOME"
   mkdir -p bin
   cd bin
-  latest="$("$THIS_MAIN_RB" node latest)"
-  remote_file="$("$THIS_MAIN_RB" node latest remote file)"
+  latest="$("$THIS_NODE_RB" node latest)"
+  remote_file="$("$THIS_NODE_RB" node latest remote file)"
   set -x
   rm -f "$remote_file"
   wget "$remote_file"
@@ -308,6 +308,6 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   *)
-    "$THIS_MAIN_RB" $@
+    "$THIS_NODE_RB" $@
     ;;
 esac
