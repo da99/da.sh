@@ -207,6 +207,7 @@ case "$(echo "$@" | xargs)" in
   tar -xf "$(basename "$remote_file")"
   rm -f node
   ln -s "$(basename "$remote_file" .tar.xz)" node
+  node/bin/npm upgrade -g
   set +x
   echo
   echo "--- Installed: $PWD"
