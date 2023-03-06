@@ -264,6 +264,23 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   # =========================================================================
+  # DENO
+  # =========================================================================
+  "deno install latest")
+  cd "$HOME/bin"
+  if test -e deno ; then
+    deno upgrade
+    exit 0
+  fi
+  remote_file="https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip"
+  wget "$remote_file"
+  unzip "$(basename "$remote_file")"
+  echo
+  echo "--- Installed:"
+  ./deno --version
+  ;;
+
+  # =========================================================================
   # NVIM
   # =========================================================================
   "nvim "*)
