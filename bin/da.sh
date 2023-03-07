@@ -24,6 +24,9 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd install packages"
     echo "       packages for software development."
     echo "$cmd edit packages"
+    echo "$cmd list packages"
+    echo "$cmd install packages"
+    echo
     echo "$cmd progs list"
     echo
     echo "$cmd node latest"
@@ -186,6 +189,26 @@ case "$(echo "$@" | xargs)" in
     if which xbps-install ; then
       cd "$(dirname "$0")"/..
       lvim config/void.packages.txt || nvim config/void.packages.txt
+    fi
+    ;;
+
+  "list packages")
+    if command -v xbps-install >/dev/null; then
+      cd "$(dirname "$0")"/..
+      cat config/void.packages.txt | tr '\n' ' '
+    else
+      lsb_release -a
+      exit 1
+    fi
+    ;;
+
+  "install packages")
+    set -x
+    if command -v xbps-install >/dev/null; then
+      sudo xbps-install -S $("$0" list packages)
+    else
+      lsb_release -a
+      exit 1
     fi
     ;;
   # ----------------------------------------------------------------

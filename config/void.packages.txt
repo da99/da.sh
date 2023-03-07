@@ -4,13 +4,10 @@ tree git gitk curl smplayer ripgrep tree zsh htop
 make gcc bat openssh xsel
 xdotool
 wmctrl
-ruby rust cargo
-thunar-archive-plugin
 pipewire libspa-bluetooth wireplumber
 network-manager-applet
 qlipper network-manager-applet pa-applet
 exfatprogs
-polybar
 noto-fonts-emoji
 xdg-desktop-portal
 xdg-desktop-portal-gnome
@@ -22,4 +19,9 @@ bluez blueman bluedevil
 gdk-pixbuf-devel gdk-pixbuf-xlib-devel pango-devel cairo-devel libgcc-devel
 atk-devel atkmm-devel gtk+3-devel
 fzf ranger trash-cli
-
+breeze-icons breeze-gtk breeze-cursors breeze-amber-cursor-theme
+faenza-icon-theme faience-icon-theme
+gnome-colors-icon-theme gnome-icon-theme
+gnome-icon-theme-extras gnome-icon-theme-symbolic
+gnome-icon-theme-xfce hicolor-icon-theme
+mate-icon-theme mate-icon-theme-faenza

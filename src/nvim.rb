@@ -42,7 +42,9 @@ when 'nvim is latest'
 
 when 'nvim install latest'
   if latest?
-    puts File.read(NVIM_VERSION_TXT)
+    Dir.chdir(HOME_BIN) {
+      puts File.read(NVIM_VERSION_TXT)
+    }
     exit(0) 
   end
   Dir.chdir(HOME_BIN)
