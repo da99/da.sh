@@ -4,7 +4,7 @@ tree git gitk curl smplayer ripgrep tree zsh htop
 make gcc bat openssh xsel
 xdotool
 wmctrl
-pipewire libspa-bluetooth wireplumber
+pipewire pamixer libspa-bluetooth wireplumber
 network-manager-applet
 qlipper network-manager-applet pa-applet
 exfatprogs
@@ -25,3 +25,4 @@ gnome-colors-icon-theme gnome-icon-theme
 gnome-icon-theme-extras gnome-icon-theme-symbolic
 gnome-icon-theme-xfce hicolor-icon-theme
 mate-icon-theme mate-icon-theme-faenza
+liberation-fonts-ttf
