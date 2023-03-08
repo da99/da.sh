@@ -178,6 +178,15 @@ case "$(echo "$@" | xargs)" in
     done
     ;;
 
+
+  "install themes")
+    mkdir -p $HOME/.local/share/konsole/
+    cd $HOME/.local/share/konsole/
+    if ! test -e Chester.colorscheme ; then
+      wget "https://github.com/mbadolato/iTerm2-Color-Schemes/raw/master/konsole/Chester.colorscheme"
+    fi
+    ;;
+
   "install packages"|"install dev packages")
     if command -v xbps-install >/dev/null; then
       cd "$(dirname "$0")"/..
@@ -186,11 +195,6 @@ case "$(echo "$@" | xargs)" in
     else
       lsb_release -a
       exit 1
-    fi
-    mkdir -p $HOME/.local/share/konsole/
-    cd $HOME/.local/share/konsole/
-    if ! test -e Chester.colorscheme ; then
-      wget "https://github.com/mbadolato/iTerm2-Color-Schemes/raw/master/konsole/Chester.colorscheme"
     fi
     ;;
 
