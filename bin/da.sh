@@ -21,11 +21,11 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd new zsh [new/file]"
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
-    echo "$cmd install packages"
-    echo "       packages for software development."
+    echo
     echo "$cmd edit packages"
     echo "$cmd list packages"
     echo "$cmd install packages"
+    echo "       packages for software development."
     echo
     echo "$cmd progs list"
     echo
@@ -35,6 +35,7 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd node is latest"
     echo
     echo "$cmd nvim is latest"
+    echo
     ;;
 
   "bspwm config")
@@ -178,10 +179,18 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "install packages"|"install dev packages")
-    if which xbps-install ; then
+    if command -v xbps-install >/dev/null; then
       cd "$(dirname "$0")"/..
       set -x
-      sudo xbps-install -S $(cat config/void.packages.txt | tr '\n' ' ')
+      sudo xbps-install -S $("$0" list packages | tr '\n' ' ')
+    else
+      lsb_release -a
+      exit 1
+    fi
+    mkdir -p $HOME/.local/share/konsole/
+    cd $HOME/.local/share/konsole/
+    if ! test -e Chester.colorscheme ; then
+      wget "https://github.com/mbadolato/iTerm2-Color-Schemes/raw/master/konsole/Chester.colorscheme"
     fi
     ;;
 
@@ -202,15 +211,6 @@ case "$(echo "$@" | xargs)" in
     fi
     ;;
 
-  "install packages")
-    set -x
-    if command -v xbps-install >/dev/null; then
-      sudo xbps-install -S $("$0" list packages)
-    else
-      lsb_release -a
-      exit 1
-    fi
-    ;;
   # ----------------------------------------------------------------
 
 
