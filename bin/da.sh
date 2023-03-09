@@ -41,6 +41,8 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd repo is clean"
     echo "$cmd repo list dirty"
     echo "$cmd repo list"
+    echo
+    echo "$cmd wallpaper loop (cmd)"
     ;;
 
   "bspwm config")
@@ -363,6 +365,16 @@ case "$(echo "$@" | xargs)" in
       echo "$HOME"
     fi
     find -L /apps /media-lib -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
+    ;;
+
+  "wallpaper loop "*)
+    shift
+    shift
+    while read -r line ; do
+      echo "Current: $line"
+      feh --no-fehbg --bg-fill "$line"
+      sleep 2
+    done < <($@)
     ;;
 
   *)
