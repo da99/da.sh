@@ -28,6 +28,7 @@ case "$(echo "$@" | xargs)" in
     echo "       packages for software development."
     echo
     echo "$cmd progs list"
+    echo "$cmd progs pull all"
     echo
     echo "$cmd node latest"
     echo "$cmd node latest install"
@@ -36,6 +37,10 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd nvim is latest"
     echo
+    echo "$cmd repo pull all"
+    echo "$cmd repo is clean"
+    echo "$cmd repo list dirty"
+    echo "$cmd repo list"
     ;;
 
   "bspwm config")
@@ -139,7 +144,7 @@ case "$(echo "$@" | xargs)" in
 
   "update") # update
     "$0" check dirs
-    "$0" git pull progs
+    "$0" progs pull all
     "$0" install packages
     "$0" update .ssh
     "$0" update sshd
@@ -151,7 +156,7 @@ case "$(echo "$@" | xargs)" in
     fi
     ;;
 
-  "git pull progs") # git pull progs
+  "progs pull all") # git pull progs
     cd /progs
     for repo in zsh-syntax-highlighting zsh-autosuggestions zsh-history-substring-search ; do
       if ! test -d "/progs/$repo"; then
@@ -328,7 +333,6 @@ case "$(echo "$@" | xargs)" in
   # =========================================================================
 
   "repo pull all") # repo pull all
-    "$0" git pull progs
     for dir in $($0 repo list) ; do
       cd "$dir"
       echo "=== git pull in $PWD ===" >&2
