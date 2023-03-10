@@ -3,7 +3,7 @@ wget
 tree git gitk curl smplayer playerctl ripgrep tree zsh htop
 make gcc bat openssh ksshaskpass xsel
 xdotool
-wmctrl
+wmctrl xtitle
 pipewire pamixer libspa-bluetooth wireplumber
 network-manager-applet
 qlipper network-manager-applet pa-applet
