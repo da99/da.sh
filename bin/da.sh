@@ -8,7 +8,7 @@ THIS_NODE_RB="$THIS_DIR/src/node.rb"
 THIS_SRC="$THIS_DIR/src"
 
 case "$(echo "$@" | xargs)" in
-  help)
+  help|-h)
     cmd="da.sh"
     echo "$cmd list select"
     echo "       fzf with customized options."
@@ -44,11 +44,14 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd wallpaper loop (cmd)"
     echo
-    echo "$cmd music follow [cmd with args]"
+    echo "$cmd music snoop [cmd with args]"
     echo "$cmd music playing titles"
     echo "$cmd hud music playing titles"
     echo
     echo "$cmd pipewire install"
+    echo
+    echo "$cmd xtitle padded [padding string]"
+    echo "$cmd xtitle snoop [cmd with args]"
     ;;
 
   "bspwm config")
@@ -388,12 +391,12 @@ case "$(echo "$@" | xargs)" in
     done < <($@)
     ;;
 
-  "music follow "*)
+  "music snoop "*)
     shift
     shift
     while read -r line ; do
       echo "$line"
-      $@
+      $@ || notify-send "Error:" "music snoop command: $@"
     done < <( playerctl --follow --all-players status )
     ;;
 
@@ -411,6 +414,19 @@ case "$(echo "$@" | xargs)" in
     echo 'context.exec = [ { path = "/usr/bin/wireplumber" args = "" } ]' > "${XDG_CONFIG_HOME}/pipewire/pipewire.conf.d/10-wireplumber.conf"
     ;;
 
+  "xtitle padded"*)
+    shift
+    shift
+    echo "${1}$(xtitle)${1}"
+    ;;
+
+  "xtitle snoop "*)
+    shift
+    shift
+    while read -r line ; do
+      $@ || notify-send "Error in xtitle snoop" "$@"
+    done < <(xtitle -s)
+    ;;
   *)
     "$THIS_NODE_RB" $@
     ;;
