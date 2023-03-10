@@ -43,6 +43,10 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd repo list"
     echo
     echo "$cmd wallpaper loop (cmd)"
+    echo
+    echo "$cmd music follow [cmd with args]"
+    echo "$cmd music playing titles"
+    echo "$cmd hud music playing titles"
     ;;
 
   "bspwm config")
@@ -99,6 +103,11 @@ case "$(echo "$@" | xargs)" in
       echo "xrandr --output $display --set TearFree on"
       xrandr --output $display --set TearFree on
     done
+    ;;
+
+  "hud music playing titles")
+    output="$($0 music playing titles)"
+    echo "${output//$'\n'/"   |   "}"
     ;;
 
   "hud "*)
@@ -375,6 +384,19 @@ case "$(echo "$@" | xargs)" in
       feh --no-fehbg --bg-fill "$line"
       sleep 2
     done < <($@)
+    ;;
+
+  "music follow "*)
+    shift
+    shift
+    while read -r line ; do
+      echo "$line"
+      $@
+    done < <( playerctl --follow --all-players status )
+    ;;
+
+  "music playing titles")
+    playerctl -a metadata title
     ;;
 
   *)

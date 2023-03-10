@@ -1,6 +1,6 @@
 fish-shell neovim
 wget
-tree git gitk curl smplayer ripgrep tree zsh htop
+tree git gitk curl smplayer playerctl ripgrep tree zsh htop
 make gcc bat openssh ksshaskpass xsel
 xdotool
 wmctrl
