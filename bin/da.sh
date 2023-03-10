@@ -47,6 +47,8 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd music follow [cmd with args]"
     echo "$cmd music playing titles"
     echo "$cmd hud music playing titles"
+    echo
+    echo "$cmd pipewire install"
     ;;
 
   "bspwm config")
@@ -397,6 +399,16 @@ case "$(echo "$@" | xargs)" in
 
   "music playing titles")
     playerctl -a metadata title
+    ;;
+
+  "pipewire install")
+    set -x
+    sudo xbps-install -S pipewire wireplumber libspa-bluetooth
+    : "${XDG_CONFIG_HOME:=${HOME}/.config}"
+    mkdir -p "${XDG_CONFIG_HOME}/pipewire"
+    sed '/path.*=.*pipewire-media-session/s/{/#{/' /usr/share/pipewire/pipewire.conf > "${XDG_CONFIG_HOME}/pipewire/pipewire.conf"
+    mkdir -p "${XDG_CONFIG_HOME}/pipewire/pipewire.conf.d"
+    echo 'context.exec = [ { path = "/usr/bin/wireplumber" args = "" } ]' > "${XDG_CONFIG_HOME}/pipewire/pipewire.conf.d/10-wireplumber.conf"
     ;;
 
   *)
