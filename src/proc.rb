@@ -2,32 +2,30 @@
 
 require "open3"
 
+pid = false
+puts "Process pid #{Process.pid}"
+Signal.trap("INT") do
+  Process.kill("INT", pid) if pid
+end
+Signal.trap("TERM") do
+  Process.kill("INT", pid) if pid
+end
+
 def reload_genmon(id)
   puts "Reloading: #{id}"
   `xfce4-panel --plugin-event=genmon-#{id}:refresh:bool:true`
 end
 
-xtitle_genmon = ARGV.first
-player_genmon = ARGV.last
+cmd  = ARGV.dup
+genmon = cmd.shift
+puts cmd.inspect
 
-puts "xitle: #{xtitle_genmon} player: #{player_genmon}"
-
-fork do
-  Open3.popen2('playerctl', '--follow', 'status') do |i, o, status_thread|
-    puts "playerctl PID: #{status_thread.pid}"
-    o.each_line { |line|
-      puts "--- #{line}"
-      reload_genmon(player_genmon)
-    }
-    puts "ended: #{status_thread.value.success?.inspect}"
-  end
-end
-
-Open3.popen2('xtitle', '-s') do |i, o, status_thread|
-  puts "xtitle PID: #{status_thread.pid}"
+Open3.popen2(*cmd) do |i, o, status_thread|
+  puts "#{cmd.first} PID: #{status_thread.pid}"
+  pid = status_thread.pid
   o.each_line { |line|
     puts "--- #{line}"
-    reload_genmon(xtitle_genmon)
+    reload_genmon(genmon)
   }
   puts "ended: #{status_thread.value.success?.inspect}"
 end
