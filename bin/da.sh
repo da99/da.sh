@@ -270,9 +270,10 @@ case "$(echo "$@" | xargs)" in
   ;;
   # ----------------------------------------------------------------
 
-  "new zsh "*)
+  "new zsh "*|"new ruby "*)
     this_bin="${0:a:h}/.."
     da_bin="${this_bin}/.."
+    file_type="$2"
     new_file="$3"
 
     if test -e "$new_file" ; then
@@ -280,10 +281,18 @@ case "$(echo "$@" | xargs)" in
       exit 0
     fi
 
-    cp -i "${this_bin}/templates/script.zsh" "$new_file"
+    case "$file_type" in
+      zsh)
+        cp -i "${this_bin}/templates/script.zsh" "$new_file"
+        ;;
+      ruby)
+        cp -i "${this_bin}/templates/script.rb" "$new_file"
+        ;;
+    esac
     chmod +x "$new_file"
     echo "=== Created: $new_file" >&2
     ;;
+
 
   "zsh git prompt")
     autoload -U colors && colors

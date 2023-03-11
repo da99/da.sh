@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+#
+#
+
+# NOTE: If player stopped, title and url will return nil
+#   because `playerctl metadata` returns "No player could handle this command."
+class Player
+  class << self
+    def all_names
+      `playerctl --list-all`.strip.split("\n")
+    end
+
+    def all
+      all_names.map { |name|
+        Player.new name
+      }.reject(&:stopped?)
+    end
+  end # class
+
+  attr_reader :name
+
+  def initialize(name)
+    @name = name
+    @status = `playerctl -p #{name} status`.strip
+  end
+  def status
+    return nil if @status == "No players found"
+    @status
+  end
+  def playing?
+    status === "Playing"
+  end
+
+  def stopped?
+    status === "Stopped"
+  end
+
+  def title
+    return nil if stopped?
+    `playerctl -p #{name} metadata title`.strip
+  end
+
+  def url
+    return nil if stopped?
+    `playerctl -p #{name} metadata url`.strip
+  end
+
+  def local?
+    return nil if stopped?
+    !url[/^\//].nil?
+  end
+end # class
+
+case ARGV.map(&:strip).join(' ')
+when "list titles"
+  Player.all.each { |p| puts p.title }
+
+when "list"
+  Player.all.each { |p|
+    puts "#{p.name} #{p.status} #{p.title}"
+  }
+  
+when "list playing titles"
+  Player.all.select(&:playing?).each { |p|
+    puts p.title
+  }
+
+when "hud list playing titles"
+  puts Player.all.select(&:playing?).map(&:title).join('  |  ')
+
+when "snoop"
+  raise "not implemented"  
+else
+  raise "Unknown option: #{ARGV.inspect}" 
+
+end # case
