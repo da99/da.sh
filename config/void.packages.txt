@@ -8,12 +8,11 @@ pipewire pamixer libspa-bluetooth wireplumber
 network-manager-applet
 qlipper network-manager-applet pa-applet
 exfatprogs
-noto-fonts-emoji
+noto-fonts-cjk noto-fonts-emoji noto-fonts-ttf noto-fonts-ttf-extra
 xdg-desktop-portal
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
 xdg-desktop-portal-kde
-xdg-desktop-portal-lxqt
 libX11-devel libXcursor-devel
 bluez blueman bluedevil
 gdk-pixbuf-devel gdk-pixbuf-xlib-devel pango-devel cairo-devel libgcc-devel
