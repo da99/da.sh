@@ -66,7 +66,12 @@ when "list playing titles"
   }
 
 when "hud list playing titles"
-  puts Player.all.select(&:playing?).map(&:title).join('  |  ')
+  titles = Player.all.select(&:playing?).map(&:title)
+  if titles.empty?
+    puts ''
+  else
+    puts "   #{titles.join('  |  ')}    "
+  end
 
 when "snoop"
   raise "not implemented"  
