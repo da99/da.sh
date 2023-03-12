@@ -8,7 +8,7 @@ pipewire pamixer libspa-bluetooth wireplumber
 network-manager-applet
 qlipper network-manager-applet pa-applet
 exfatprogs
-noto-fonts-cjk noto-fonts-emoji noto-fonts-ttf noto-fonts-ttf-extra
+xorg-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-ttf noto-fonts-ttf-extra
 xdg-desktop-portal
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
