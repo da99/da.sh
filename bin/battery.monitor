@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+#
+#
+cmd = ARGV.map(&:strip).join(' ')
+
+class Battery
+  attr_reader :info
+  def initialize
+    @info = `upower -i /org/freedesktop/UPower/devices/battery_BAT0`.strip.split("\n").map(&:strip)
+  end
+
+  def state
+    find('state: ').split(':').last.strip
+  end
+
+  def charging?
+    state === "charging"
+  end
+
+  def discharging?
+    state === "discharging"
+  end
+
+  def find(str)
+    info.find { |line| line[str] }
+  end
+
+  def to_number
+    l = find('percentage: ')
+    if l
+      l.strip.split(/\ +/).last.sub('%', '')
+    else
+      0
+    end
+  end
+end # class
+
+case cmd
+when "current"
+  batt = Battery.new
+  puts batt.to_number
+when "status"
+  batt = Battery.new
+  puts "#{batt.state} #{batt.to_number}"
+else
+  raise "Unknown option: #{cmd}"
+end
+
