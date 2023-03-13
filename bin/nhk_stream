@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+#
+
+set -u -e -x
+
+# exec > /tmp/nhk_high.txt
+# exec 2>&1
+
+# M3U8="https://nhkwlive-xjp.akamaized.net/hls/live/2003458/nhkwlive-xjp-en/index_1M.m3u8"
+echo "=== Starting @ $(date) in $PWD:"
+exec streamlink       \
+  --http-no-ssl-verify           \
+  --player-external-http          \
+  --player-external-http-port 2112 \
+  --default-stream best \
+  nhk.or.jp/nhkworld  best
