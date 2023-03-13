@@ -1,0 +1,166 @@
+#!/usr/bin/env ruby
+#
+#
+
+cmd = ARGV.map(&:strip).join(' ')
+
+W_2K = 2560
+H_2K = 1440
+W_1080P = 1920
+H_1080P = 1080
+
+
+CURRENT_WIDTH, CURRENT_HEIGHT = `xprop -notype -len 16 -root _NET_DESKTOP_GEOMETRY`.split('=').last.split(',').map(&:strip).map(&:to_i)
+
+class Geo
+  class << self
+
+    def current_name
+      case "#{CURRENT_WIDTH} #{CURRENT_HEIGHT}"
+      when "2560 1440"
+        "2k"
+      when "1920 1080"
+        "1080p"
+      when "3840 2160"
+        "4k"
+      else
+        raise "Unknown resolution: #{CURRENT_WIDTH} #{CURRENT_HEIGHT}"
+      end
+    end # def
+
+    def w
+      CURRENT_WIDTH
+    end
+
+    def h
+      CURRENT_HEIGHT
+    end
+
+  end # class self
+end # class
+
+class Margin
+  class << self
+    def padding
+      15
+    end
+
+    def top
+      60
+    end
+
+    def left
+      50
+    end
+
+    def bottom
+      20
+    end
+
+    def right
+      10
+    end
+  end # class
+end # class
+
+class Left
+  class << self
+
+    def x
+      Margin.left
+    end
+
+    def y
+      Margin.top
+    end
+
+    def w
+      ((Geo.w - Margin.left - Margin.right) * 0.60).to_i - Margin.padding
+    end
+
+    def h
+      (Geo.h - Margin.top - Margin.bottom) - Margin.bottom
+    end
+  end # class self
+end # class
+
+class Right
+  class << self
+    def x
+      Left.x + Left.w + Margin.padding
+    end
+
+    def y
+      Left.y
+    end
+
+    def w
+      Geo.w - x - Margin.right
+    end
+
+    def h
+      Left.h + Margin.bottom
+    end
+  end # class
+end # class
+
+class Right_Top
+  class << self
+    def x
+      Left.x + Left.w + Margin.padding
+    end
+
+    def y
+      Left.y
+    end
+
+    def w
+      Geo.w - x - Margin.right
+    end
+
+    def h
+      (Left.h / 2).to_i - (Margin.padding * 4)
+    end
+  end # class
+end # class
+
+class Right_Bottom
+  class << self
+    def x
+      Right_Top.x
+    end
+
+    def y
+      Right_Top.y + Right_Top.h + (Margin.padding * 3)
+    end
+
+    def w
+      Right_Top.w
+    end
+
+    def h
+      Geo.h - y - Margin.padding
+    end
+  end # class
+end # class
+
+def move(x)
+  puts "wmctrl -r :ACTIVE: -e 0,#{x.x},#{x.y},#{x.w},#{x.h}"
+  `wmctrl -r :ACTIVE: -e 0,#{x.x},#{x.y},#{x.w},#{x.h}`
+end
+
+case cmd
+when "screen geo name"
+  puts geo_name
+when "right top"
+  move(Right_Top)
+when "right bottom"
+  move(Right_Bottom)
+when "right"
+  move(Right)
+when "left"
+  move(Left)
+else
+  raise "Unknown options: #{cmd}"
+
+end # case
