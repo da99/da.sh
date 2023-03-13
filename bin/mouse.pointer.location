@@ -178,16 +178,16 @@ class UI
       return nil unless in_window?
 
       if top_edge?
-        return 'top_left_corner' if left_edge?
-        return 'top_right_corner' if right_edge?
-        return 'top_middle' if middle_column?
+        return 'left_top_corner' if left_edge?
+        return 'right_top_corner' if right_edge?
+        return 'middle_top' if middle_column?
         return 'top_edge'
       end
 
       if bottom_edge?
-        return 'bottom_left_corner' if left_edge?
-        return 'bottom_right_corner' if right_edge?
-        return 'bottom_middle' if middle_column?
+        return 'left_bottom_corner' if left_edge?
+        return 'right_bottom_corner' if right_edge?
+        return 'middle_bottom' if middle_column?
         return 'bottom_edge'
       end
 

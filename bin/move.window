@@ -63,6 +63,27 @@ class Margin
   end # class
 end # class
 
+class Maximized
+  class << self
+
+    def x
+      Margin.left
+    end
+
+    def y
+      Margin.top
+    end
+
+    def w
+      (Geo.w - Margin.left - Margin.right).to_i
+    end
+
+    def h
+      Left.h
+    end
+  end # class self
+end # class
+
 class Left
   class << self
 
@@ -79,7 +100,7 @@ class Left
     end
 
     def h
-      (Geo.h - Margin.top - Margin.bottom) - Margin.bottom
+      (Geo.h - Margin.top - Margin.bottom) - Margin.padding
     end
   end # class self
 end # class
@@ -156,6 +177,8 @@ when "right top"
   move(Right_Top)
 when "right bottom"
   move(Right_Bottom)
+when "maximized"
+  move(Maximized)
 when "right"
   move(Right)
 when "left"

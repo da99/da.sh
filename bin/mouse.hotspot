@@ -8,6 +8,15 @@ action="$(mouse.pointer.location current)"
 
 set -x
 case "$action" in
+  left_top_corner)
+    move.window left
+    ;;
+  right_top_corner)
+    move.window right top
+    ;;
+  right_bottom_corner)
+    move.window right bottom
+    ;;
   left_top|left_bottom)
     xdotool key --clearmodifiers Left
     ;;
@@ -33,7 +42,7 @@ case "$action" in
     xdotool key --clearmodifiers Page_Down
     ;;
   middle_middle)
-    bspc node -t '~fullscreen'
+    move.window maximized
     # xdotool key --clearmodifiers F11
     ;;
   *)
