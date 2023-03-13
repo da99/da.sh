@@ -1,0 +1,240 @@
+#!/usr/bin/env ruby
+
+INT_KEYS = %w[X Y WIDTH HEIGHT].freeze
+
+# Navigate with the Window manager and mouse.
+class UI
+  class << self
+    def shell_string_to_hash(raw_str)
+      raw_str.split("\n").each_with_object({}) do |str, h|
+        a, b = str.split('=')
+        h[a] = if INT_KEYS.include?(a)
+                 b.to_i
+               else
+                 b
+               end
+      end
+    end
+  end # class
+
+  # Mouse-related:
+  class Mouse
+    class << self
+      def current
+        h = UI.shell_string_to_hash(`xdotool getmouselocation --shell`)
+        Mouse.new(h['X'], h['Y'])
+      end
+    end # class
+
+    attr_reader :x, :y
+
+    def initialize(raw_x, raw_y)
+      @x = raw_x
+      @y = raw_y
+    end
+  end
+
+  # Window-related:
+  class Window
+
+    DECORATION_HEIGHT = 29
+
+    class << self
+      def current
+        h = UI.shell_string_to_hash(`xdotool getactivewindow getwindowgeometry --shell`)
+        Window.new(h['X'], h['Y'] - DECORATION_HEIGHT, h['WIDTH'], h['HEIGHT'] + DECORATION_HEIGHT)
+      end
+    end
+    # end class
+
+    attr_reader :x, :y, :w, :h, :corner_length, :side_column_length,
+      :column_w, :row_h, :middle_h
+
+    def initialize(raw_x, raw_y, raw_w, raw_h)
+      @x = raw_x
+      @y = raw_y
+      @w = raw_w
+      @h = raw_h
+      @corner_length = ((@w < @h ? @w : @h) * 0.15).to_i
+      @column_w = ((@w - (@corner_length * 2)) / 3).to_i
+      @row_h = ((@h - (@corner_length * 2)) / 2).to_i
+      @middle_h = ((@h - (@corner_length * 2)) / 3).to_i
+    end
+
+    def end_x
+      x + w
+    end
+
+    def end_y
+      y + h
+    end
+
+  end
+  # end class
+
+  # Let's give names to different
+  # areas within a window or the screen:
+  class Window_Location
+    class << self
+      def current
+        self.new(Mouse.current, Window.current)
+      end
+    end
+
+    attr_reader :mouse, :window
+
+    def initialize(mouse, win)
+      @mouse = mouse
+      @window = win
+    end
+
+    def in_window?
+      mouse.x > window.x && mouse.x < window.end_x && 
+        mouse.y > window.y && mouse.y < window.end_y
+    end
+
+    def left_column?
+      mouse.x > (window.x + window.corner_length) &&
+        mouse.x < (window.x + window.corner_length + window.column_w)
+    end
+
+    def middle_column?
+       mouse.x > (window.x + window.corner_length + window.column_w) &&
+         mouse.x < (window.end_x - window.corner_length - window.column_w)
+    end
+
+    def right_column?
+      mouse.x > (window.end_x - window.corner_length - window.column_w) &&
+        mouse.x < (window.end_x - window.corner_length)
+    end
+    
+    def top_edge?
+      mouse.y > window.y &&
+        mouse.y < (window.y + window.corner_length)
+    end
+
+    def bottom_edge?
+      mouse.y < window.end_y &&
+        mouse.y > (window.end_y - window.corner_length)
+    end
+    
+    def left_edge?
+      mouse.x > window.x &&
+        mouse.x <= (window.x + window.corner_length)
+    end
+
+    def right_edge?
+      mouse.x < window.end_x &&
+        mouse.x >= (window.end_x - window.corner_length)
+    end
+
+    # ROWS:
+    def top_row?
+      mouse.y > (window.y + window.corner_length) &&
+        mouse.y < (window.end_y - window.corner_length - window.row_h)
+    end
+
+    def bottom_row?
+      mouse.y > (window.y + window.corner_length + window.row_h) &&
+        mouse.y < (window.end_y - window.corner_length)
+    end
+
+    def left_top?
+      left_column? && top_row?
+    end
+
+    def left_bottom?
+      left_column? && bottom_row?
+    end
+
+    def right_top?
+      right_column? && top_row?
+    end
+
+    def right_bottom?
+      right_column? && bottom_row?
+    end
+
+    def middle_top?
+      middle_column? &&
+        mouse.y > (window.y + window.corner_length) &&
+        mouse.y < (window.y + window.corner_length + window.middle_h)
+    end
+
+    def middle_middle?
+      middle_column? &&
+        mouse.y > (window.y + window.corner_length + window.middle_h) &&
+        mouse.y < (window.end_y - window.corner_length - window.middle_h)
+    end
+
+    def middle_bottom?
+      middle_column? &&
+        mouse.y > (window.y + window.corner_length + window.middle_h + window.middle_h) &&
+        mouse.y < (window.end_y - window.corner_length)
+    end
+
+
+    def to_name
+      return nil unless in_window?
+
+      if top_edge?
+        return 'top_left_corner' if left_edge?
+        return 'top_right_corner' if right_edge?
+        return 'top_middle' if middle_column?
+        return 'top_edge'
+      end
+
+      if bottom_edge?
+        return 'bottom_left_corner' if left_edge?
+        return 'bottom_right_corner' if right_edge?
+        return 'bottom_middle' if middle_column?
+        return 'bottom_edge'
+      end
+
+      if left_edge?
+        return 'left_edge'
+      end
+
+      if right_edge?
+        return 'right_edge'
+      end
+
+      if left_column?
+        return 'left_top' if left_top?
+        return 'left_bottom' if left_bottom?
+      end
+
+      if right_column?
+        return 'right_top' if right_top?
+        return 'right_bottom' if right_bottom?
+      end
+
+      if middle_column?
+        return 'middle_top' if middle_top?
+        return 'middle_middle' if middle_middle?
+        return 'middle_bottom' if middle_bottom?
+      end
+
+      nil
+    end
+  end
+end
+
+cmd = ARGV.map(&:strip).join(' ')
+case cmd
+when "current"
+  location = UI::Window_Location.current
+  win_name = location.to_name
+  if !win_name
+    # Mouse is outside the current window.
+    m = UI::Mouse.current
+    puts "mx: #{m.x} my: #{m.y}"
+  else
+    puts win_name
+  end
+
+else
+  raise "Unknown options: #{cmd}"
+  
+end # case
+

@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+#
+#
+set -u -e -o pipefail
+
+action="$(mouse.pointer.location current)"
+
+
+set -x
+case "$action" in
+  left_top|left_bottom)
+    xdotool key --clearmodifiers Left
+    ;;
+  right_top|right_bottom)
+    xdotool key --clearmodifiers Right
+    ;;
+  top_edge|top_middle)
+    xdotool key --clearmodifiers Home
+    ;;
+  bottom_edge|bottom_middle)
+    xdotool key --clearmodifiers End
+    ;;
+  left_edge)
+    xdotool key --clearmodifiers Alt_L+Left
+    ;;
+  right_edge)
+    xdotool key --clearmodifiers Alt_L+Right
+    ;;
+  middle_top)
+    xdotool key --clearmodifiers Page_Up
+    ;;
+  middle_bottom)
+    xdotool key --clearmodifiers Page_Down
+    ;;
+  middle_middle)
+    bspc node -t '~fullscreen'
+    # xdotool key --clearmodifiers F11
+    ;;
+  *)
+    notify-send "!!! Unknown Action:" "$action"
+    exit 0
+    ;;
+esac
+
+# notify-send "Action:" "$action"
