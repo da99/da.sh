@@ -173,9 +173,15 @@ class UI
         mouse.y < (window.end_y - window.corner_length)
     end
 
+    def left_top_window_corner?
+      mouse.x < 10 && mouse.y < 10
+    end
 
     def to_name
-      return nil unless in_window?
+      if !in_window?
+        return 'left_top_window_corner' if left_top_window_corner?
+        return nil
+      end
 
       if top_edge?
         return 'left_top_corner' if left_edge?
