@@ -5,6 +5,7 @@ cmd = ARGV.map(&:strip).join(' ')
 
 class Battery
   attr_reader :info
+
   def initialize
     @info = `upower -i /org/freedesktop/UPower/devices/battery_BAT0`.strip.split("\n").map(&:strip)
   end
@@ -28,7 +29,7 @@ class Battery
   def to_number
     l = find('percentage: ')
     if l
-      l.strip.split(/\ +/).last.sub('%', '')
+      l.strip.split(/\ +/).last.sub('%', '').to_i
     else
       0
     end
@@ -42,6 +43,15 @@ when "current"
 when "status"
   batt = Battery.new
   puts "#{batt.state} #{batt.to_number}"
+when "watch"
+  while true
+    batt = Battery.new
+    if batt.discharging? && batt.to_number < 25
+      `notify-send --urgency=critical "Battery" "Plug in charger: #{batt.to_number}%"`
+      sleep(60 * 3)
+    end
+    sleep(60 * 5)
+  end
 else
   raise "Unknown option: #{cmd}"
 end
