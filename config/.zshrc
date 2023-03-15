@@ -12,6 +12,9 @@ export TERM='xterm-256color'
 
 fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
+bindkey -v
+export KEYTIMEOUT=1
+cursor_mode
 
 # =================================================================
 # History
