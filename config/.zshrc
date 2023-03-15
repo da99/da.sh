@@ -45,7 +45,6 @@ source /progs/zsh-autosuggestions/zsh-autosuggestions.zsh
 # =================================================================
 # Aliases:
 # From: https://superuser.com/questions/1514569/how-to-expand-aliases-inline-in-zsh
-zstyle ':completion:*' completer _expand_alias _complete _ignored
 # =================================================================
 alias .="git status"
 alias devcheck="git commit -m 'Development checkpoint.'"
@@ -55,14 +54,13 @@ alias gc="git clone --depth 1"
 # =================================================================
 # Auto-completion
 # =================================================================
-# The following lines were added by compinstall
-zstyle ':completion:*' completer _expand _complete _ignored _match _correct _approximate
+autoload -Uz compinit && compinit
+# zstyle ':completion:*' completer _expand _complete _ignored _match _correct _approximate
+# zstyle ':completion:*' completer _expand_alias _complete _ignored
+zstyle ':completion:*' completer _expand_alias _complete _ignored _match _correct _approximate
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 # zstyle ':completion:*' rehash true
 zstyle :compinstall filename "/home/$USER/.zshrc"
-
-autoload -Uz compinit && compinit
-# End of lines added by compinstall
 # =================================================================
 
 autoload -U colors && colors
