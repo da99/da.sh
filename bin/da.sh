@@ -395,8 +395,8 @@ case "$(echo "$@" | xargs)" in
     shift
     while read -r line ; do
       echo "Current: $line"
-      feh --no-fehbg --bg-fill "$line"
-      sleep 2
+      feh --no-fehbg --bg-fill "$line" || :
+      sleep 5
     done < <($@)
     ;;
 
