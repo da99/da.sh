@@ -46,11 +46,11 @@ class Margin
     end
 
     def top
-      60
+      40
     end
 
     def left
-      50
+      55
     end
 
     def bottom
@@ -58,7 +58,7 @@ class Margin
     end
 
     def right
-      10
+      20
     end
   end # class
 end # class
@@ -152,7 +152,7 @@ class Right_Bottom
     end
 
     def y
-      Right_Top.y + Right_Top.h + (Margin.padding * 3)
+      Right_Top.y + Right_Top.h + (Margin.padding * 1)
     end
 
     def w
