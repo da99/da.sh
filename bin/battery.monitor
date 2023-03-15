@@ -47,7 +47,7 @@ when "watch"
   while true
     batt = Battery.new
     if batt.discharging? && batt.to_number < 25
-      `notify-send --icon=/usr/share/icons/gnome/32x32/status/battery-empty.png --urgency=critical "Battery" "Plug in charger: #{batt.to_number}%"`
+      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg --urgency=critical "Battery" "Plug in charger: #{batt.to_number}%"`
       sleep(60 * 3)
     end
     sleep(60 * 5)
