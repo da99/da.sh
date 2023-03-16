@@ -43,17 +43,6 @@ precmd_git_prompt() {
   git_prompt="$(da.sh zsh git prompt)"
 }
 
-source /progs/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-# =================================================================
-# Aliases:
-# From: https://superuser.com/questions/1514569/how-to-expand-aliases-inline-in-zsh
-# =================================================================
-alias .="git status"
-alias devcheck="git commit -m 'Development checkpoint.'"
-alias gc="git clone --depth 1"
-# =================================================================
-
 # =================================================================
 # Auto-completion
 # =================================================================
@@ -66,7 +55,28 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle :compinstall filename "/home/$USER/.zshrc"
 # =================================================================
 
-autoload -U colors && colors
+# =================================================================
+# NOTE: fzf-tab needs to be loaded after compinit, but before plugins which will wrap widgets, such as zsh-autosuggestions or fast-syntax-highlighting!!
+source /progs/fzf-tab/fzf-tab.plugin.zsh
+# set list-colors to enable filename colorizing
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+# =================================================================
+
+# =================================================================
+# Auto-suggestions
+# =================================================================
+source /progs/zsh-autosuggestions/zsh-autosuggestions.zsh
+# =================================================================
+
+# =================================================================
+# Aliases:
+# From: https://superuser.com/questions/1514569/how-to-expand-aliases-inline-in-zsh
+# =================================================================
+alias .="git status"
+alias devcheck="git commit -m 'Development checkpoint.'"
+alias gc="git clone --depth 1"
+# =================================================================
+
 
 # =================================================================
 # Highlighting: https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md
@@ -75,5 +85,6 @@ source /progs/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # NOTE: zsh-history-substring-search must be sourced after syntax highlighting.
 source /progs/zsh-history-substring-search/zsh-history-substring-search.zsh
 # =================================================================
+autoload -U colors && colors
 PROMPT='%{$fg[green]%}%n%{$reset_color%}@%{$fg[green]%}%m%{$reset_color%} %{$fg[yellow]%}%~%{$reset_color%} ${git_prompt}%(?.. %S%F{9}$?%f%s )%#%{$reset_color%} '
-
+# =================================================================
