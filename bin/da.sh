@@ -10,6 +10,11 @@ THIS_SRC="$THIS_DIR/src"
 case "$(echo "$@" | xargs)" in
   help|-h)
     cmd="da.sh"
+    echo "$cmd check fs"
+    echo "       Lists all things that need to be done."
+    echo "$cmd check check fs"
+    echo "       exits with either 0 or 1"
+    echo
     echo "$cmd list select"
     echo "       fzf with customized options."
     echo "$cmd hud my cmd with args"
@@ -27,8 +32,9 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd install packages"
     echo "       packages for software development."
     echo
+    echo "$cmd install progs"
     echo "$cmd progs list"
-    echo "$cmd progs pull all"
+    echo "$cmd upgrade progs"
     echo
     echo "$cmd node latest"
     echo "$cmd node latest install"
@@ -52,6 +58,27 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd xtitle padded [padding string]"
     echo "$cmd xtitle snoop [cmd with args]"
+    ;;
+
+  "check fs")
+    is_fine="yes"
+    for dir in /apps /progs ; do
+      if ! test -e "$dir" ; then
+        echo "--- create $dir " >&2
+        is_fine=""
+      fi
+    done
+    if test "$is_fine" = "yes" ; then
+      echo "✔️ Everything setup."
+    fi
+    ;;
+
+  "check check fs")
+    errors="$("$0" check fs 2>&1 >/dev/null )"
+    if test -z "$errors" ; then
+      exit 0
+    fi
+    exit 1
     ;;
 
   "bspwm config")
@@ -160,7 +187,7 @@ case "$(echo "$@" | xargs)" in
 
   "update") # update
     "$0" check dirs
-    "$0" progs pull all
+    "$0" upgrade progs
     "$0" install packages
     "$0" update .ssh
     "$0" update sshd
@@ -172,20 +199,26 @@ case "$(echo "$@" | xargs)" in
     fi
     ;;
 
-  "progs pull all") # git pull progs
-    cd /progs
-    for repo in zsh-syntax-highlighting zsh-autosuggestions zsh-history-substring-search ; do
-      if ! test -d "/progs/$repo"; then
+  "install progs")
+    "$0" check check fs || { "$0" check fs && exit 1 }
+    for repo in "Aloxaf/fzf-tab" "zsh-users/zsh-syntax-highlighting" "zsh-users/zsh-autosuggestions" "zsh-users/zsh-history-substring-search" ; do
+      dname="$(basename "$repo")"
+      if test -d "/progs/$dname"; then
+        echo "--- exists: /progs/$dname"
+      else
         cd /progs
-        echo "=== Cloning: $repo ===" >&2
-        git clone --depth 1 "https://github.com/zsh-users/$repo"
+        echo "=== Cloning: $repo into $PWD/$dname ===" >&2
+        echo git clone --depth 1 "https://github.com/$repo"
       fi
     done
+    ;;
+
+  "upgrade progs") # git pull progs
+    cd /progs
 
     while read -r git_dir; do
       cd "$git_dir"/..
-      echo
-      echo "=== git pull in $PWD"
+      echo "=== git pull in $PWD: "
       git pull || read -s -k '?Press any key to continue.'
     done < <(find /progs/ -mindepth 2 -maxdepth 2 -type d -name .git)
     ;;
