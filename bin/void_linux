@@ -1,0 +1,31 @@
+#!/usr/bin/env zsh
+#
+#
+set -u -e -o pipefail
+
+case "$@" in
+  -h|--help|help)
+    cmd="$(basename "$0")"
+    echo "  $cmd hud available packages"
+    ;;
+
+  "upgrade packages")
+    sudo xbps-install -Su
+    sudo xbps-remove -Oo
+    ;;
+
+  "hud available packages")
+    count="$(xbps-install -Mun | wc -l)"
+    if test "$count" = "0" ; then
+      echo
+    else
+      echo "New packages: $count"
+    fi
+    ;;
+
+  *)
+    echo "!!! Unknown options: $@" >&2
+    exit 1
+    ;;
+esac
+
