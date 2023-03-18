@@ -19,7 +19,7 @@ case "$action" in
     windows move right top
     ;;
   right_bottom_corner)
-    windows right bottom
+    windows move right bottom
     ;;
   left_top|left_bottom)
     xdotool key --clearmodifiers Left

@@ -3,6 +3,7 @@
 #
 #
 cmd = ARGV.map(&:strip).join(' ')
+WIN_LOG = "/tmp/windows.txt"
 
 class Windows
   class << self
@@ -22,7 +23,15 @@ class Windows
       return id if id["0x"]
     end
 
+    def replay
+      puts File.read(WIN_LOG)
+    end # def
+
     def move(x)
+      active_id = Windows.active_id
+      File.open(WIN_LOG, "a") { |f|
+        f.puts "#{active_id} #{x.name}"
+      }
       puts "wmctrl -r :ACTIVE: -e 0,#{x.x},#{x.y},#{x.w},#{x.h}"
       `wmctrl -r :ACTIVE: -e 0,#{x.x},#{x.y},#{x.w},#{x.h}`
     end
@@ -240,6 +249,9 @@ when "move right"
 
 when "move left"
   Windows.move(Left)
+
+when "replay"
+  Windows.replay
 
 else
   STDERR.puts "!!! Unknown option: #{cmd}"
