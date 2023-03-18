@@ -13,13 +13,13 @@ case "$action" in
     ;;
 
   left_top_corner)
-    move.window left
+    windows move left
     ;;
   right_top_corner)
-    move.window right top
+    windows move right top
     ;;
   right_bottom_corner)
-    move.window right bottom
+    windows right bottom
     ;;
   left_top|left_bottom)
     xdotool key --clearmodifiers Left
@@ -46,7 +46,7 @@ case "$action" in
     xdotool key --clearmodifiers Page_Down
     ;;
   middle_middle)
-    move.window maximized
+    windows maximize
     # xdotool key --clearmodifiers F11
     ;;
   *)
