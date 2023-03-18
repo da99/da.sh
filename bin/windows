@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+#
+#
+#
+class Windows
+  class << self
+    def list
+      `wmctrl -l`.strip.split("\n").select { |line| 
+        pieces = line.split(/\ +/)
+        if pieces[1] === "-1"
+          nil
+        else
+          line
+        end
+      }
+    end
+  end # class self
+end # class
+
+cmd = ARGV.map(&:strip).join(' ')
+case cmd
+when "help", "-h", "--help"
+  puts "  list"
+  puts "  list count"
+  puts "  list is empty"
+when "list"
+  Windows.list.each { |l| puts l }
+when "list count"
+  puts Windows.list.size
+when "list is empty"
+  if Windows.list.empty?
+    exit 0
+  else
+    exit 1
+  end
+else
+  STDERR.puts "!!! Unknown option: #{cmd}"
+  exit 1
+end # cae
+

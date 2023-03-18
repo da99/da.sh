@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+
+
+set -u -e -o pipefail
+
+case "$@" in
+  "Power Off")
+    if windows list is empty; then
+      coproc ( loginctl poweroff  > /dev/null  2>&1 )
+    else
+      notify-send "Power Off Failed" "Windows open: $(windows list count)"
+    fi
+    ;;
+  "Reboot")
+    if windows list is empty; then
+      coproc ( loginctl reboot  > /dev/null  2>&1 )
+    else
+      notify-send "Reboot Failed" "Windows open: $(windows list count)"
+    fi
+    ;;
+  "Quit Window Manager")
+    if windows list is empty; then
+      coproc ( openbox --exit  > /dev/null  2>&1 )
+    else
+      notify-send "Quitting WM Failed" "Windows open: $(windows list count)"
+    fi
+    ;;
+  "Screen Sleep")
+    coproc ( da.sh screen sleep 2  > /dev/null  2>&1 )
+    ;;
+  "")
+    echo "Screen Sleep"
+    echo "Power Off"
+    echo "Reboot"
+    echo "Quit Window Manager"
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+

@@ -19,8 +19,8 @@ case "$(echo "$@" | xargs)" in
     echo "       fzf with customized options."
     echo "$cmd hud my cmd with args"
     echo "       Takes output and replace newlines with '|'"
-    echo "$cmd screen sleep"
-    echo "       Waits 2 seconds and shuts off monitor."
+    echo "$cmd screen sleep [5]"
+    echo "       Waits 5 seconds and shuts off monitor."
     echo "$cmd all screens tear free"
     echo "       Waits 2 seconds and shuts off monitor."
     echo "$cmd new zsh [new/file]"
@@ -126,7 +126,13 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "screen sleep")
-    sleep 5s && xset dpms force off;
+    "$0" $@ 5
+    ;;
+
+  "screen sleep "*)
+    shift;
+    shift;
+    sleep "$1"s && xset dpms force off;
     ;;
 
   "all screens tear free")
