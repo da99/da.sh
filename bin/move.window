@@ -4,19 +4,19 @@
 
 cmd = ARGV.map(&:strip).join(' ')
 
-W_2K = 2560
-H_2K = 1440
-W_1080P = 1920
-H_1080P = 1080
-
-
-CURRENT_WIDTH, CURRENT_HEIGHT = `xprop -notype -len 16 -root _NET_DESKTOP_GEOMETRY`.split('=').last.split(',').map(&:strip).map(&:to_i)
-
 class Geo
   class << self
 
+    def _init
+      if not defined? @raw_area
+        @raw_area = `xprop -notype -len 16 -root _NET_DESKTOP_GEOMETRY`.split('=').last.split(',').map(&:strip).map(&:to_i)
+        @screen_w, @screen_h = @raw_area
+      end
+      @raw_area
+    end
+
     def current_name
-      case "#{CURRENT_WIDTH} #{CURRENT_HEIGHT}"
+      case "#{w} #{h}"
       when "2560 1440"
         "2k"
       when "1920 1080"
@@ -24,16 +24,18 @@ class Geo
       when "3840 2160"
         "4k"
       else
-        raise "Unknown resolution: #{CURRENT_WIDTH} #{CURRENT_HEIGHT}"
+        raise "Unknown resolution: #{w} #{h}"
       end
     end # def
 
     def w
-      CURRENT_WIDTH
+      _init
+      @screen_w
     end
 
     def h
-      CURRENT_HEIGHT
+      _init
+      @screen_h
     end
 
   end # class self
@@ -172,7 +174,7 @@ end
 
 case cmd
 when "screen geo name"
-  puts geo_name
+  puts Geo.current_name
 when "right top"
   move(Right_Top)
 when "right bottom"
