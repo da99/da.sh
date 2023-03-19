@@ -13,6 +13,12 @@ class Memory_Storage
       case cmd
       when "set"
         V[args.first] = args[1..-1].join(' ')
+      when "get-existing"
+          args.map { |k|
+            if V.has_key?(k)
+              "#{k} #{V[k]}"
+            end
+          }.compact.join("\n")
       when "get"
         case args.first
         when "all"
@@ -20,7 +26,9 @@ class Memory_Storage
             "#{k} #{v}"
           }.join("\n")
         else
-          V[args.first] || ""
+          args.map { |k|
+            "#{k} #{V[k]}"
+          }.join("\n")
         end
       else
         "FAIL: Unknown command: #{cmd}"
@@ -52,7 +60,7 @@ end # if
 s = TCPSocket.open('localhost', 2001)
 s.puts(cmd_line)
 while line = s.gets
-  result = line.chop
+  result = line
   if result.index("FAIL:") == 0
     STDERR.puts result
     exit 1

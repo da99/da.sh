@@ -18,22 +18,50 @@ class Windows
       }
     end # def
 
+    def list_ids
+      list.map { |l| l.split.first }
+    end
+
     def active_id
       id = `wmctrl -a :ACTIVE: -v 2>&1`.strip.split.last
       return id if id["0x"]
     end
 
     def replay
-      puts File.read(WIN_LOG)
+      lines = `my.kv.ram get-existing #{Windows.list_ids.join(' ')}`.split("\n")
+      lines.each { |l|
+        args = l.split
+        win_id = args.shift
+        move(win_id, args.join(' '))
+      }
     end # def
 
-    def move(x)
-      active_id = Windows.active_id
-      File.open(WIN_LOG, "a") { |f|
-        f.puts "#{active_id} #{x.name}"
-      }
-      puts "wmctrl -r :ACTIVE: -e 0,#{x.x},#{x.y},#{x.w},#{x.h}"
-      `wmctrl -r :ACTIVE: -e 0,#{x.x},#{x.y},#{x.w},#{x.h}`
+    def direction_to_object(str)
+      case str
+      when "right top"
+        Right_Top
+
+      when "right bottom"
+        Right_Bottom
+
+      when "maximize"
+        Maximized
+
+      when "right"
+        Right
+
+      when "left"
+        Left
+      else
+        raise "Unknown direction: #{str.inspect}"
+      end
+    end
+
+    def move(active_id, direction)
+      d = direction_to_object(direction)
+      cmd = "wmctrl #{active_id.index('0x') == 0 ? '-i' : ''} -r #{active_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
+      puts cmd
+      `#{cmd}`
     end
   end # class self
 end # class
@@ -204,6 +232,7 @@ end # class
 case cmd
 when "help", "-h", "--help"
   puts "  list"
+  puts "  list ids"
   puts "  list count"
   puts "  list is empty"
   puts "  active id"
@@ -220,6 +249,9 @@ when "screen geo name"
 when "list"
   Windows.list.each { |l| puts l }
 
+when "list ids"
+  Windows.list_ids.map { |id| puts id }
+
 when "list count"
   id = Windows.list.size
   if id
@@ -235,20 +267,22 @@ when "list is empty"
     exit 1
   end
 
-when "move right top"
-  Windows.move(Right_Top)
+when /^move .+/
+  Windows.move(":ACTIVE:", cmd.sub("move ", ''))
+# when "move right top"
+#   Windows.move(Right_Top)
 
-when "move right bottom"
-  Windows.move(Right_Bottom)
+# when "move right bottom"
+#   Windows.move(Right_Bottom)
 
 when "maximize"
-  Windows.move(Maximized)
+  Windows.move(":ACTIVE:", cmd)
 
-when "move right"
-  Windows.move(Right)
+# when "move right"
+#   Windows.move(Right)
 
-when "move left"
-  Windows.move(Left)
+# when "move left"
+#   Windows.move(Left)
 
 when "replay"
   Windows.replay

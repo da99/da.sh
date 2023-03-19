@@ -13,12 +13,15 @@ case "$action" in
     ;;
 
   left_top_corner)
+    my.kv.ram set $(windows active id) left
     windows move left
     ;;
   right_top_corner)
+    my.kv.ram set $(windows active id) right top
     windows move right top
     ;;
   right_bottom_corner)
+    my.kv.ram set $(windows active id) right bottom
     windows move right bottom
     ;;
   left_top|left_bottom)
@@ -46,6 +49,7 @@ case "$action" in
     xdotool key --clearmodifiers Page_Down
     ;;
   middle_middle)
+    my.kv.ram set $(windows active id) maximize
     windows maximize
     # xdotool key --clearmodifiers F11
     ;;
