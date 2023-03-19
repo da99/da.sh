@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+#
+#
+
+require 'socket'
+PORT = 2001
+
+class Memory_Storage
+  class << self
+    def run(cmd_args)
+      cmd = cmd_args.first
+      args = cmd_args[1..-1]
+      case cmd
+      when "set"
+        V[args.first] = args[1..-1].join(' ')
+      when "get"
+        case args.first
+        when "all"
+          V.each_pair.map { |k,v|
+            "#{k} #{v}"
+          }.join("\n")
+        else
+          V[args.first] || ""
+        end
+      else
+        "FAIL: Unknown command: #{cmd}"
+      end
+    end
+  end # class
+end # class
+
+cmd_line = ARGV.map(&:strip).join(' ')
+
+if cmd_line == ""
+  puts "=== Setting up a new server on: #{PORT}"
+  server = TCPServer.open(PORT)
+  V = Hash.new
+
+  loop {
+    Thread.fork(server.accept) do |client|
+      cmd_args = client.gets.strip.split
+      result = Memory_Storage.run(cmd_args)
+      puts "Result: #{result.inspect}"
+      client.puts(result)
+      client.close
+    end
+  }
+
+  exit 0
+end # if
+
+s = TCPSocket.open('localhost', 2001)
+s.puts(cmd_line)
+while line = s.gets
+  result = line.chop
+  if result.index("FAIL:") == 0
+    STDERR.puts result
+    exit 1
+  end
+  puts result
+end
+s.close
+
+
