@@ -7,22 +7,33 @@ action="$(mouse.pointer.location current)"
 
 
 set -x
+
+replay_later() {
+  if pgrep -a -f ruby.+my.kv.ram ; then
+    my.kv.ram set $(windows active id) $1
+  fi
+}
+
 case "$action" in
   left_top_window_corner)
     left_top_window_corner || notify-send "Error:" "left_top_window_corner"
     ;;
 
   left_top_corner)
-    my.kv.ram set $(windows active id) left
-    windows move left
+    windows move :ACTIVE: left
+    replay_later left
     ;;
   right_top_corner)
-    my.kv.ram set $(windows active id) right top
-    windows move right top
+    windows move :ACTIVE: right_top
+    replay_later right_top
     ;;
   right_bottom_corner)
-    my.kv.ram set $(windows active id) right bottom
-    windows move right bottom
+    windows move :ACTIVE: right_bottom
+    replay_later right_bottom
+    ;;
+  middle_middle)
+    windows move :ACTIVE: maximize
+    replay_later maximize
     ;;
   left_top|left_bottom)
     xdotool key --clearmodifiers Left
@@ -48,15 +59,9 @@ case "$action" in
   middle_bottom)
     xdotool key --clearmodifiers Page_Down
     ;;
-  middle_middle)
-    my.kv.ram set $(windows active id) maximize
-    windows maximize
-    # xdotool key --clearmodifiers F11
-    ;;
   *)
     notify-send "!!! Unknown Action:" "$action"
     exit 0
     ;;
 esac
-
 # notify-send "Action:" "$action"

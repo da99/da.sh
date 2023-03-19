@@ -38,10 +38,10 @@ class Windows
 
     def direction_to_object(str)
       case str
-      when "right top"
+      when "right_top"
         Right_Top
 
-      when "right bottom"
+      when "right_bottom"
         Right_Bottom
 
       when "maximize"
@@ -237,7 +237,7 @@ when "help", "-h", "--help"
   puts "  list is empty"
   puts "  active id"
   puts "  screen geo name"
-  puts "  move [right | right top | right bottom | move left]"
+  puts "  move [id | :ACTIVE:] [right | right_top | right_bottom | left | maximize]"
   puts "  maximize"
 
 when "active id"
@@ -268,21 +268,7 @@ when "list is empty"
   end
 
 when /^move .+/
-  Windows.move(":ACTIVE:", cmd.sub("move ", ''))
-# when "move right top"
-#   Windows.move(Right_Top)
-
-# when "move right bottom"
-#   Windows.move(Right_Bottom)
-
-when "maximize"
-  Windows.move(":ACTIVE:", cmd)
-
-# when "move right"
-#   Windows.move(Right)
-
-# when "move left"
-#   Windows.move(Left)
+  Windows.move(ARGV[1], ARGV[2])
 
 when "replay"
   Windows.replay
