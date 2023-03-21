@@ -5,21 +5,30 @@
 cmd = ARGV.map(&:strip).join(' ')
 WIN_LOG = "/tmp/windows.txt"
 
+class Window
+  attr_reader :win_id, :wm_class, :wm_instance, :title
+  def initialize(raw_pieces)
+    @win_id, _gravity, class_instance, _host, *titles  = raw_pieces
+    @wm_class, @wm_instance = class_instance.split('.')
+    @title = titles.join(' ')
+  end
+end # class
+
 class Windows
   class << self
     def list
-      `wmctrl -l`.strip.split("\n").select { |line| 
+      `wmctrl -lx`.strip.split("\n").map { |line| 
         pieces = line.split(/\ +/)
         if pieces[1] === "-1"
           nil
         else
-          line
+          Window.new pieces
         end
-      }
+      }.compact
     end # def
 
     def list_ids
-      list.map { |l| l.split.first }
+      list.map { |l| l.win_id  }
     end
 
     def active_id
@@ -232,6 +241,7 @@ end # class
 case cmd
 when "help", "-h", "--help"
   puts "  list"
+  puts "  list class [class]"
   puts "  list ids"
   puts "  list count"
   puts "  list is empty"
@@ -247,8 +257,15 @@ when "screen geo name"
   puts Geo.current_name
 
 when "list"
-  Windows.list.each { |l| puts l }
+  Windows.list.each { |l| puts "#{l.win_id} #{l.wm_class} #{l.title}" }
 
+when /^list class .+/
+  target = ARGV[2]
+  Windows.list.each { |w|
+    if w.wm_class == target
+      puts w.win_id
+    end
+  }
 when "list ids"
   Windows.list_ids.map { |id| puts id }
 
