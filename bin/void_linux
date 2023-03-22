@@ -15,7 +15,19 @@ case "$@" in
     ;;
 
   "hud available packages")
-    count="$(xbps-install -Mun | wc -l)"
+    if ! ping -c1 8.8.8.8 >/dev/null ; then
+      echo
+      exit 0
+    fi
+    now_timestamp="$(date +%s)"
+    last_check="$(my.kv.ram get-default last-void-packages-check 0)"
+    if test $((( $now_timestamp - $last_check ))) -gt $((( 60 * 60 ))) ; then
+      count="$(xbps-install -Mun | wc -l)"
+      my.kv.ram set available-void-packages-check $count >/dev/null
+      my.kv.ram set last-void-packages-check $now_timestamp >/dev/null
+    else
+      count="$(my.kv.ram get-default available-void-packages-check 0)"
+    fi
     if test "$count" = "0" ; then
       echo
     else
