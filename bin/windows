@@ -323,16 +323,16 @@ when /^next (up|down|left|right)/
     exit 0 
   end
 
-  next_position = case "#{dir} #{current.position}"
-                  when "left right_top"
+  next_position = case "#{current.position} #{dir}"
+                  when "right_top left", "right_bottom left"
                     "left"
-                  when "left right_bottom"
-                    "left"
-                  when "up right_bottom"
-                    "right_top"
                   when "right left"
+                    "left"
+                  when "left right"
                     "right_top"
-                  when "down right_top"
+                  when "right_bottom up"
+                    "right_top"
+                  when "right_top down"
                     "right_bottom"
                   else
                     STDERR.puts "No window in desired direction: #{dir} from #{current.position}"
