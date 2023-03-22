@@ -37,6 +37,7 @@ class Window
         true
       else
         found = w.win_id == win_id
+        false
       end
     }
     next_win || dir_group.first
