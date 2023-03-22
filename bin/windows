@@ -15,10 +15,25 @@ class Window
     @user_time = 0
     @position = nil
   end
+
+  def activate
+    cmd = "wmctrl -i -a #{win_id}"
+    puts cmd
+    `#{cmd}`
+  end
 end # class
 
 class Windows
   class << self
+    def by_id(raw_id)
+      id = if raw_id == ":ACTIVE:"
+             Windows.active_id
+           else
+             raw_id
+           end
+      list.detect { |w| w.win_id == id }
+    end
+
     def list
       @list ||= begin
                    `wmctrl -lx`.strip.split("\n").map { |line| 
@@ -268,7 +283,7 @@ when "help", "-h", "--help"
   puts "  screen geo name"
   puts "  move [id | :ACTIVE:] [right | right_top | right_bottom | left | maximize]"
   puts "  maximize"
-  puts "  next [up|down|left|right] [id | :ACTIVE:]"
+  puts "  next [under|up|down|left|right] [id | :ACTIVE:]"
 
 when "active id"
   puts Windows.active_id
@@ -311,17 +326,45 @@ when "list is empty"
 when /^move .+/
   Windows.move(ARGV[1], ARGV[2])
 
-when /^next (up|down|left|right)/
-  dir = ARGV[1]
-  win_id = ARGV[2] || Windows.active_id
+when /^next under/
+  win_id = ARGV[2] || ":ACTIVE:"
+  current = Windows.by_id(win_id)
+  unless current
+    STDERR.puts "No current window found: under #{win_id}"
+    exit 0 
+  end
   Windows.list_with_user_time
   Windows.list_with_position
-  current = Windows.list.detect { |w| w.win_id == win_id } ||
-    Windows.list.detect { |w| w.position == "left" } 
+  group = Windows.list
+    .select { |w| w.position == current.position }
+    .sort_by(&:user_time)
+    .reverse
+  found = false
+  next_win = group.detect { |w|
+    if found
+      true
+    else
+      found = w.win_id == current.win_id
+      false
+    end
+  }
+  if !next_win
+    next_win = group.first
+  end
+
+  next_win.activate
+
+
+when /^next (up|down|left|right)/
+  dir = ARGV[1]
+  win_id = ARGV[2] || ":ACTIVE:"
+  current = Windows.by_id(win_id)
   unless current
     STDERR.puts "No current window found: #{dir} #{win_id}"
     exit 0 
   end
+  Windows.list_with_user_time
+  Windows.list_with_position
 
   next_position = case "#{current.position} #{dir}"
                   when "right_top left", "right_bottom left"
@@ -345,10 +388,7 @@ when /^next (up|down|left|right)/
     exit(0) 
   end
 
-  cmd = "wmctrl -i -a #{new_win.win_id}"
-  puts cmd
-  `#{cmd}`
-
+  new_win.activate
 
 when "replay"
   Windows.replay
