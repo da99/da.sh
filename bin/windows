@@ -354,7 +354,6 @@ when /^next under/
 
   next_win.activate
 
-
 when /^next (up|down|left|right)/
   dir = ARGV[1]
   win_id = ARGV[2] || ":ACTIVE:"
