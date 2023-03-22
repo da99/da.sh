@@ -13,6 +13,12 @@ class Memory_Storage
       case cmd
       when "set"
         V[args.first] = args[1..-1].join(' ')
+      when "get-default"
+        if V.has_key?(args.first)
+          V[args.first]
+        else
+          args[1..-1].join(' ')
+        end
       when "get-existing"
           args.map { |k|
             if V.has_key?(k)
@@ -39,7 +45,17 @@ end # class
 
 cmd_line = ARGV.map(&:strip).join(' ')
 
-if cmd_line == ""
+case cmd_line
+when "help", "--help", '-h'
+  cmd = "my.kv.ram"
+  puts "  #{cmd}"
+  puts "    Starts server."
+  puts "  #{cmd} get all"
+  puts "  #{cmd} get (key ... )"
+  puts "  #{cmd} get-default (key) (value)"
+  puts "  #{cmd} get-existing (key ... )"
+  puts "  #{cmd} set (key) (value ..)"
+when ""
   puts "=== Setting up a new server on: #{PORT}"
   server = TCPServer.open(PORT)
   V = Hash.new
@@ -55,18 +71,20 @@ if cmd_line == ""
   }
 
   exit 0
-end # if
-
-s = TCPSocket.open('localhost', 2001)
-s.puts(cmd_line)
-while line = s.gets
-  result = line
-  if result.index("FAIL:") == 0
-    STDERR.puts result
-    exit 1
+else
+  s = TCPSocket.open('localhost', 2001)
+  s.puts(cmd_line)
+  while line = s.gets
+    result = line
+    if result.index("FAIL:") == 0
+      STDERR.puts result
+      exit 1
+    end
+    puts result
   end
-  puts result
-end
-s.close
+  s.close
+end # case
+
+
 
 
