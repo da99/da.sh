@@ -268,6 +268,7 @@ when "help", "-h", "--help"
   puts "  screen geo name"
   puts "  move [id | :ACTIVE:] [right | right_top | right_bottom | left | maximize]"
   puts "  maximize"
+  puts "  next [up|down|left|right] [id | :ACTIVE:]"
 
 when "active id"
   puts Windows.active_id
@@ -309,6 +310,45 @@ when "list is empty"
 
 when /^move .+/
   Windows.move(ARGV[1], ARGV[2])
+
+when /^next (up|down|left|right)/
+  dir = ARGV[1]
+  win_id = ARGV[2] || Windows.active_id
+  Windows.list_with_user_time
+  Windows.list_with_position
+  current = Windows.list.detect { |w| w.win_id == win_id } ||
+    Windows.list.detect { |w| w.position == "left" } 
+  unless current
+    STDERR.puts "No current window found: #{dir} #{win_id}"
+    exit 0 
+  end
+
+  next_position = case "#{dir} #{current.position}"
+                  when "left right_top"
+                    "left"
+                  when "left right_bottom"
+                    "left"
+                  when "up right_bottom"
+                    "right_top"
+                  when "right left"
+                    "right_top"
+                  when "down right_top"
+                    "right_bottom"
+                  else
+                    STDERR.puts "No window in desired direction: #{dir} from #{current.position}"
+                    exit 0
+                  end
+
+  new_win = Windows.list.sort_by(&:user_time).reverse.detect { |w| w.position == next_position }
+  unless new_win
+    STDERR.puts "No new window found: #{dir} #{win_id} -> #{next_position}"
+    exit(0) 
+  end
+
+  cmd = "wmctrl -i -a #{new_win.win_id}"
+  puts cmd
+  `#{cmd}`
+
 
 when "replay"
   Windows.replay
