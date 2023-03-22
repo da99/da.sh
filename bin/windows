@@ -7,28 +7,49 @@ WIN_LOG = "/tmp/windows.txt"
 
 class Window
   attr_reader :win_id, :wm_class, :wm_instance, :title
+  attr_accessor :user_time, :position
   def initialize(raw_pieces)
     @win_id, _gravity, class_instance, _host, *titles  = raw_pieces
     @wm_class, @wm_instance = class_instance.split('.')
     @title = titles.join(' ')
+    @user_time = 0
+    @position = nil
   end
 end # class
 
 class Windows
   class << self
     def list
-      `wmctrl -lx`.strip.split("\n").map { |line| 
-        pieces = line.split(/\ +/)
-        if pieces[1] === "-1"
-          nil
-        else
-          Window.new pieces
-        end
-      }.compact
+      @list ||= begin
+                   `wmctrl -lx`.strip.split("\n").map { |line| 
+                     pieces = line.split(/\ +/)
+                     if pieces[1] === "-1"
+                       nil
+                     else
+                       Window.new pieces
+                     end
+                   }.compact
+                 end
     end # def
 
-    def list_ids
-      list.map { |l| l.win_id  }
+    def list_with_user_time
+      list.each { |w|
+        w.user_time = `xprop -id #{w.win_id} _NET_WM_USER_TIME`.strip.split.last
+      }
+      list
+    end
+
+    def list_with_position
+      positions = `my.kv.ram get-existing #{list.map(&:win_id).join(' ')}`.strip.split("\n").inject({}) { |memo, o|
+        win_id, pos = o.split
+        memo[win_id] = pos
+        memo
+      }
+      list.each { |w|
+        w.position = positions[w.win_id] || w.position
+        w
+      }
+      list
     end
 
     def active_id
@@ -37,11 +58,9 @@ class Windows
     end
 
     def replay
-      lines = `my.kv.ram get-existing #{Windows.list_ids.join(' ')}`.split("\n")
-      lines.each { |l|
-        args = l.split
-        win_id = args.shift
-        move(win_id, args.join(' '))
+      list_with_position.each { |w|
+        next unless w.position
+        move(w.win_id, w.position)
       }
     end # def
 
@@ -257,7 +276,11 @@ when "screen geo name"
   puts Geo.current_name
 
 when "list"
-  Windows.list.each { |l| puts "#{l.win_id} #{l.wm_class} #{l.title}" }
+  Windows.list_with_user_time
+  Windows.list_with_position
+  Windows.list.each { |l|
+    puts "#{l.win_id} #{l.wm_class} #{l.user_time} #{l.position || "unknown"} #{l.title}"
+  }
 
 when /^list class .+/
   target = ARGV[2]
@@ -267,7 +290,7 @@ when /^list class .+/
     end
   }
 when "list ids"
-  Windows.list_ids.map { |id| puts id }
+  Windows.list.each { |w| puts w.win_id }
 
 when "list count"
   id = Windows.list.size
