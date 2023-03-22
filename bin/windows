@@ -21,6 +21,26 @@ class Window
     puts cmd
     `#{cmd}`
   end
+
+  def next_window(dir = "under")
+    Windows.list_with_user_time
+    Windows.list_with_position
+
+    if dir == "under"
+      dir = position
+    end
+
+    dir_group = Windows.list.sort_by(&:user_time).reverse.select { |w| w.position == dir }
+    found = false
+    next_win = dir_group.detect { |w|
+      if found
+        true
+      else
+        found = w.win_id == win_id
+      end
+    }
+    next_win || dir_group.first
+  end # def
 end # class
 
 class Windows
@@ -354,40 +374,21 @@ when /^next under/
 
   next_win.activate
 
-when /^next (up|down|left|right)/
-  dir = ARGV[1]
+when /^next [under|left|right_bottom|right_top|right]/
+  dir = ARGV[1] || "under"
   win_id = ARGV[2] || ":ACTIVE:"
   current = Windows.by_id(win_id)
   unless current
     STDERR.puts "No current window found: #{dir} #{win_id}"
     exit 0 
   end
-  Windows.list_with_user_time
-  Windows.list_with_position
-
-  next_position = case "#{current.position} #{dir}"
-                  when "right_top left", "right_bottom left"
-                    "left"
-                  when "right left"
-                    "left"
-                  when "left right"
-                    "right_top"
-                  when "right_bottom up"
-                    "right_top"
-                  when "right_top down"
-                    "right_bottom"
-                  else
-                    STDERR.puts "No window in desired direction: #{dir} from #{current.position}"
-                    exit 0
-                  end
-
-  new_win = Windows.list.sort_by(&:user_time).reverse.detect { |w| w.position == next_position }
+  new_win = current.next_window(dir)
   unless new_win
-    STDERR.puts "No new window found: #{dir} #{win_id} -> #{next_position}"
+    STDERR.puts "No new window found: next #{dir} #{win_id}"
     exit(0) 
   end
-
   new_win.activate
+
 
 when "replay"
   Windows.replay

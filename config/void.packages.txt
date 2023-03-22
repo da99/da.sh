@@ -1,7 +1,7 @@
 fish-shell neovim
 wget xcolor rofi
 tree git gitk curl ripgrep tree zsh htop
-streamlink smplayer playerctl
+streamlink smplayer playerctl ffmpeg
 make gcc bat openssh ksshaskpass xsel
 xdotool
 wmctrl xtitle
