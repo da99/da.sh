@@ -75,6 +75,7 @@ source /progs/zsh-autosuggestions/zsh-autosuggestions.zsh
 alias .="git status"
 alias devcheck="git commit -m 'Development checkpoint.'"
 alias gc="git clone --depth 1"
+alias grep="grep --color=always"
 # =================================================================
 
 
