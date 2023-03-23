@@ -5,35 +5,108 @@
 require 'socket'
 PORT = 2001
 
+class Storage
+  attr_reader :storage, :expires
+  def initialize
+    @storage = {}
+    @expires = {}
+  end
+
+  def set(k,v)
+    storage[k] = v
+  end
+
+  def set_expire(k, str, v)
+    case str
+    when /^\d+s$/
+      expires[k] = Time.now.to_i + str.sub('s', '').to_i
+    when /^\d+m$/
+      expires[k] = (str.sub('m', '').to_i * 60)
+    when /^\d+h$/
+      expires[k] = (str.sub('h', '').to_i * (60 * 60))
+    else
+      raise "Invalid expiration format: #{str}"
+    end
+    set k, v
+  end
+
+  def has_key?(k)
+    !expired?(k)
+  end
+
+  def expired?(k)
+    return true if !storage.has_key?(k)
+    exp = expires[k] || -1
+    return false if exp < 0
+    puts "--- #{Time.now.to_i} #{exp}"
+    if Time.now.to_i < exp
+      false
+    else
+      storage.delete(k)
+      puts storage.inspect
+      true
+    end
+  end
+
+  def get_default(k, default)
+    if has_key?(k)
+      get(k)
+    else
+      default
+    end
+  end
+
+  def get(k)
+    if has_key?(k)
+      @storage[k]
+    else
+      nil
+    end
+  end
+
+  def get_all
+    storage.each_pair.map { |k,v|
+      "#{k} #{v}"
+    }.join("\n")
+  end
+
+  def get_existing(*keys)
+    keys.map { |k|
+      if has_key?(k)
+        "#{k} #{V[k]}"
+      end
+    }.compact.join("\n")
+  end
+end # class
+
 class Memory_Storage
+  STORAGE = Storage.new
   class << self
     def run(cmd_args)
       cmd = cmd_args.first
       args = cmd_args[1..-1]
       case cmd
       when "set"
-        V[args.first] = args[1..-1].join(' ')
+        STORAGE.set args.first, args[1..-1].join(' ')
+      when "set-expire"
+        STORAGE.set_expire [args.first], args[1], args[2..-1].join(' ')
       when "get-default"
-        if V.has_key?(args.first)
-          V[args.first]
-        else
-          args[1..-1].join(' ')
-        end
+        STORAGE.get_default(args.first, args[1..-1].join(' '))
       when "get-existing"
-          args.map { |k|
-            if V.has_key?(k)
-              "#{k} #{V[k]}"
-            end
-          }.compact.join("\n")
+        STORAGE.get_existing(*args)
+      when "get-expires"
+        STORAGE.expires.each_pair.map { |k,v|
+          s = "#{k} -> #{v} (#{v - Time.now.to_i})"
+          puts s
+          s
+        }.join("\n")
       when "get"
         case args.first
         when "all"
-          V.each_pair.map { |k,v|
-            "#{k} #{v}"
-          }.join("\n")
+          STORAGE.get_all
         else
           args.map { |k|
-            "#{k} #{V[k]}"
+            "#{k} #{STORAGE.get(k)}"
           }.join("\n")
         end
       else
@@ -58,8 +131,6 @@ when "help", "--help", '-h'
 when ""
   puts "=== Setting up a new server on: #{PORT}"
   server = TCPServer.open(PORT)
-  V = Hash.new
-
   loop {
     Thread.fork(server.accept) do |client|
       cmd_args = client.gets.strip.split
