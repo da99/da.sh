@@ -73,7 +73,7 @@ class Storage
   def get_existing(*keys)
     keys.map { |k|
       if has_key?(k)
-        "#{k} #{V[k]}"
+        "#{k} #{storage[k]}"
       end
     }.compact.join("\n")
   end
@@ -134,7 +134,11 @@ when ""
   loop {
     Thread.fork(server.accept) do |client|
       cmd_args = client.gets.strip.split
-      result = Memory_Storage.run(cmd_args)
+      result = begin
+                 Memory_Storage.run(cmd_args)
+               rescue Object => e
+                 "FAIL: #{e.message.inspect}"
+               end
       puts "Result: #{result.inspect}"
       client.puts(result)
       client.close

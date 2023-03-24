@@ -7,16 +7,26 @@ require "socket"
 SERVER_PORT = 2002
 cmd = ARGV.map(&:strip).join(' ')
 WIN_LOG = "/tmp/windows.txt"
+DEBUG = ENV["DEBUG"] || false
 
 class Window
   attr_reader :win_id, :wm_class, :wm_instance, :title
-  attr_accessor :user_time, :position
+  attr_accessor :position
   def initialize(raw_pieces)
     @win_id, _gravity, class_instance, _host, *titles  = raw_pieces
     @wm_class, @wm_instance = class_instance.split('.')
     @title = titles.join(' ')
     @user_time = 0
     @position = nil
+  end
+
+  def user_time=(str)
+    @user_time = case str
+                 when "found"
+                   0
+                 else
+                   str.to_i rescue 0
+                 end
   end
 
   def activate
@@ -26,14 +36,13 @@ class Window
   end
 
   def next_window(dir = "under")
-    Windows.list_with_user_time
-    Windows.list_with_position
+    list = Windows.list
 
     if dir == "under"
       dir = position
     end
 
-    dir_group = Windows.list.sort_by(&:user_time).reverse.select { |w| w.position == dir }
+    dir_group = list.sort_by(&:user_time).reverse.select { |w| w.position == dir }
     found = false
     next_win = dir_group.detect { |w|
       if found
@@ -45,10 +54,73 @@ class Window
     }
     next_win || dir_group.first
   end # def
+
+  def move_to(new_position)
+    @position = new_position
+    d = Windows.direction_to_object(position)
+    cmd = "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
+    puts cmd
+    `#{cmd}`
+  end # def
+
+  def re_move
+    return nil unless position
+    move_to(position)
+  end
+
+  def summary
+    "#{win_id} #{wm_class} #{position.inspect}"
+  end
 end # class
 
 class Windows
   class << self
+
+    def send_message(*cmd)
+      s = TCPSocket.open('localhost', SERVER_PORT)
+      s.puts cmd.join(' ')
+      result = s.gets
+      if result.index("FAIL:") == 0
+        STDERR.puts result
+      else
+        puts result
+      end
+      s.close
+    end # def
+
+    def run_client_cmd(cmd_array)
+      cmd = cmd_array.join(' ')
+      puts "RECEIVED: #{cmd}"
+      case cmd
+      when /^moved [:A-Z0-9x]+ to .+$/
+        id = cmd_array[1]
+        id = Windows.active_id if id === ":ACTIVE:"
+        dir = cmd_array[3]
+        w = list.detect { |w| w.win_id === id }
+        if w
+          w.position = dir
+          "PASS: --- Window #{id} is marked with position: #{dir}"
+        else
+          "FAILED: window not found: #{id}"
+        end
+      when "print list"
+        Windows.list.each { |w|
+          puts w.summary
+        }
+        "PASS: done printing list."
+      when "update list"
+        Windows.update_list
+        if DEBUG
+          STDERR.puts "--- Updated client list:"
+          list.each { |w|
+            STDERR.puts w.summary
+          }
+        end
+        "PASS: window list updated."
+      else
+        "FAIL: Unknown command: #{cmd.inspect}"
+      end
+    end # def
 
     def server
       puts "=== Setting up a new server on: #{SERVER_PORT}"
@@ -56,7 +128,7 @@ class Windows
       loop {
         client = server.accept
         cmd_args = client.gets.strip.split
-        result = Memory_Storage.run(cmd_args)
+        result = run_client_cmd(cmd_args)
         puts "Result: #{result.inspect}"
         client.puts(result)
         client.close
@@ -64,23 +136,23 @@ class Windows
     end # def
 
     def spy
-      s = TCPSocket.open('localhost', SERVER_PORT)
       cmd = %w{xprop -spy -root _NET_CLIENT_LIST}
       Open3.popen2(*cmd) do |i, o, stat|
         puts "#{cmd.join ' '} PID: #{stat.pid}"
         pid = stat.pid
         o.each_line { |line|
-          s.puts("updated client list")
-          while line = s.gets
-            result = line
-            if result.index("FAIL:") == 0
-              STDERR.puts result
-            end
+          puts line.inspect
+          STDERR.puts("--- Opening new client: #{SERVER_PORT}") if DEBUG
+          s = TCPSocket.open('localhost', SERVER_PORT)
+          s.puts("update list")
+          result = s.gets
+          s.close
+          if result.index("FAIL:") == 0
+            STDERR.puts result
           end
         }
         puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
       end
-      s.close
     end # def
 
     def by_id(raw_id)
@@ -99,42 +171,32 @@ class Windows
                      if pieces[1] === "-1"
                        nil
                      else
-                       Window.new pieces
+                       w = Window.new pieces
+                       w.user_time = `xprop -id #{w.win_id} _NET_WM_USER_TIME`.strip.split.last
+                       w
                      end
                    }.compact
                  end
     end # def
 
-    def list_with_user_time
-      list.each { |w|
-        w.user_time = `xprop -id #{w.win_id} _NET_WM_USER_TIME`.strip.split.last
-      }
+    def update_list
+      @list = nil
       list
-    end
-
-    def list_with_position
-      positions = `my.kv.ram get-existing #{list.map(&:win_id).join(' ')}`.strip.split("\n").inject({}) { |memo, o|
-        win_id, pos = o.split
-        memo[win_id] = pos
-        memo
-      }
-      list.each { |w|
-        w.position = positions[w.win_id] || w.position
-        w
-      }
-      list
-    end
+    end # def
 
     def active_id
       id = `wmctrl -a :ACTIVE: -v 2>&1`.strip.split.last
       return id if id["0x"]
     end
 
+    def active
+      win_id = active_id
+      return nil unless win_id
+      list.detect { |w| w.win_id == win_id }
+    end
+
     def replay
-      list_with_position.each { |w|
-        next unless w.position
-        move(w.win_id, w.position)
-      }
+      list.each(&:re_move)
     end # def
 
     def direction_to_object(str)
@@ -161,8 +223,8 @@ class Windows
     def move(active_id, direction)
       d = direction_to_object(direction)
       cmd = "wmctrl #{active_id.index('0x') == 0 ? '-i' : ''} -r #{active_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
-      puts cmd
       `#{cmd}`
+      send_message("moved #{active_id} to #{direction}")
     end
   end # class self
 end # class
@@ -360,8 +422,6 @@ when "screen geo name"
   puts Geo.current_name
 
 when "list"
-  Windows.list_with_user_time
-  Windows.list_with_position
   Windows.list.each { |l|
     puts "#{l.win_id} #{l.wm_class} #{l.user_time} #{l.position || "unknown"} #{l.title}"
   }
@@ -401,8 +461,6 @@ when /^next under/
     STDERR.puts "No current window found: under #{win_id}"
     exit 0 
   end
-  Windows.list_with_user_time
-  Windows.list_with_position
   group = Windows.list
     .select { |w| w.position == current.position }
     .sort_by(&:user_time)

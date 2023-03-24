@@ -11,7 +11,7 @@ when "-h", "--help", "help"
 when /\d+ .+/
   port = ARGV.first.to_i
   message = ARGV[1..-1].map(&:strip).join(' ')
-  s = TCPSocket.open('localhost', 2001)
+  s = TCPSocket.open('localhost', port)
   s.puts(message)
   while line = s.gets
     result = line
