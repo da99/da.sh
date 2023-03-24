@@ -2,6 +2,9 @@
 #
 #
 #
+require "open3"
+require "socket"
+SERVER_PORT = 2002
 cmd = ARGV.map(&:strip).join(' ')
 WIN_LOG = "/tmp/windows.txt"
 
@@ -46,6 +49,26 @@ end # class
 
 class Windows
   class << self
+    def spy
+      s = TCPSocket.open('localhost', SERVER_PORT)
+      cmd = %w{xprop -spy -root _NET_CLIENT_LIST}
+      Open3.popen2(*cmd) do |i, o, stat|
+        puts "#{cmd.join ' '} PID: #{stat.pid}"
+        pid = stat.pid
+        o.each_line { |line|
+          s.puts("updated client list")
+          while line = s.gets
+            result = line
+            if result.index("FAIL:") == 0
+              STDERR.puts result
+            end
+          end
+        }
+        puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
+      end
+      s.close
+    end # def
+
     def by_id(raw_id)
       id = if raw_id == ":ACTIVE:"
              Windows.active_id
@@ -295,6 +318,10 @@ end # class
 
 case cmd
 when "help", "-h", "--help"
+  puts "  "
+  puts "    Starts server."
+  puts "  spy"
+  puts "    Send messages to the server when window list is updated."
   puts "  list"
   puts "  list class [class]"
   puts "  list ids"
@@ -305,6 +332,12 @@ when "help", "-h", "--help"
   puts "  move [id | :ACTIVE:] [right | right_top | right_bottom | left | maximize]"
   puts "  maximize"
   puts "  next [under|up|down|left|right] [id | :ACTIVE:]"
+
+when ""
+  Windows.server
+
+when "spy"
+  Windows.spy
 
 when "active id"
   puts Windows.active_id

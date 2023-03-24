@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+#
+#
+
+require 'socket'
+cmd = ARGV.map(&:strip).join(' ')
+
+case cmd
+when "-h", "--help", "help"
+  puts "  #{bin} [PORT] message with arguments"
+when /\d+ .+/
+  port = ARGV.first.to_i
+  message = ARGV[1..-1].map(&:strip).join(' ')
+  s = TCPSocket.open('localhost', 2001)
+  s.puts(message)
+  while line = s.gets
+    result = line
+    if result.index("FAIL:") == 0
+      STDERR.puts result
+      exit 1
+    end
+    puts result
+  end
+  s.close
+else
+  STDERR.puts "Unknown message: #{cmd.inspect}"
+  exit 1
+end
