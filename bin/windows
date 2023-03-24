@@ -49,6 +49,20 @@ end # class
 
 class Windows
   class << self
+
+    def server
+      puts "=== Setting up a new server on: #{SERVER_PORT}"
+      server = TCPServer.open(SERVER_PORT)
+      loop {
+        client = server.accept
+        cmd_args = client.gets.strip.split
+        result = Memory_Storage.run(cmd_args)
+        puts "Result: #{result.inspect}"
+        client.puts(result)
+        client.close
+      }
+    end # def
+
     def spy
       s = TCPSocket.open('localhost', SERVER_PORT)
       cmd = %w{xprop -spy -root _NET_CLIENT_LIST}

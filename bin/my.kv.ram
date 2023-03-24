@@ -141,7 +141,6 @@ when ""
     end
   }
 
-  exit 0
 else
   s = TCPSocket.open('localhost', 2001)
   s.puts(cmd_line)
