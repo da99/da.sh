@@ -11,11 +11,15 @@ DEBUG = ENV["DEBUG"] || false
 
 class Window
 
-  attr_reader :win_id, :wm_class, :wm_instance, :title
-  attr_accessor :position
+  attr_reader :win_id, :wm_class, :wm_instance, :title, :user_time,
+    :x, :y, :w, :h
 
   def initialize(raw_pieces)
-    @win_id, _gravity, class_instance, _host, *titles  = raw_pieces
+    @win_id, _gravity, _x, _y, _w, _h, class_instance, _host, *titles  = raw_pieces
+    @x = _x.to_i
+    @y = _y.to_i
+    @w = _w.to_i
+    @h = _h.to_i
     @wm_class, @wm_instance = class_instance.split('.')
     @title = titles.join(' ')
     @user_time = 0
@@ -36,6 +40,27 @@ class Window
     puts cmd
     `#{cmd}`
   end
+
+  def position=(str_or_position)
+    @position = str_or_position
+  end # def
+
+  def position
+    @position ||= begin
+                    size = 10 # Compensates for window active/inactive borders.
+                    g = Geo.positions.detect { |pos|
+                      x.between?(pos.x - size, pos.x + size) &&
+                        y.between?(pos.y - size, pos.y + size) &&
+                        w.between?(pos.w - size, pos.w + size) &&
+                        h.between?(pos.h - size, pos.h + size)
+                    }
+                    if g
+                      g.nickname
+                    else
+                      nil
+                    end
+                  end
+  end # def
 
   def next_window(dir = "under")
     list = Windows.list
@@ -71,7 +96,8 @@ class Window
   end
 
   def summary
-    "#{win_id} #{wm_class} #{position.inspect}"
+
+    "#{win_id} #{wm_class} #{position || "#{x},#{y},#{w},#{h}"} #{user_time}"
   end
 end # class
 
@@ -114,6 +140,8 @@ class Windows
           puts w.summary
         }
         "PASS: done printing list."
+      when /^print summary (Left|Right|Right_Top|Right_Bottom|Maximized)$/
+        Kernel.const_get(cmd_array[2]).summary
       when "update list"
         Windows.update_list
         if DEBUG
@@ -192,7 +220,7 @@ class Windows
 
     def list
       @list ||= begin
-                   `wmctrl -lx`.strip.split("\n").map { |line| 
+                   `wmctrl -lxG`.strip.split("\n").map { |line| 
                      pieces = line.split(/\ +/)
                      if pieces[1] === "-1"
                        nil
@@ -255,7 +283,147 @@ class Windows
   end # class self
 end # class
 
+class Margin
+  class << self
+    def padding
+      15
+    end
+
+    def top
+      40
+    end
+
+    def left
+      55
+    end
+
+    def bottom
+      20
+    end
+
+    def right
+      20
+    end
+  end # class
+end # class
+
+module Position
+  def nickname
+    self.name.downcase
+  end
+  def summary
+    "#{nickname} #{x},#{y},#{w},#{h}"
+  end
+end # class
+
+class Maximized
+  class << self
+    include Position
+    def x
+      Margin.left
+    end
+
+    def y
+      Margin.top
+    end
+
+    def w
+      (Geo.w - Margin.left - Margin.right).to_i
+    end
+
+    def h
+      Left.h
+    end
+  end # class self
+end # class
+
+class Left
+  class << self
+    include Position
+    def x
+      Margin.left
+    end
+
+    def y
+      Margin.top
+    end
+
+    def w
+      ((Geo.w - Margin.left - Margin.right) * 0.60).to_i - Margin.padding
+    end
+
+    def h
+      (Geo.h - Margin.top - Margin.bottom) - Margin.padding
+    end
+  end # class self
+end # class
+
+class Right
+
+  class << self
+    include Position
+    def x
+      Left.x + Left.w + Margin.padding
+    end
+
+    def y
+      Left.y
+    end
+
+    def w
+      Geo.w - x - Margin.right
+    end
+
+    def h
+      Left.h + Margin.bottom
+    end
+  end # class
+end # class
+
+class Right_Top
+  class << self
+    include Position
+    def x
+      Left.x + Left.w + Margin.padding
+    end
+
+    def y
+      Left.y
+    end
+
+    def w
+      Geo.w - x - Margin.right
+    end
+
+    def h
+      (Left.h / 2).to_i - (Margin.padding * 4)
+    end
+  end # class
+end # class
+
+class Right_Bottom
+  class << self
+    include Position
+    def x
+      Right_Top.x
+    end
+
+    def y
+      Right_Top.y + Right_Top.h + (Margin.padding * 1)
+    end
+
+    def w
+      Right_Top.w
+    end
+
+    def h
+      Geo.h - y - Margin.padding
+    end
+  end # class
+end # class
+
 class Geo
+  POSITIONS = [Left, Right_Top, Right_Bottom, Right, Maximized]
   class << self
 
     def _init
@@ -265,6 +433,10 @@ class Geo
       end
       @raw_area
     end
+
+    def positions
+      POSITIONS
+    end # def
 
     def current_name
       case "#{w} #{h}"
@@ -292,131 +464,6 @@ class Geo
   end # class self
 end # class
 
-class Margin
-  class << self
-    def padding
-      15
-    end
-
-    def top
-      40
-    end
-
-    def left
-      55
-    end
-
-    def bottom
-      20
-    end
-
-    def right
-      20
-    end
-  end # class
-end # class
-
-class Maximized
-  class << self
-
-    def x
-      Margin.left
-    end
-
-    def y
-      Margin.top
-    end
-
-    def w
-      (Geo.w - Margin.left - Margin.right).to_i
-    end
-
-    def h
-      Left.h
-    end
-  end # class self
-end # class
-
-class Left
-  class << self
-
-    def x
-      Margin.left
-    end
-
-    def y
-      Margin.top
-    end
-
-    def w
-      ((Geo.w - Margin.left - Margin.right) * 0.60).to_i - Margin.padding
-    end
-
-    def h
-      (Geo.h - Margin.top - Margin.bottom) - Margin.padding
-    end
-  end # class self
-end # class
-
-class Right
-  class << self
-    def x
-      Left.x + Left.w + Margin.padding
-    end
-
-    def y
-      Left.y
-    end
-
-    def w
-      Geo.w - x - Margin.right
-    end
-
-    def h
-      Left.h + Margin.bottom
-    end
-  end # class
-end # class
-
-class Right_Top
-  class << self
-    def x
-      Left.x + Left.w + Margin.padding
-    end
-
-    def y
-      Left.y
-    end
-
-    def w
-      Geo.w - x - Margin.right
-    end
-
-    def h
-      (Left.h / 2).to_i - (Margin.padding * 4)
-    end
-  end # class
-end # class
-
-class Right_Bottom
-  class << self
-    def x
-      Right_Top.x
-    end
-
-    def y
-      Right_Top.y + Right_Top.h + (Margin.padding * 1)
-    end
-
-    def w
-      Right_Top.w
-    end
-
-    def h
-      Geo.h - y - Margin.padding
-    end
-  end # class
-end # class
 
 case cmd
 when "help", "-h", "--help"
