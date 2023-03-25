@@ -10,8 +10,10 @@ WIN_LOG = "/tmp/windows.txt"
 DEBUG = ENV["DEBUG"] || false
 
 class Window
+
   attr_reader :win_id, :wm_class, :wm_instance, :title
   attr_accessor :position
+
   def initialize(raw_pieces)
     @win_id, _gravity, class_instance, _host, *titles  = raw_pieces
     @wm_class, @wm_instance = class_instance.split('.')
@@ -74,6 +76,8 @@ class Window
 end # class
 
 class Windows
+  PIDS = []
+
   class << self
 
     def send_message(*cmd)
@@ -92,6 +96,8 @@ class Windows
       cmd = cmd_array.join(' ')
       puts "RECEIVED: #{cmd}"
       case cmd
+      when "close", "CLOSE"
+        "CLOSE"
       when /^moved [:A-Z0-9x]+ to .+$/
         id = cmd_array[1]
         id = Windows.active_id if id === ":ACTIVE:"
@@ -125,10 +131,25 @@ class Windows
     def server
       puts "=== Setting up a new server on: #{SERVER_PORT}"
       server = TCPServer.open(SERVER_PORT)
+      spy = Thread.new { Windows.spy }
+      spy.abort_on_exception = true
       loop {
         client = server.accept
         cmd_args = client.gets.strip.split
         result = run_client_cmd(cmd_args)
+        case result
+        when "CLOSE"
+          PIDS.each { |t|
+            if t.alive?
+              STDERR.puts "-- Killing: #{t.class.name} #{t.pid}"
+              `kill -INT #{t.pid}`
+            end
+            sleep 1
+          }
+          spy.kill
+          server.close
+          break
+        end
         puts "Result: #{result.inspect}"
         client.puts(result)
         client.close
@@ -138,6 +159,8 @@ class Windows
     def spy
       cmd = %w{xprop -spy -root _NET_CLIENT_LIST}
       Open3.popen2(*cmd) do |i, o, stat|
+        i.close
+        PIDS.push stat
         puts "#{cmd.join ' '} PID: #{stat.pid}"
         pid = stat.pid
         o.each_line { |line|
@@ -145,8 +168,11 @@ class Windows
           STDERR.puts("--- Opening new client: #{SERVER_PORT}") if DEBUG
           s = TCPSocket.open('localhost', SERVER_PORT)
           s.puts("update list")
+          STDERR.puts("SENT: update list") if DEBUG
           result = s.gets
           s.close
+          STDERR.puts("RESULT: #{result}") if DEBUG
+          STDERR.puts("--- Closing client: #{SERVER_PORT}") if DEBUG
           if result.index("FAIL:") == 0
             STDERR.puts result
           end
