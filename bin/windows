@@ -22,17 +22,12 @@ class Window
     @h = _h.to_i
     @wm_class, @wm_instance = class_instance.split('.')
     @title = titles.join(' ')
-    @user_time = 0
+    @user_time = Windows.user_time_stamp
     @position = nil
   end
 
-  def user_time=(str)
-    @user_time = case str
-                 when "found"
-                   0
-                 else
-                   str.to_i rescue 0
-                 end
+  def user_time!
+    @user_time = Windows.user_time_stamp
   end
 
   def activate
@@ -91,15 +86,19 @@ class Window
   end
 
   def summary
-
     "#{win_id} #{wm_class} #{position || "#{x},#{y},#{w},#{h}"} #{user_time}"
   end
 end # class
 
 class Windows
   PIDS = []
+  @@USER_TIME = 0
 
   class << self
+
+    def user_time_stamp
+      @@USER_TIME += 1
+    end
 
     def send_message(*cmd)
       s = TCPSocket.open('localhost', SERVER_PORT)
@@ -180,7 +179,7 @@ class Windows
     end # def
 
     def spy
-      cmd = %w{xprop -spy -root _NET_CLIENT_LIST}
+      cmd = %w{xprop -spy -root _NET_CLIENT_LIST _NET_ACTIVE_WINDOW}
       Open3.popen2(*cmd) do |i, o, stat|
         i.close
         PIDS.push stat
@@ -188,16 +187,24 @@ class Windows
         pid = stat.pid
         o.each_line { |line|
           puts line.inspect
-          STDERR.puts("--- Opening new client: #{SERVER_PORT}") if DEBUG
-          s = TCPSocket.open('localhost', SERVER_PORT)
-          s.puts("update list")
-          STDERR.puts("SENT: update list") if DEBUG
-          result = s.gets
-          s.close
-          STDERR.puts("RESULT: #{result}") if DEBUG
-          STDERR.puts("--- Closing client: #{SERVER_PORT}") if DEBUG
-          if result.index("FAIL:") == 0
-            STDERR.puts result
+          case line
+          when "_NET_ACTIVE_WINDOW(WINDOW): window id # 0x0"
+          when /^_NET_CLIENT_LIST.WINDOW../
+            STDERR.puts("--- Opening new client: #{SERVER_PORT}") if DEBUG
+            s = TCPSocket.open('localhost', SERVER_PORT)
+            s.puts("update list")
+            STDERR.puts("SENT: update list") if DEBUG
+            result = s.gets
+            s.close
+            STDERR.puts("RESULT: #{result}") if DEBUG
+            STDERR.puts("--- Closing client: #{SERVER_PORT}") if DEBUG
+            if result.index("FAIL:") == 0
+              STDERR.puts result
+            end
+          when /^_NET_ACTIVE_WINDOW/
+            Windows.active&.user_time!
+          else # Window is actibe
+            STDERR.puts "!!! Unknown xprop result: #{line}"
           end
         }
         puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
@@ -217,12 +224,10 @@ class Windows
       @list ||= begin
                    `wmctrl -lxG`.strip.split("\n").map { |line| 
                      pieces = line.split(/\ +/)
-                     if pieces[1] === "-1"
-                       nil
+                     if pieces[1] != "-1"
+                       Window.new(pieces)
                      else
-                       w = Window.new pieces
-                       w.user_time = `xprop -id #{w.win_id} _NET_WM_USER_TIME`.strip.split.last
-                       w
+                       nil
                      end
                    }.compact
                  end
