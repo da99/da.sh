@@ -40,17 +40,20 @@ case cmd
 when "current"
   batt = Battery.new
   puts batt.to_number
+
 when "status"
   batt = Battery.new
   puts "#{batt.state} #{batt.to_number}"
+
 when "watch"
   while true
     batt = Battery.new
     if batt.discharging? && batt.to_number < 25
       `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg --urgency=critical "Battery" "Plug in charger: #{batt.to_number}%"`
       sleep(60 * 3)
+    else
+      sleep(60 * 5)
     end
-    sleep(60 * 5)
   end
 else
   raise "Unknown option: #{cmd}"
