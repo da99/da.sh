@@ -41,6 +41,8 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd node latest remote file"
     echo "$cmd node is latest"
     echo
+    echo "$cmd install openbox theme"
+    echo
     echo "$cmd nvim is latest"
     echo
     echo "$cmd repo pull all"
@@ -475,6 +477,22 @@ case "$(echo "$@" | xargs)" in
       $@ || notify-send "Error in xtitle snoop" "$@"
     done < <(xtitle -s)
     ;;
+
+  "install openbox theme")
+    cd "$THIS_DIR"
+    da_dir="$PWD"
+    theme_name="plainborder"
+    cd "$HOME"
+    mkdir -p .themes
+    cd .themes
+    if test -e "$theme_name" ; then
+      echo "!!! Already exists: $PWD/$theme_name"
+      exit 1
+    fi
+    set -x
+    ln -s "$da_dir"/config/plainborder $PWD/plainborder
+    ;;
+
   *)
     "$THIS_NODE_RB" $@
     ;;
