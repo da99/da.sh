@@ -48,17 +48,12 @@ class Window
   def position
     @position ||= begin
                     size = 10 # Compensates for window active/inactive borders.
-                    g = Geo.positions.detect { |pos|
+                    Geo.positions.detect { |pos|
                       x.between?(pos.x - size, pos.x + size) &&
                         y.between?(pos.y - size, pos.y + size) &&
                         w.between?(pos.w - size, pos.w + size) &&
                         h.between?(pos.h - size, pos.h + size)
-                    }
-                    if g
-                      g.nickname
-                    else
-                      nil
-                    end
+                    }&.nickname
                   end
   end # def
 
@@ -135,13 +130,13 @@ class Windows
         else
           "FAILED: window not found: #{id}"
         end
+
       when "print list"
-        Windows.list.each { |w|
-          puts w.summary
-        }
-        "PASS: done printing list."
+        Windows.list.map(&:summary).join("\n")
+
       when /^print summary (Left|Right|Right_Top|Right_Bottom|Maximized)$/
         Kernel.const_get(cmd_array[2]).summary
+
       when "update list"
         Windows.update_list
         if DEBUG
@@ -178,7 +173,7 @@ class Windows
           server.close
           break
         end
-        puts "Result: #{result.inspect}"
+        STDERR.puts("RESULT: #{result.inspect}") if DEBUG
         client.puts(result)
         client.close
       }
