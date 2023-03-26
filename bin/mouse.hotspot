@@ -8,12 +8,6 @@ action="$(mouse.pointer.location current)"
 
 set -x
 
-replay_later() {
-  if pgrep -a -f ruby.+my.kv.ram ; then
-    my.kv.ram set $(windows active id) $1
-  fi
-}
-
 case "$action" in
   left_top_window_corner)
     left_top_window_corner || notify-send "Error:" "left_top_window_corner"
@@ -31,29 +25,37 @@ case "$action" in
   middle_middle)
     windows move :ACTIVE: maximize
     ;;
-  left_top|left_bottom)
-    xdotool key --clearmodifiers Left
-    ;;
   right_top|right_bottom)
     xdotool key --clearmodifiers Right
     ;;
-  top_edge|top_middle)
+  left_top|left_bottom)
+    xdotool key --clearmodifiers Left
+    ;;
+  middle_top_edge)
+    # xdotool key --clearmodifiers Page_Up
     xdotool key --clearmodifiers Home
     ;;
-  bottom_edge|bottom_middle)
+  middle_bottom)
+    # xdotool key --clearmodifiers Page_Down
     xdotool key --clearmodifiers End
     ;;
+  right_top_edge)
+    windows move :ACTIVE: right
+    ;;
+  # left_top)
+  #   notify-send "Mouse.location: left_top" "No action set."
+  #   ;;
+  # top_edge)
+  #   notify-send "Mouse.location: top_edge" "No action set."
+  #   ;;
+  # bottom_edge)
+  #   notify-send "Mouse.location: bottom_edge" "No action set."
+  #   ;;
   left_edge)
     xdotool key --clearmodifiers Alt_L+Left
     ;;
   right_edge)
     xdotool key --clearmodifiers Alt_L+Right
-    ;;
-  middle_top)
-    xdotool key --clearmodifiers Page_Up
-    ;;
-  middle_bottom)
-    xdotool key --clearmodifiers Page_Down
     ;;
   *)
     notify-send "!!! Unknown Action:" "$action"

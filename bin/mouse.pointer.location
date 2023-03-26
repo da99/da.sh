@@ -186,7 +186,9 @@ class UI
       if top_edge?
         return 'left_top_corner' if left_edge?
         return 'right_top_corner' if right_edge?
-        return 'middle_top' if middle_column?
+        return 'middle_top_edge' if middle_column?
+        return 'left_top_edge' if left_column?
+        return 'right_top_edge' if right_column?
         return 'top_edge'
       end
 
