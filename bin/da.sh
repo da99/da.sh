@@ -43,8 +43,6 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd install openbox theme"
     echo
-    echo "$cmd nvim is latest"
-    echo
     echo "$cmd repo pull all"
     echo "$cmd repo is clean"
     echo "$cmd repo list dirty"
@@ -376,13 +374,6 @@ case "$(echo "$@" | xargs)" in
   echo
   echo "--- Installed:"
   ./deno --version
-  ;;
-
-  # =========================================================================
-  # NVIM
-  # =========================================================================
-  "nvim "*)
-    "$THIS_SRC"/nvim.rb $@
   ;;
 
   # =========================================================================

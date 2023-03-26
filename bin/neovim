@@ -30,20 +30,28 @@ end
 
 
 case cmd
-when 'nvim latest'
+when '--help', 'help', '-h'
+  cmd = "  neovim"
+  puts "#{cmd} -h|--help|help"
+  puts "#{cmd} latest"
+  puts "#{cmd} latest remote file"
+  puts "#{cmd} is latest"
+  puts "#{cmd} install"
+  puts "         Install latest."
+
+when 'latest'
   puts latest_version
 
-when 'nvim latest remote file'
+when 'latest remote file'
   puts remote_file
 
-when 'nvim is latest'
-  exit 0 if latest?
-  exit 1
+when 'is latest'
+  exit 1 if !latest?
 
-when 'nvim install latest'
+when 'install'
   if latest?
     Dir.chdir(HOME_BIN) {
-      puts File.read(NVIM_VERSION_TXT)
+      STDERR.puts "Alread installed latest: #{File.read(NVIM_VERSION_TXT)}"
     }
     exit(0) 
   end
@@ -53,12 +61,14 @@ when 'nvim install latest'
 
   FileUtils.rm(new_file_name, :force => true)
   FileUtils.rm('nvim', :force => true)
-  File.open(new_file_name, 'wb') { |f| 
-    f.write Net::HTTP.get(URI(download_url))
-  }
+  `wget -v #{download_url}`
   File.write(NVIM_VERSION_TXT, "#{latest_version}\n")
   FileUtils.mv(new_file_name, 'nvim')
+  `chmod o+x #{nvim}`
+  `#{HOME_BIN}/nvim --version`
+
 else
   STDERR.puts "!!! Not found: #{ARGV.map(&:inspect).join ' '}"
   exit 1
-end
+
+end # case
