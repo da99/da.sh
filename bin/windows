@@ -349,7 +349,7 @@ class Left
     end
 
     def w
-      ((Geo.w - Margin.left - Margin.right) * 0.60).to_i - Margin.padding
+      ((Geo.w - Margin.left - Margin.right) * 0.70).to_i - Margin.padding
     end
 
     def h
