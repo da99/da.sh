@@ -9,6 +9,9 @@ cmd = ARGV.map(&:strip).join(' ')
 WIN_LOG = "/tmp/windows.txt"
 DEBUG = ENV["DEBUG"] || false
 
+Signal.trap("TERM") { `send.message #{SERVER_PORT} close` }
+Signal.trap("INT") { `send.message #{SERVER_PORT} close` }
+
 class Window
 
   attr_reader :win_id, :wm_class, :wm_instance, :title, :user_time,
@@ -116,8 +119,15 @@ class Windows
       cmd = cmd_array.join(' ')
       puts "RECEIVED: #{cmd}"
       case cmd
+
       when "close", "CLOSE"
         "CLOSE"
+
+      when "re_move"
+        Geo.re_init
+        list.map(&:re_move)
+        "re_moved: #{Windows.list.size}"
+
       when /^moved [:A-Z0-9x]+ to .+$/
         id = cmd_array[1]
         id = Windows.active_id if id === ":ACTIVE:"
@@ -427,12 +437,14 @@ class Geo
   class << self
 
     def _init
-      if not defined? @raw_area
-        @raw_area = `xprop -notype -len 16 -root _NET_DESKTOP_GEOMETRY`.split('=').last.split(',').map(&:strip).map(&:to_i)
-        @screen_w, @screen_h = @raw_area
-      end
+      re_init if not defined? @raw_area
       @raw_area
     end
+
+    def re_init
+        @raw_area = `xprop -notype -len 16 -root _NET_DESKTOP_GEOMETRY`.split('=').last.split(',').map(&:strip).map(&:to_i)
+        @screen_w, @screen_h = @raw_area
+    end # def
 
     def positions
       POSITIONS
@@ -479,6 +491,7 @@ when "help", "-h", "--help"
   puts "  active id"
   puts "  screen geo name"
   puts "  move [id | :ACTIVE:] [right | right_top | right_bottom | left | maximize]"
+  puts "  re_move"
   puts "  maximize"
   puts "  next [under|up|down|left|right] [id | :ACTIVE:]"
 
@@ -569,8 +582,8 @@ when /^next [under|left|right_bottom|right_top|right]/
   new_win.activate
 
 
-when "replay"
-  Windows.replay
+when "re_move"
+  Windows.send_message("re_move")
 
 else
   STDERR.puts "!!! Unknown option: #{cmd}"
