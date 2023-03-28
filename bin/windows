@@ -9,8 +9,6 @@ cmd = ARGV.map(&:strip).join(' ')
 WIN_LOG = "/tmp/windows.txt"
 DEBUG = ENV["DEBUG"] || false
 
-Signal.trap("TERM") { `send.message #{SERVER_PORT} close` }
-Signal.trap("INT") { `send.message #{SERVER_PORT} close` }
 
 class Window
 
@@ -106,12 +104,13 @@ class Windows
     def send_message(*cmd)
       s = TCPSocket.open('localhost', SERVER_PORT)
       s.puts cmd.join(' ')
-      result = s.gets
-      if result.index("FAIL:") == 0
-        STDERR.puts result
-      else
-        puts result
-      end
+      while result = s.gets
+        if result.index("FAIL:") == 0
+          STDERR.puts result
+        else
+          puts result
+        end
+      end # while
       s.close
     end # def
 
@@ -125,8 +124,8 @@ class Windows
 
       when "re_move"
         Geo.re_init
-        list.map(&:re_move)
-        "re_moved: #{Windows.list.size}"
+        moved = list.map(&:re_move)
+        "re_moved: #{moved.size}"
 
       when /^moved [:A-Z0-9x]+ to .+$/
         id = cmd_array[1]
@@ -161,16 +160,20 @@ class Windows
     end # def
 
     def server
+      keep_running = true
       puts "=== Setting up a new server on: #{SERVER_PORT}"
       server = TCPServer.open(SERVER_PORT)
       spy = Thread.new { Windows.spy }
       spy.abort_on_exception = true
-      loop {
+      while keep_running
         client = server.accept
         cmd_args = client.gets.strip.split
         result = run_client_cmd(cmd_args)
-        case result
-        when "CLOSE"
+        STDERR.puts("RESULT: #{result.inspect}") if DEBUG
+        client.puts(result)
+        client.close
+        if result == "CLOSE"
+          keep_running = false
           PIDS.each { |t|
             if t.alive?
               STDERR.puts "-- Killing: #{t.class.name} #{t.pid}"
@@ -178,14 +181,11 @@ class Windows
             end
             sleep 1
           }
-          spy.kill
-          server.close
+          spy.kill rescue nil
           break
         end
-        STDERR.puts("RESULT: #{result.inspect}") if DEBUG
-        client.puts(result)
-        client.close
-      }
+      end # while
+      server.close rescue nil
     end # def
 
     def spy
@@ -258,10 +258,6 @@ class Windows
       return nil unless win_id
       list.detect { |w| w.win_id == win_id }
     end
-
-    def replay
-      list.each(&:re_move)
-    end # def
 
     def direction_to_object(str)
       case str
@@ -481,6 +477,7 @@ case cmd
 when "help", "-h", "--help"
   puts "  "
   puts "    Starts server."
+  puts "  close server"
   puts "  spy"
   puts "    Send messages to the server when window list is updated."
   puts "  list"
@@ -497,6 +494,10 @@ when "help", "-h", "--help"
 
 when ""
   Windows.server
+
+when "close server"
+  STDERR.puts "--- Closing server..."
+  Windows.send_message("close")
 
 when "spy"
   Windows.spy
