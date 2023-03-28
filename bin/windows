@@ -23,12 +23,12 @@ class Window
     @h = _h.to_i
     @wm_class, @wm_instance = class_instance.split('.')
     @title = titles.join(' ')
-    @user_time = Windows.user_time_stamp
+    @user_time = DE.user_time_stamp
     @position = nil
   end
 
   def user_time!
-    @user_time = Windows.user_time_stamp
+    @user_time = DE.user_time_stamp
   end
 
   def activate
@@ -54,7 +54,7 @@ class Window
   end # def
 
   def next_window(dir = "under")
-    list = Windows.list
+    list = DE.list
 
     if dir == "under"
       dir = position
@@ -75,7 +75,7 @@ class Window
 
   def move_to(new_position)
     @position = new_position
-    d = Windows.direction_to_object(position)
+    d = DE.direction_to_object(position)
     cmd = "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
     puts cmd
     `#{cmd}`
@@ -91,7 +91,7 @@ class Window
   end
 end # class
 
-class Windows
+class DE
   PIDS = []
   @@USER_TIME = 0
 
@@ -129,7 +129,7 @@ class Windows
 
       when /^moved [:A-Z0-9x]+ to .+$/
         id = cmd_array[1]
-        id = Windows.active_id if id === ":ACTIVE:"
+        id = active_id if id === ":ACTIVE:"
         dir = cmd_array[3]
         w = list.detect { |w| w.win_id === id }
         if w
@@ -140,13 +140,13 @@ class Windows
         end
 
       when "print list"
-        Windows.list.map(&:summary).join("\n")
+        list.map(&:summary).join("\n")
 
       when /^print summary (Left|Right|Right_Top|Right_Bottom|Maximized)$/
         Kernel.const_get(cmd_array[2]).summary
 
       when "update list"
-        Windows.update_list
+        update_list
         if DEBUG
           STDERR.puts "--- Updated client list:"
           list.each { |w|
@@ -159,14 +159,24 @@ class Windows
       end
     end # def
 
+    def close!
+      STDERR.puts "Closing server..."
+      send_message("close")
+      STDERR.puts "Server should be closed by now."
+    end
+
     def server
       keep_running = true
+      Signal.trap("INT") { Thread.new { close! } }
+      Signal.trap("TERM") { Thread.new { close! } }
       puts "=== Setting up a new server on: #{SERVER_PORT}"
       server = TCPServer.open(SERVER_PORT)
-      spy = Thread.new { Windows.spy }
+      spy = Thread.new { DE.spy }
       spy.abort_on_exception = true
       while keep_running
+        STDERR.puts "--- Waiting for new client..." if DEBUG
         client = server.accept
+        STDERR.puts "--- Found new client..." if DEBUG
         cmd_args = client.gets.strip.split
         result = run_client_cmd(cmd_args)
         STDERR.puts("RESULT: #{result.inspect}") if DEBUG
@@ -179,13 +189,14 @@ class Windows
               STDERR.puts "-- Killing: #{t.class.name} #{t.pid}"
               `kill -INT #{t.pid}`
             end
-            sleep 1
+            sleep 0.5
           }
           spy.kill rescue nil
           break
         end
       end # while
       server.close rescue nil
+      STDERR.puts "--- Server is closed."
     end # def
 
     def spy
@@ -212,7 +223,7 @@ class Windows
               STDERR.puts result
             end
           when /^_NET_ACTIVE_WINDOW/
-            Windows.active&.user_time!
+            active&.user_time!
           else # Window is actibe
             STDERR.puts "!!! Unknown xprop result: #{line}"
           end
@@ -223,7 +234,7 @@ class Windows
 
     def by_id(raw_id)
       id = if raw_id == ":ACTIVE:"
-             Windows.active_id
+             active_id
            else
              raw_id
            end
@@ -493,38 +504,38 @@ when "help", "-h", "--help"
   puts "  next [under|up|down|left|right] [id | :ACTIVE:]"
 
 when ""
-  Windows.server
+  DE.server
 
 when "close server"
   STDERR.puts "--- Closing server..."
-  Windows.send_message("close")
+  DE.send_message("close")
 
 when "spy"
-  Windows.spy
+  DE.spy
 
 when "active id"
-  puts Windows.active_id
+  puts DE.active_id
 
 when "screen geo name"
   puts Geo.current_name
 
 when "list"
-  Windows.list.each { |l|
+  DE.list.each { |l|
     puts "#{l.win_id} #{l.wm_class} #{l.user_time} #{l.position || "unknown"} #{l.title}"
   }
 
 when /^list class .+/
   target = ARGV[2]
-  Windows.list.each { |w|
+  DE.list.each { |w|
     if w.wm_class == target
       puts w.win_id
     end
   }
 when "list ids"
-  Windows.list.each { |w| puts w.win_id }
+  DE.list.each { |w| puts w.win_id }
 
 when "list count"
-  id = Windows.list.size
+  id = DE.list.size
   if id
     puts id
   else
@@ -532,23 +543,23 @@ when "list count"
   end
 
 when "list is empty"
-  if Windows.list.empty?
+  if DE.list.empty?
     exit 0
   else
     exit 1
   end
 
 when /^move .+/
-  Windows.move(ARGV[1], ARGV[2])
+  DE.move(ARGV[1], ARGV[2])
 
 when /^next under/
   win_id = ARGV[2] || ":ACTIVE:"
-  current = Windows.by_id(win_id)
+  current = DE.by_id(win_id)
   unless current
     STDERR.puts "No current window found: under #{win_id}"
     exit 0 
   end
-  group = Windows.list
+  group = DE.list
     .select { |w| w.position == current.position }
     .sort_by(&:user_time)
     .reverse
@@ -570,7 +581,7 @@ when /^next under/
 when /^next [under|left|right_bottom|right_top|right]/
   dir = ARGV[1] || "under"
   win_id = ARGV[2] || ":ACTIVE:"
-  current = Windows.by_id(win_id)
+  current = DE.by_id(win_id)
   unless current
     STDERR.puts "No current window found: #{dir} #{win_id}"
     exit 0 
@@ -584,7 +595,7 @@ when /^next [under|left|right_bottom|right_top|right]/
 
 
 when "re_move"
-  Windows.send_message("re_move")
+  DE.send_message("re_move")
 
 else
   STDERR.puts "!!! Unknown option: #{cmd}"

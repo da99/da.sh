@@ -6,7 +6,6 @@ set -u -e -o pipefail
 case "$@" in
   "Power Off")
     if windows list is empty; then
-      windows close server || :
       coproc ( loginctl poweroff  > /dev/null  2>&1 )
     else
       notify-send "Power Off Failed" "Windows open: $(windows list count)"
@@ -14,7 +13,6 @@ case "$@" in
     ;;
   "Reboot")
     if windows list is empty; then
-      windows close server || :
       coproc ( loginctl reboot  > /dev/null  2>&1 )
     else
       notify-send "Reboot Failed" "Windows open: $(windows list count)"
@@ -22,7 +20,6 @@ case "$@" in
     ;;
   "Quit Window Manager")
     if windows list is empty; then
-      windows close server || :
       coproc ( openbox --exit  > /dev/null  2>&1 )
     else
       notify-send "Quitting WM Failed" "Windows open: $(windows list count)"
