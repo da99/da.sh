@@ -311,7 +311,7 @@ class Margin
     end
 
     def left
-      55
+      46
     end
 
     def bottom
