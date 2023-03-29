@@ -458,15 +458,7 @@ case "$(echo "$@" | xargs)" in
   "xtitle padded"*)
     shift
     shift
-    echo "${1}$(xtitle)${1}"
-    ;;
-
-  "xtitle snoop "*)
-    shift
-    shift
-    while read -r line ; do
-      $@ || notify-send "Error in xtitle snoop" "$@"
-    done < <(xtitle -s)
+    windows active title $@
     ;;
 
   "install openbox theme")

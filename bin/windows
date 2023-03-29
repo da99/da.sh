@@ -497,6 +497,7 @@ when "help", "-h", "--help"
   puts "  list count"
   puts "  list is empty"
   puts "  active id"
+  puts "  active title (padding) (max length)"
   puts "  screen geo name"
   puts "  move [id | :ACTIVE:] [right | right_top | right_bottom | left | maximize]"
   puts "  re_move"
@@ -596,6 +597,13 @@ when /^next [under|left|right_bottom|right_top|right]/
 
 when "re_move"
   DE.send_message("re_move")
+
+when /^active title(.+)?/
+  _i, _j, padding, raw_max = ARGV
+  padding ||= ""
+  max = (raw_max || 250).to_i rescue 250
+  title = `xtitle`.strip
+  puts "#{padding}#{title[0,max]}#{padding}"
 
 else
   STDERR.puts "!!! Unknown option: #{cmd}"
