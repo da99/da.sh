@@ -246,7 +246,9 @@ class DE
                    `wmctrl -lxG`.strip.split("\n").map { |line| 
                      pieces = line.split(/\ +/)
                      if pieces[1] != "-1"
-                       Window.new(pieces)
+                       w = Window.new(pieces)
+                       w.position
+                       w
                      else
                        nil
                      end
