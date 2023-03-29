@@ -476,6 +476,22 @@ case "$(echo "$@" | xargs)" in
     ln -s "$da_dir"/config/plainborder $PWD/plainborder
     ;;
 
+  "install obsidian theme")
+    cd "$HOME"
+    mkdir -p .icons
+    set -x
+    cd .icons
+    if test -e iconpack-obsidian ; then
+      echo "!!! Already installed." >&2
+    else
+      git clone --depth=1 https://github.com/madmaxms/iconpack-obsidian.git
+      cd iconpack-obsidian
+      rm -Rf LICENSE README.md logo.jpg
+      mv -fi * $HOME/.icons/
+    fi
+    ls -1
+    ;;
+
   *)
     "$THIS_NODE_RB" $@
     ;;
