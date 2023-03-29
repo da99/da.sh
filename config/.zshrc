@@ -21,6 +21,7 @@ cursor_mode
 HISTFILE=~/.zsh.histfile
 HISTSIZE=500
 SAVEHIST=500
+setopt HIST_IGNORE_ALL_DUPS
 setopt appendhistory
 # =================================================================
 HISTORY_SUBSTRING_SEARCH_FUZZY="true"
