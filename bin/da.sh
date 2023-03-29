@@ -56,8 +56,7 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd pipewire install"
     echo
-    echo "$cmd xtitle padded [padding string]"
-    echo "$cmd xtitle snoop [cmd with args]"
+    echo "$cmd install obsidian theme"
     ;;
 
   "check fs")
@@ -477,6 +476,7 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "install obsidian theme")
+    # from: https://www.2daygeek.com/obsidian-icons-theme-for-linux-desktop/
     cd "$HOME"
     mkdir -p .icons
     set -x
