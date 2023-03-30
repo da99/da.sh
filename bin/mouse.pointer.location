@@ -55,7 +55,7 @@ class UI
       @y = raw_y
       @w = raw_w
       @h = raw_h
-      @corner_length = ((@w < @h ? @w : @h) * 0.15).to_i
+      @corner_length = 40 # ((@w < @h ? @w : @h) * 0.15).to_i
       @column_w = ((@w - (@corner_length * 2)) / 3).to_i
       @row_h = ((@h - (@corner_length * 2)) / 2).to_i
       @middle_h = ((@h - (@corner_length * 2)) / 3).to_i
@@ -110,22 +110,22 @@ class UI
     
     def top_edge?
       mouse.y > window.y &&
-        mouse.y < (window.y + window.corner_length)
+        mouse.y < (window.y + (window.corner_length * 2))
     end
 
     def bottom_edge?
       mouse.y < window.end_y &&
-        mouse.y > (window.end_y - window.corner_length)
+        mouse.y > (window.end_y - (window.corner_length * 2))
     end
     
     def left_edge?
       mouse.x > window.x &&
-        mouse.x <= (window.x + window.corner_length)
+        mouse.x <= (window.x + (window.corner_length * 2))
     end
 
     def right_edge?
       mouse.x < window.end_x &&
-        mouse.x >= (window.end_x - window.corner_length)
+        mouse.x >= (window.end_x - (window.corner_length * 2))
     end
 
     # ROWS:
