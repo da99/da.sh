@@ -223,7 +223,7 @@ case "$(echo "$@" | xargs)" in
 
     while read -r git_dir; do
       cd "$git_dir"/..
-      echo "=== git pull in $PWD: "
+      echo -n "=== git pull in $PWD: "
       git pull || read -s -k '?Press any key to continue.'
     done < <(find /progs/ -mindepth 2 -maxdepth 2 -type d -name .git)
     ;;
