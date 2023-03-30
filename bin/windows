@@ -13,6 +13,7 @@ DEBUG = ENV["DEBUG"] || false
 class Window
 
   attr_reader :win_id, :wm_class, :wm_instance, :title, :user_time,
+    :position,
     :x, :y, :w, :h
 
   def initialize(raw_pieces)
@@ -25,6 +26,15 @@ class Window
     @title = titles.join(' ')
     @user_time = DE.user_time_stamp
     @position = nil
+    @position = begin
+                  size = 10 # Compensates for window active/inactive borders.
+                  Geo.positions.detect { |pos|
+                    x.between?(pos.x - size, pos.x + size) &&
+                      y.between?(pos.y - size, pos.y + size) &&
+                      w.between?(pos.w - size, pos.w + size) &&
+                      h.between?(pos.h - size, pos.h + size)
+                  }&.nickname
+                end
   end
 
   def user_time!
@@ -39,18 +49,6 @@ class Window
 
   def position=(str_or_position)
     @position = str_or_position
-  end # def
-
-  def position
-    @position ||= begin
-                    size = 10 # Compensates for window active/inactive borders.
-                    Geo.positions.detect { |pos|
-                      x.between?(pos.x - size, pos.x + size) &&
-                        y.between?(pos.y - size, pos.y + size) &&
-                        w.between?(pos.w - size, pos.w + size) &&
-                        h.between?(pos.h - size, pos.h + size)
-                    }&.nickname
-                  end
   end # def
 
   def next_window(dir = "under")
