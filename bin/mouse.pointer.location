@@ -120,12 +120,12 @@ class UI
     
     def left_edge?
       mouse.x > window.x &&
-        mouse.x <= (window.x + (window.corner_length * 2))
+        mouse.x <= (window.x + (window.corner_length * 1))
     end
 
     def right_edge?
       mouse.x < window.end_x &&
-        mouse.x >= (window.end_x - (window.corner_length * 2))
+        mouse.x >= (window.end_x - (window.corner_length * 1))
     end
 
     # ROWS:
