@@ -72,9 +72,15 @@ class Window
   end # def
 
   def move_to(new_position)
+    d = DE.direction_to_object(new_position)
     @position = new_position
-    d = DE.direction_to_object(position)
-    cmd = "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
+    cmd = case wm_class
+          when "smplayer"
+            c = DE.window_border # Compensate
+            "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
+          else
+            "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
+          end
     puts cmd
     `#{cmd}`
   end # def
@@ -94,6 +100,10 @@ class DE
   @@USER_TIME = 0
 
   class << self
+
+    def window_border
+      4
+    end
 
     def user_time_stamp
       @@USER_TIME += 1
@@ -125,14 +135,13 @@ class DE
         moved = list.map(&:re_move)
         "re_moved: #{moved.size}"
 
-      when /^moved [:A-Z0-9x]+ to .+$/
-        id = cmd_array[1]
-        id = active_id if id === ":ACTIVE:"
+      when /^move [:A-Z0-9x]+ to .+$/
+        id = (cmd_array[1] === ":ACTIVE:") ? active_id : cmd_array[1]
         dir = cmd_array[3]
         w = list.detect { |w| w.win_id === id }
         if w
-          w.position = dir
-          "PASS: --- Window #{id} is marked with position: #{dir}"
+          w.move_to(dir)
+          "PASS: --- Window #{id} was move to: #{dir}"
         else
           "FAILED: window not found: #{id}"
         end
@@ -292,10 +301,7 @@ class DE
     end
 
     def move(active_id, direction)
-      d = direction_to_object(direction)
-      cmd = "wmctrl #{active_id.index('0x') == 0 ? '-i' : ''} -r #{active_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
-      `#{cmd}`
-      send_message("moved #{active_id} to #{direction}")
+      send_message("move #{active_id} to #{direction}")
     end
   end # class self
 end # class
@@ -321,6 +327,7 @@ class Margin
     def right
       20
     end
+
   end # class
 end # class
 

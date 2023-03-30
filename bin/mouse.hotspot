@@ -13,13 +13,13 @@ case "$action" in
     left_top_window_corner || notify-send "Error:" "left_top_window_corner"
     ;;
 
-  left_top_corner)
+  left_top_corner|left_top_edge)
     windows move :ACTIVE: left
     ;;
   right_top_corner)
     windows move :ACTIVE: right_top
     ;;
-  right_bottom_corner)
+  right_bottom_corner|right_bottom_edge)
     windows move :ACTIVE: right_bottom
     ;;
   middle_middle)
@@ -35,7 +35,7 @@ case "$action" in
     # xdotool key --clearmodifiers Page_Up
     xdotool key --clearmodifiers Home
     ;;
-  middle_bottom)
+  middle_bottom_edge)
     # xdotool key --clearmodifiers Page_Down
     xdotool key --clearmodifiers End
     ;;
