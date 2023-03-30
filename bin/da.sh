@@ -477,19 +477,20 @@ case "$(echo "$@" | xargs)" in
 
   "install obsidian theme")
     # from: https://www.2daygeek.com/obsidian-icons-theme-for-linux-desktop/
-    cd "$HOME"
-    mkdir -p .icons
-    set -x
-    cd .icons
-    if test -e iconpack-obsidian ; then
-      echo "!!! Already installed." >&2
-    else
+    mkdir -p "$HOME/.icons"
+    cd /progs
+    if ! test -e iconpack-obsidian ; then
       git clone --depth=1 https://github.com/madmaxms/iconpack-obsidian.git
-      cd iconpack-obsidian
-      rm -Rf LICENSE README.md logo.jpg
-      mv -fi * $HOME/.icons/
     fi
-    ls -1
+    cd iconpack-obsidian
+    while read -r raw ; do
+      theme_name="$(basename "$raw")"
+      if ! test -e "$HOME/.icons/$theme_name"; then
+        echo "$PWD/$theme_name  --> $HOME/.icons/$theme_name" >&2
+        ln -s "$PWD/$theme_name" "$HOME/.icons/$theme_name"
+      fi
+    done < <(find . -type d -maxdepth 1 -mindepth 1 -name "Obsidian*")
+      # echo "!!! Already installed." >&2
     ;;
 
   *)
