@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require "open3"
+
+pid = false
+STDERR.puts "#{$PROGRAM_NAME} pid #{Process.pid}"
+
+Signal.trap("INT") { Process.kill("INT", pid) if pid }
+Signal.trap("TERM") { Process.kill("INT", pid) if pid }
+
+cmd  = "udevadm monitor -s bluetooth".split
+STDERR.puts cmd.inspect
+
+NOCAPS = "setxkbmap -option ctrl:nocaps"
+def run_nocaps
+  puts "Running: #{NOCAPS} #{`#{NOCAPS}`}".strip
+end
+
+run_nocaps
+
+Open3.popen2(*cmd) do |i, o, stat|
+  puts "#{cmd.first} PID: #{stat.pid}"
+  pid = stat.pid
+  o.each_line { |line|
+    sleep 1
+    run_nocaps if line["bluetooth"]
+  }
+  puts "no.caps monitor ended: #{cmd.first}: #{stat.value.success?.inspect}"
+end
+
+puts "Done: #{$PROGRAM_NAME} #{cmd.inspect}"
