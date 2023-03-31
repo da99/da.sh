@@ -7,25 +7,6 @@ require "open3"
 
 USR1 = "/tmp/usr1.sh"
 USR2 = "/tmp/usr2.sh"
-cmd = USR1
-pid = false
-keep_running = true
-already_run = false
-STDERR.puts "#{$PROGRAM_NAME} pid #{Process.pid}"
-
-Signal.trap("INT") { keep_running = false; Process.kill("INT", pid) if pid }
-Signal.trap("TERM") { keep_running = false; Process.kill("INT", pid) if pid }
-Signal.trap("USR1") { already_run = false; cmd = USR1 }
-Signal.trap("USR2") { already_run = false; cmd = USR2 }
-
-
-2.times do |i|
-  if !File.exists?("/tmp/usr#{i + 1}.sh")
-    `da.sh new zsh /tmp/usr#{i + 1}.sh`
-  end
-end
-
-STDERR.puts cmd.inspect
 
 class Colorize
   class << self
@@ -58,33 +39,76 @@ class Colorize
       colorize(36, str)
     end
   end # class
+end # class
+
+def setup_file(i)
+  if !File.exists?("/tmp/usr#{i}.sh")
+    `da.sh new zsh /tmp/usr#{i}.sh`
+  end
 end
 
-while keep_running
-  if already_run
-    sleep 0.5
-    next
-  end
-  puts ""
-  puts "------------------------------------------------------"
-  already_run = true
-  Open3.popen3(cmd) do |i, o, e, stat|
-    puts "#{cmd} PID: #{stat.pid}"
-    pid = stat.pid
-    Thread.new {
-      e.each_line { |line|
-        STDERR.puts Colorize.yellow(line.strip)
-      }
-    }
-    Thread.new {
-      o.each_line { |line|
-        STDOUT.puts line.strip
-      }
-    }
-    puts "ended: #{cmd}: #{stat.value.success?.inspect} #{Time.now}"
-  end
-  pid = nil
-end # while
+cmd = ARGV.map(&:strip).join(' ')
 
-puts "Done: #{$PROGRAM_NAME} #{cmd.inspect} #{Time.now}"
+case cmd
+
+when "USR1"
+  Signal.trap("USR1") { puts "uh oh" }
+  system("pkill -USR1 -f \"^ruby.+dev.terminal$\"")
+  exit $?.exitstatus
+  
+when "USR2"
+  Signal.trap("USR2") { puts "uh oh" }
+  system("pkill -USR2 -f \"^ruby.+dev.terminal$\"")
+  exit $?.exitstatus
+
+when ""
+  setup_file(1)
+  setup_file(2)
+  cmd = USR1
+  pid = false
+  keep_running = true
+  already_run = true
+  STDERR.puts "#{$PROGRAM_NAME} pid #{Process.pid}"
+
+  Signal.trap("INT") { keep_running = false; Process.kill("INT", pid) if pid }
+  Signal.trap("TERM") { keep_running = false; Process.kill("INT", pid) if pid }
+  Signal.trap("USR1") { already_run = false; cmd = USR1 }
+  Signal.trap("USR2") { already_run = false; cmd = USR2 }
+
+  while keep_running
+    if already_run
+      sleep 0.5
+      next
+    end
+    puts ""
+    puts "-------------- #{Time.now} ------------------"
+    already_run = true
+    Open3.popen3(cmd) do |i, o, e, stat|
+      puts "#{cmd} PID: #{stat.pid}"
+      pid = stat.pid
+      Thread.new {
+        e.each_line { |line|
+          STDERR.puts Colorize.yellow(line.strip)
+        }
+      }
+      Thread.new {
+        o.each_line { |line|
+          STDOUT.puts line.strip
+        }
+      }
+      puts "ended: #{cmd}: #{stat.value.success?.inspect} #{Time.now}"
+    end
+    pid = nil
+  end # while
+
+  puts "Done: #{$PROGRAM_NAME} #{cmd.inspect} #{Time.now}"
+
+else
+  STDERR.puts "!!! Unknown option for #{$PROGRAM_NAME}: #{cmd}"
+  exit 1
+  
+end # case
+
+
+
 
