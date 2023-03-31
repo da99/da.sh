@@ -78,9 +78,6 @@ class Window
           when "smplayer"
             c = DE.window_border # Compensate
             "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
-          when "chromium"
-            c = DE.window_border + 4 # Compensate
-            "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w + c},#{d.h + c}"
           else
             "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
           end
