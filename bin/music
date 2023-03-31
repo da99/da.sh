@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+#
+#
+
+
+cmd = ARGV.map(&:strip).join(" ")
+
+case cmd
+when "-h", "--help", "help"
+  c = File.basename($PROGRAM_NAME || "music")
+  puts  "#{c} replace DIR FIND REPLACE "
+when /^replace .+/
+  dir = ARGV[1]
+  find = ARGV[2]
+  replace = ARGV[3] || ""
+  Dir.chdir(dir) do
+    Dir.entries(".").sort.each { |f|
+      new_f = f.sub(find, replace)
+      if new_f != f
+        puts "Renaming: #{f} -> #{new_f}"
+        puts `mv -i #{f.inspect} #{new_f.inspect}`.strip
+        stat = $?
+        if stat.exitstatus != 0
+          puts stat.inspect
+          exit stat.exitstatus
+        end
+        puts ""
+      end
+    }
+  end # Dir
+else
+  STDERR.puts "!!! Unknown options: #{cmd}"
+  exit 1
+end # case
+
