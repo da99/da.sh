@@ -5,6 +5,9 @@
 
 require "open3"
 
+USR1 = "/tmp/usr1.sh"
+USR2 = "/tmp/usr2.sh"
+cmd = USR1
 pid = false
 keep_running = true
 already_run = false
@@ -12,9 +15,16 @@ STDERR.puts "#{$PROGRAM_NAME} pid #{Process.pid}"
 
 Signal.trap("INT") { keep_running = false; Process.kill("INT", pid) if pid }
 Signal.trap("TERM") { keep_running = false; Process.kill("INT", pid) if pid }
-Signal.trap("USR1") { already_run = false }
+Signal.trap("USR1") { already_run = false; cmd = USR1 }
+Signal.trap("USR2") { already_run = false; cmd = USR2 }
 
-cmd  = ARGV.dup
+
+2.times do |i|
+  if !File.exists?("/tmp/usr#{i + 1}.sh")
+    `da.sh new zsh /tmp/usr#{i + 1}.sh`
+  end
+end
+
 STDERR.puts cmd.inspect
 
 class Colorize
@@ -58,8 +68,8 @@ while keep_running
   puts ""
   puts "------------------------------------------------------"
   already_run = true
-  Open3.popen3(*cmd) do |i, o, e, stat|
-    puts "#{cmd.first} PID: #{stat.pid}"
+  Open3.popen3(cmd) do |i, o, e, stat|
+    puts "#{cmd} PID: #{stat.pid}"
     pid = stat.pid
     Thread.new {
       e.each_line { |line|
@@ -71,7 +81,7 @@ while keep_running
         STDOUT.puts line.strip
       }
     }
-    puts "ended: #{cmd.first}: #{stat.value.success?.inspect} #{Time.now}"
+    puts "ended: #{cmd}: #{stat.value.success?.inspect} #{Time.now}"
   end
   pid = nil
 end # while
