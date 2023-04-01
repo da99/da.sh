@@ -8,6 +8,35 @@ require "open3"
 USR1 = "/tmp/usr1.sh"
 USR2 = "/tmp/usr2.sh"
 
+def dev_pid
+  pid = `pgrep -f '^alacritty.+dev.terminal run$'`.strip
+  return pid.to_i unless pid.empty?
+  nil
+end # def
+
+def win_id
+  pid = dev_pid
+  return nil unless pid
+  raw = `wmctrl -lp | tr -s ' ' | cut -d' ' -f1,3 | grep -P ' #{pid}$'`.strip.split.first
+  return nil if raw.empty?
+  raw
+end
+
+def focus_window
+  wid = win_id
+  if wid
+    `wmctrl -i -a #{wid}` 
+    STDERR.puts "#{wid}"
+  end
+  STDERR.puts "No window found." if !wid
+end
+
+def usr(i)
+  focus_window
+  system("pkill -USR#{i} -f \"^ruby.+dev.terminal run$\"")
+  $?
+end # def
+
 class Colorize
   class << self
     # colorization
@@ -51,17 +80,33 @@ cmd = ARGV.map(&:strip).join(' ')
 
 case cmd
 
+when "-h", "--help", "help"
+  c = $PROGRAM_NAME || "dev.terminal"
+  puts "#{c}"
+  puts "#{c} run"
+  puts "#{c} USR1|USR2"
+
 when "USR1"
-  Signal.trap("USR1") { puts "uh oh" }
-  system("pkill -USR1 -f \"^ruby.+dev.terminal$\"")
-  exit $?.exitstatus
+  exit usr(1).exitstatus
   
 when "USR2"
-  Signal.trap("USR2") { puts "uh oh" }
-  system("pkill -USR2 -f \"^ruby.+dev.terminal$\"")
-  exit $?.exitstatus
+  exit usr(2).exitstatus
 
+when "window id"
+  puts win_id
+
+when "focus window"
+  focus_window
+  
 when ""
+  pid = dev_pid
+  if pid
+    STDERR.puts "Already running: #{pid}"
+    exit 0
+  end
+  exec("alacritty",  "-e", $PROGRAM_NAME, "run")
+
+when "run"
   setup_file(1)
   setup_file(2)
   cmd = USR1
