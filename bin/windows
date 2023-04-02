@@ -12,6 +12,9 @@ cmd = cmd_args.join(' ')
 WIN_LOG = "/tmp/windows.txt"
 DEBUG = ENV["DEBUG"] || false
 
+def debug(*str)
+  STDERR.puts(*str) if DEBUG
+end
 
 class Window
 
@@ -46,7 +49,7 @@ class Window
 
   def activate
     cmd = "wmctrl -i -a #{win_id}"
-    puts cmd if DEBUG
+    debug cmd
     `#{cmd}`
   end
 
@@ -108,9 +111,22 @@ end # class
 
 class DE
   PIDS = []
+  PAUSE_USER_TIME = []
   @@USER_TIME = 0
 
   class << self
+
+    def pause_user_time
+      PAUSE_USER_TIME.push 1
+    end
+
+    def pause_user_time?
+      PAUSE_USER_TIME.size > 0
+    end
+
+    def unpause_user_time
+      PAUSE_USER_TIME.pop
+    end
 
     def window_border
       4
@@ -168,6 +184,7 @@ class DE
         }
         next_win = (next_win || group.first)
         if next_win
+          DE.pause_user_time
           next_win.activate
           "Focused: #{next_win.summary}"
         else
@@ -245,13 +262,15 @@ class DE
       spy = Thread.new { DE.spy }
       spy.abort_on_exception = true
       while keep_running
-        STDERR.puts "--- Waiting for new client..." if DEBUG
+        debug "--- Waiting for new client..."
         client = server.accept
-        STDERR.puts "--- Found new client..." if DEBUG
+        debug "--- Found new client:"
         cmd_args = client.gets.strip.split
+        debug "    COMMAND: #{cmd_args.inspect}"
         result = run_client_cmd(cmd_args)
-        STDERR.puts("RESULT: #{result.inspect}") if DEBUG
+        debug "    RESULT: #{result.inspect}"
         client.puts(result)
+        debug "--- CLOSING CLIENT CONNECTION ---"
         client.close
         if result == "CLOSE"
           keep_running = false
@@ -282,19 +301,27 @@ class DE
           case line
           when "_NET_ACTIVE_WINDOW(WINDOW): window id # 0x0"
           when /^_NET_CLIENT_LIST.WINDOW../
-            STDERR.puts("--- Opening new client: #{SERVER_PORT}") if DEBUG
+            debug("--- Opening new client: #{SERVER_PORT}")
             s = TCPSocket.open('localhost', SERVER_PORT)
             s.puts("update list")
-            STDERR.puts("SENT: update list") if DEBUG
+            debug("SENT: update list")
             result = s.gets
             s.close
-            STDERR.puts("RESULT: #{result}") if DEBUG
-            STDERR.puts("--- Closing client: #{SERVER_PORT}") if DEBUG
+            debug("RESULT: #{result}")
+            debug("--- Closing client: #{SERVER_PORT}")
             if result.index("FAIL:") == 0
               STDERR.puts result
             end
+          when /^_NET_ACTIVE_WINDOW.+0x0\n$/
+            debug "--- Ignoring 0x0"
           when /^_NET_ACTIVE_WINDOW/
-            active&.user_time!
+            if pause_user_time?
+              debug "--- Unpauseing user time"
+              unpause_user_time
+            else
+              debug "--- Updating user time."
+              active&.user_time! 
+            end
           else # Window is actibe
             STDERR.puts "!!! Unknown xprop result: #{line}"
           end
