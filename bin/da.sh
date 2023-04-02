@@ -400,7 +400,7 @@ case "$(echo "$@" | xargs)" in
   "repo pull all") # repo pull all
     for dir in $($0 repo list) ; do
       cd "$dir"
-      echo "=== git pull in $PWD ===" >&2
+      echo -n "=== git pull in $PWD: " >&2
       git pull
     done
 

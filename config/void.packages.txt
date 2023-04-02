@@ -28,4 +28,4 @@ gnome-icon-theme-xfce hicolor-icon-theme
 mate-icon-theme mate-icon-theme-faenza
 liberation-fonts-ttf
 gthumb xtools
-arc-theme
+arc-theme flameshot
