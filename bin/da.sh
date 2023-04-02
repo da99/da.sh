@@ -416,11 +416,14 @@ case "$(echo "$@" | xargs)" in
 
   "repo list dirty")
     for x in $($0 repo list); do
-      cd "$x"
-      if ! "$0" repo is clean; then
-        echo "$x"
-      fi
+      (
+        cd "$x"
+        if ! "$0" repo is clean; then
+          echo "$x"
+        fi
+      ) &
     done
+    wait
     ;;
 
   "repo list")
