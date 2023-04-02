@@ -5,7 +5,10 @@
 require "open3"
 require "socket"
 SERVER_PORT = 2002
-cmd = ARGV.map(&:strip).join(' ')
+
+cmd_args = ARGV.map(&:strip)
+cmd = cmd_args.join(' ')
+
 WIN_LOG = "/tmp/windows.txt"
 DEBUG = ENV["DEBUG"] || false
 
@@ -43,8 +46,12 @@ class Window
 
   def activate
     cmd = "wmctrl -i -a #{win_id}"
-    puts cmd
+    puts cmd if DEBUG
     `#{cmd}`
+  end
+
+  def focus
+    activate
   end
 
   def position=(str_or_position)
@@ -70,10 +77,6 @@ class Window
     }
     next_win || dir_group.first
   end # def
-
-  def focus
-    `wmctrl -i -a #{win_id}`
-  end
 
   def move_to(new_position)
     d = if new_position.is_a?(Position)
@@ -120,14 +123,16 @@ class DE
     def send_message(*cmd)
       s = TCPSocket.open('localhost', SERVER_PORT)
       s.puts cmd.join(' ')
+      reply = nil
       while result = s.gets
         if result.index("FAIL:") == 0
           STDERR.puts result
         else
-          puts result
+          reply = result
         end
       end # while
       s.close
+      reply
     end # def
 
     def run_client_cmd(cmd_array)
@@ -142,6 +147,42 @@ class DE
         Geo.re_init
         moved = list.map(&:re_move)
         "re_moved: #{moved.size}"
+
+      when /^next under/
+        win_id = ARGV[2] || ":ACTIVE:"
+        current = DE.by_id(win_id)
+        return "No current window found: under #{win_id}" unless current
+
+        group = DE.list
+          .select { |w| w.position == current.position }
+          .sort_by(&:user_time)
+          .reverse
+        found = false
+        next_win = group.detect { |w|
+          if found
+            true
+          else
+            found = w.win_id == current.win_id
+            false
+          end
+        }
+        next_win = (next_win || group.first)
+        if next_win
+          next_win.activate
+          "Focused: #{next_win.summary}"
+        else
+          "No window found for: #{cmd}"
+        end
+
+      when /^next .+/
+        dir = cmd_array[1]
+        win_id = cmd_array[2] || ":ACTIVE:"
+        current = DE.by_id(win_id)
+        return "FAIL: No current window found: #{dir} #{win_id}" unless current
+        new_win = current.next_window(dir)
+        return "FAIL: No new window found: next #{dir} #{win_id}" unless new_win
+        new_win.activate
+        "Focused: #{new_win.win_id} #{new_win.position} #{new_win.user_time}"
 
       when /^focus .+ wm_class .+$/
         dir = cmd_array[1]
@@ -191,7 +232,7 @@ class DE
 
     def close!
       STDERR.puts "Closing server..."
-      send_message("close")
+      STDERR.puts send_message("close")
       STDERR.puts "Server should be closed by now."
     end
 
@@ -540,7 +581,7 @@ when ""
 
 when "close server"
   STDERR.puts "--- Closing server..."
-  DE.send_message("close")
+  STDERR.puts DE.send_message("close")
 
 when "spy"
   DE.spy
@@ -584,50 +625,11 @@ when "list is empty"
 when /^move .+/
   DE.move(ARGV[1], ARGV[2])
 
-when /^next under/
-  win_id = ARGV[2] || ":ACTIVE:"
-  current = DE.by_id(win_id)
-  unless current
-    STDERR.puts "No current window found: under #{win_id}"
-    exit 0 
-  end
-  group = DE.list
-    .select { |w| w.position == current.position }
-    .sort_by(&:user_time)
-    .reverse
-  found = false
-  next_win = group.detect { |w|
-    if found
-      true
-    else
-      found = w.win_id == current.win_id
-      false
-    end
-  }
-  if !next_win
-    next_win = group.first
-  end
-
-  next_win.activate
-
-when /^next [left|right_bottom|right_top|right]/
-  dir = ARGV[1] || "under"
-  win_id = ARGV[2] || ":ACTIVE:"
-  current = DE.by_id(win_id)
-  unless current
-    STDERR.puts "No current window found: #{dir} #{win_id}"
-    exit 0 
-  end
-  new_win = current.next_window(dir)
-  unless new_win
-    STDERR.puts "No new window found: next #{dir} #{win_id}"
-    exit(0) 
-  end
-  new_win.activate
-
+when /^next [under|left|right_bottom|right_top|right]/
+  puts DE.send_message(cmd)
 
 when "re_move"
-  DE.send_message("re_move")
+  puts DE.send_message("re_move")
 
 when /^focus wm_class .+/
   win_ids = `wmctrl -lx | tr -s ' ' | cut -d' ' -f1,3 | grep #{ARGV[2]} | cut -d' ' -f1`.split
