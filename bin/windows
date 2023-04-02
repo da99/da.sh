@@ -72,7 +72,11 @@ class Window
   end # def
 
   def move_to(new_position)
-    d = DE.direction_to_object(new_position)
+    d = if new_position.is_a?(Position)
+          new_position
+        else
+          DE.direction_to_object(new_position)
+        end
     @position = new_position
     cmd = case wm_class
           when "smplayer"
@@ -135,9 +139,9 @@ class DE
         moved = list.map(&:re_move)
         "re_moved: #{moved.size}"
 
-      when /^move [:A-Z0-9x]+ to .+$/
+      when /^move [:A-Za-z0-9]+ [a-z_]+$/
         id = (cmd_array[1] === ":ACTIVE:") ? active_id : cmd_array[1]
-        dir = cmd_array[3]
+        dir = DE.direction_to_object(cmd_array[2])
         w = list.detect { |w| w.win_id === id }
         if w
           w.move_to(dir)
@@ -149,7 +153,7 @@ class DE
       when "print list"
         list.map(&:summary).join("\n")
 
-      when /^print summary (Left|Right|Right_Top|Right_Bottom|Maximized)$/
+      when /^print summary [a-z_]+$/
         Kernel.const_get(cmd_array[2]).summary
 
       when "update list"
@@ -164,6 +168,8 @@ class DE
       else
         "FAIL: Unknown command: #{cmd.inspect}"
       end
+    rescue StandardError => e
+      "FAILED: #{cmd_array.inspect} -> #{e.class.name} #{e.message.inspect}"
     end # def
 
     def close!
@@ -301,7 +307,7 @@ class DE
     end
 
     def move(active_id, direction)
-      send_message("move #{active_id} to #{direction}")
+      send_message("move #{active_id} #{direction}")
     end
   end # class self
 end # class

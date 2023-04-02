@@ -2,7 +2,6 @@
 #
 #
 
-
 require "open3"
 
 USR1 = "/tmp/usr1.sh"
@@ -18,7 +17,7 @@ def win_id
   pid = dev_pid
   return nil unless pid
   raw = `wmctrl -lp | tr -s ' ' | cut -d' ' -f1,3 | grep -P ' #{pid}$'`.strip.split.first
-  return nil if raw.empty?
+  return nil if raw && raw.empty?
   raw
 end
 
@@ -83,8 +82,10 @@ case cmd
 when "-h", "--help", "help"
   c = $PROGRAM_NAME || "dev.terminal"
   puts "#{c}"
-  puts "#{c} run"
+  puts "    Open Alacritty in a new window and runs a development loop."
   puts "#{c} USR1|USR2"
+  puts "#{c} window id"
+  puts "#{c} focus window"
 
 when "USR1"
   exit usr(1).exitstatus
@@ -99,12 +100,23 @@ when "focus window"
   focus_window
   
 when ""
-  pid = dev_pid
-  if pid
-    STDERR.puts "Already running: #{pid}"
-    exit 0
+  if dev_pid
+    focus_window
+  else
+    Thread.new {
+      4.times do |i|
+        sleep 0.1
+        wid = win_id
+        if wid
+          cmd = "windows move #{wid} right"
+          puts "on #{i}: #{cmd}"
+          `#{cmd}`
+          break
+        end
+      end
+    }
+    system("alacritty",  "-e", $PROGRAM_NAME, "run")
   end
-  exec("alacritty",  "-e", $PROGRAM_NAME, "run")
 
 when "run"
   setup_file(1)
