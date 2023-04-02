@@ -1,4 +1,4 @@
-fish-shell neovim alacritty
+exa fish-shell neovim alacritty
 wget xcolor rofi
 tree git gitk curl ripgrep tree zsh htop
 streamlink smplayer playerctl ffmpeg

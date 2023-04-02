@@ -77,6 +77,7 @@ alias .="git status"
 alias devcheck="git commit -m 'Development checkpoint.'"
 alias gc="git clone --depth 1"
 alias grep="grep --color=always"
+alias ls="exa -aF --icons --color=always --group-directories-first"
 # =================================================================
 
 
