@@ -71,13 +71,17 @@ class Window
     next_win || dir_group.first
   end # def
 
+  def focus
+    `wmctrl -i -a #{win_id}`
+  end
+
   def move_to(new_position)
     d = if new_position.is_a?(Position)
           new_position
         else
           DE.direction_to_object(new_position)
         end
-    @position = new_position
+    @position = d.nickname
     cmd = case wm_class
           when "smplayer"
             c = DE.window_border - 2 # Compensate
@@ -139,13 +143,26 @@ class DE
         moved = list.map(&:re_move)
         "re_moved: #{moved.size}"
 
+      when /^focus .+ wm_class .+$/
+        dir = cmd_array[1]
+        wm_class = cmd_array[3]
+        win = list.select { |w|
+          w.position == dir && "#{w.wm_class}.#{w.wm_instance}"[wm_class]
+        }.sort_by(&:user_time).last
+        if win
+          win.focus
+          "focused: #{win.win_id}"
+        else
+          "FAIL: no window found for: #{cmd.inspect}"
+        end
+
       when /^move [:A-Za-z0-9]+ [a-z_]+$/
         id = (cmd_array[1] === ":ACTIVE:") ? active_id : cmd_array[1]
         dir = DE.direction_to_object(cmd_array[2])
         w = list.detect { |w| w.win_id === id }
         if w
           w.move_to(dir)
-          "PASS: --- Window #{id} was move to: #{dir}"
+          "PASS: --- Window #{id} was moved to: #{dir}"
         else
           "FAILED: window not found: #{id}"
         end
@@ -294,7 +311,7 @@ class DE
         Right_Bottom
 
       when "maximize"
-        Maximized
+        Maximize
 
       when "right"
         Right
@@ -346,7 +363,7 @@ module Position
   end
 end # class
 
-class Maximized
+class Maximize
   class << self
     include Position
     def x
@@ -453,7 +470,7 @@ class Right_Bottom
 end # class
 
 class Geo
-  POSITIONS = [Left, Right_Top, Right_Bottom, Right, Maximized]
+  POSITIONS = [Left, Right_Top, Right_Bottom, Right, Maximize]
   class << self
 
     def _init
@@ -516,6 +533,7 @@ when "help", "-h", "--help"
   puts "  re_move"
   puts "  maximize"
   puts "  next [under|up|down|left|right] [id | :ACTIVE:]"
+  puts "  focus wm_class STRING"
 
 when ""
   DE.server
@@ -610,6 +628,21 @@ when /^next [under|left|right_bottom|right_top|right]/
 
 when "re_move"
   DE.send_message("re_move")
+
+when /^focus wm_class .+/
+  win_ids = `wmctrl -lx | tr -s ' ' | cut -d' ' -f1,3 | grep #{ARGV[2]} | cut -d' ' -f1`.split
+  case win_ids.size
+  when 1
+    `wmctrl -i -a #{win_ids.first}`
+  when 0
+    STDERR.puts "--- No windows found for: #{ARGV[2]}"
+  else
+    STDERR.puts "!!! Too many windows found for: #{ARGV[2]}: #{win_ids.join ' '}"
+    exit 1
+  end
+
+when /^focus [a-z_]+ wm_class .+$/
+  DE.send_message(cmd)
 
 when /^active title(.+)?/
   _i, _j, padding, raw_max = ARGV
