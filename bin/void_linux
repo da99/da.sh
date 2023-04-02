@@ -7,11 +7,29 @@ case "$@" in
   -h|--help|help)
     cmd="$(basename "$0")"
     echo "  $cmd hud available packages"
+    echo "  $cmd upgrade packages"
+    echo "  $cmd install time"
+    echo "       Installs and activates the openntpd service"
+    ;;
+
+  "install time")
+    if ! test -e /var/service/openntpd ; then
+      set -x
+      sudo xbps-install -S openntpd
+      sudo ln -s /etc/sv/openntpd /var/service/
+      set +X
+    fi
     ;;
 
   "upgrade packages")
     sudo xbps-install -Su
     sudo xbps-remove -Oo
+    "$0" install time
+    if test -e /progs/void-packages ; then
+      cd /progs/void-packages
+      git pull
+      xcheckmypkgs
+    fi
     ;;
 
   "hud available packages")
