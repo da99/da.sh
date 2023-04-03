@@ -31,7 +31,6 @@ def focus_window
 end
 
 def usr(i)
-  focus_window
   system("pkill -USR#{i} -f \"^ruby.+dev.terminal run$\"")
   $?
 end # def

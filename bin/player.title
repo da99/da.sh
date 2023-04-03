@@ -23,10 +23,12 @@ class Player
     @name = name
     @status = `playerctl -p #{name} status`.strip
   end
+
   def status
     return nil if @status == "No players found"
     @status
   end
+
   def playing?
     status === "Playing"
   end
@@ -35,9 +37,32 @@ class Player
     status === "Stopped"
   end
 
+  def window_id
+    pid # This caches the window title and the call to wmctrl is made.
+    @window_id
+  end
+
+  def pid
+    @pid ||= case name
+             when /\.instance\d+$/
+               pid = name.sub(/.+\.instance/, '').to_i
+             else
+               _win_id, _pid, _class_and_instance = `wmctrl -lxp | tr -s ' ' | cut -d' ' -f1,3,4 | grep "#{name}." | head -n 1`.strip.split
+               if _pid
+                 @window_id = _win_id
+                 _pid.to_i
+               end
+             end
+  end
+
   def title
     return nil if stopped?
-    `playerctl -p #{name} metadata title`.strip
+    return window_title || player_title if name[/^(smplayer|vlc)/]
+    player_title
+  end
+
+  def player_title
+    @player_title ||= `playerctl -p #{name} metadata title`.strip
   end
 
   def url
@@ -48,6 +73,18 @@ class Player
   def local?
     return nil if stopped?
     !url[/^\//].nil?
+  end
+
+  def summary
+    "#{name} #{window_id}/#{pid.inspect} #{window_title.inspect}"
+  end
+
+  def window_title
+    return nil unless pid
+    @window_title ||= begin
+                        raw = `xtitle #{window_id}`.strip
+                        raw.empty? ? nil : raw
+                      end
   end
 end # class
 
@@ -72,6 +109,11 @@ when "hud list playing titles"
   else
     puts "   #{titles.join('  |  ')}    "
   end
+
+when "summary"
+  Player.all.select(&:playing?).each { |p|
+    puts p.summary
+  }
 
 when "snoop"
   raise "not implemented"  

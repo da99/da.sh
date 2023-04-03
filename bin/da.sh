@@ -466,12 +466,6 @@ case "$(echo "$@" | xargs)" in
     echo 'context.exec = [ { path = "/usr/bin/wireplumber" args = "" } ]' > "${XDG_CONFIG_HOME}/pipewire/pipewire.conf.d/10-wireplumber.conf"
     ;;
 
-  "xtitle padded"*)
-    shift
-    shift
-    windows active title $@
-    ;;
-
   "install openbox theme")
     cd "$THIS_DIR"
     da_dir="$PWD"

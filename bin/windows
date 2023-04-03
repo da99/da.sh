@@ -674,6 +674,7 @@ when /^focus [a-z_]+ wm_class .+$/
   DE.send_message(cmd)
 
 when /^active title(.+)?/
+  # NOTE: This is obsolete. Just use xtitle -t NUMBER -f " %s "
   _i, _j, padding, raw_max = ARGV
   padding ||= ""
   max = (raw_max || 250).to_i rescue 250
