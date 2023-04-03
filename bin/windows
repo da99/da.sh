@@ -325,7 +325,7 @@ class DE
           else # Window is actibe
             STDERR.puts "!!! Unknown xprop result: #{line}"
           end
-        }
+        } # Open3
         puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
       end
     end # def
