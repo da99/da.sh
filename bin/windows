@@ -89,9 +89,9 @@ class Window
         end
     @position = d.nickname
     cmd = case wm_class
-          when "smplayer"
-            c = DE.window_border - 2 # Compensate
-            "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
+          when "something else"
+            c = DE.window_border  # Compensate
+            "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h + c}"
           else
             "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
           end
