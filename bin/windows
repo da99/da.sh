@@ -89,9 +89,13 @@ class Window
         end
     @position = d.nickname
     cmd = case wm_class
-          when "something else"
-            c = DE.window_border  # Compensate
-            "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h + c}"
+          when "smplayer"
+            # This compensates for a bug in SMplayer
+            # that does not render the window properly if
+            # monitors have been switched
+            # or monitor comes back from sleep.
+            c = DE.window_border
+            "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
           else
             "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
           end
@@ -447,7 +451,7 @@ class Margin
     end
 
     def top
-      40
+      35
     end
 
     def left
@@ -589,9 +593,23 @@ class Geo
       @raw_area
     end
 
+    def current_monitor
+      `xrandr --listmonitors | tail -n+2 | cut -d' ' -f6 | head -n1`.strip
+    end
+
+    def switched?
+      @monitor && (@old_monitor != @monitor)
+    end
+
     def re_init
-        @raw_area = `xprop -notype -len 16 -root _NET_DESKTOP_GEOMETRY`.split('=').last.split(',').map(&:strip).map(&:to_i)
-        @screen_w, @screen_h = @raw_area
+      if @old_monitor.nil?
+        @old_monitor = @monitor = current_monitor
+      else
+        @old_monitor = @monitor
+        @monitor = current_monitor
+      end
+      @raw_area = `xprop -notype -len 16 -root _NET_DESKTOP_GEOMETRY`.split('=').last.split(',').map(&:strip).map(&:to_i)
+      @screen_w, @screen_h = @raw_area
     end # def
 
     def positions
