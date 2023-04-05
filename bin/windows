@@ -103,8 +103,11 @@ class Window
     case wm_class
     when "smplayer"
       if !re_move? && (d.stamp? || old_position["_stamp"])
-        system("xdotool key --clearmodifiers ctrl+c")
-        debug("send ctrl+c")
+        Thread.new {
+          sleep 0.1
+          system("xdotool key --clearmodifiers ctrl+c")
+          debug("send ctrl+c")
+        }
       end
       # This compensates for a bug in SMplayer
       # that does not render the window properly if
