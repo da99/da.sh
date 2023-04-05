@@ -113,6 +113,7 @@ class DE
   PIDS = []
   PAUSE_USER_TIME = []
   @@USER_TIME = 0
+  @@FIRST_RUN = true
 
   class << self
 
@@ -130,6 +131,10 @@ class DE
 
     def window_border
       4
+    end
+
+    def first_run?
+      @@FIRST_RUN == true
     end
 
     def user_time_stamp
@@ -231,6 +236,9 @@ class DE
       when /^print summary [a-z_]+$/
         Kernel.const_get(cmd_array[2]).summary
 
+      when "save list"
+        save_list
+
       when "update list"
         update_list
         if DEBUG
@@ -291,6 +299,7 @@ class DE
 
     def spy
       cmd = %w{xprop -spy -root _NET_CLIENT_LIST _NET_ACTIVE_WINDOW}
+      first_run = true
       Open3.popen2(*cmd) do |i, o, stat|
         i.close
         PIDS.push stat
@@ -299,19 +308,12 @@ class DE
         o.each_line { |line|
           puts line.inspect
           case line
-          when "_NET_ACTIVE_WINDOW(WINDOW): window id # 0x0"
           when /^_NET_CLIENT_LIST.WINDOW../
-            debug("--- Opening new client: #{SERVER_PORT}")
-            s = TCPSocket.open('localhost', SERVER_PORT)
-            s.puts("update list")
-            debug("SENT: update list")
-            result = s.gets
-            s.close
-            debug("RESULT: #{result}")
-            debug("--- Closing client: #{SERVER_PORT}")
+            result = send_message "update list"
             if result.index("FAIL:") == 0
               STDERR.puts result
             end
+
           when /^_NET_ACTIVE_WINDOW.+0x0\n$/
             debug "--- Ignoring 0x0"
           when /^_NET_ACTIVE_WINDOW/
@@ -339,24 +341,67 @@ class DE
       list.detect { |w| w.win_id == id }
     end
 
+    def new_window_id?(win_id)
+      return false if first_run?
+      !old_list.include? win_id
+    end
+
+    def old_list
+      @old_list ||= []
+    end
+
     def list
       @list ||= begin
                    `wmctrl -lxG`.strip.split("\n").map { |line| 
                      pieces = line.split(/\ +/)
                      if pieces[1] != "-1"
                        w = Window.new(pieces)
-                       w.position
+                       case w.wm_class
+                       when "chromium"
+                         if DE.new_window_id?(w.win_id)
+                           w.move_to "left"
+                         else
+                           w.re_move
+                         end
+                       when "Navigator"
+                         if DE.new_window_id?(w.win_id)
+                           w.position = "left"
+                           # Firefox moves itself to
+                           # last known position shortly
+                           # after this program moves it.
+                           # So we re-move it after it has moved itself.
+                           Thread.new {
+                             w.re_move
+                             sleep 0.2
+                           }
+                         end
+                        else
+                          w.position
+                          w.re_move
+                       end # case
                        w
                      else
                        nil
                      end
                    }.compact
                  end
+      @list
     end # def
 
+    def save_list
+      @old_list = if @list
+                    @list.map &:win_id
+                  else
+                    []
+                  end
+    end
+
     def update_list
+      save_list unless first_run?
       @list = nil
-      list
+      l = list
+      @@FIRST_RUN = false
+      l
     end # def
 
     def active_id
