@@ -365,18 +365,16 @@ class DE
                          end
                        when "Navigator"
                          if DE.new_window_id?(w.win_id)
-                           w.position = "left"
-                           # Firefox moves itself to
-                           # last known position shortly
-                           # after this program moves it.
-                           # So we re-move it after it has moved itself.
                            Thread.new {
-                             w.re_move
+                             # Firefox moves itself to
+                             # last known position shortly
+                             # after this program moves it.
+                             # So we re-move it after it has moved itself.
+                             w.move_to "left"
                              sleep 0.2
                            }
                          end
                         else
-                          w.position
                           w.re_move
                        end # case
                        w
