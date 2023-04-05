@@ -16,6 +16,11 @@ def debug(*str)
   STDERR.puts(*str) if DEBUG
 end
 
+def run(*str)
+  debug(*str) if DEBUG
+  system(*str)
+end
+
 class Window
 
   attr_reader :win_id, :wm_class, :wm_instance, :title, :user_time,
@@ -89,24 +94,27 @@ class Window
     case win_info
     when "smplayer right_bottom right_bottom"
       d = Right_Bottom_Stamp unless re_move?
+    when "smplayer right_top right_top"
+      d = Right_Top_Stamp unless re_move?
     end
+    debug("new position: #{d.nickname}")
+    debug("win_info: #{win_info.inspect}")
     @position = d.nickname
-    cmd = case wm_class
-          when "smplayer"
-            # This compensates for a bug in SMplayer
-            # that does not render the window properly if
-            # monitors have been switched
-            # or monitor comes back from sleep.
-            c = DE.window_border
-            if !re_move? && (d.stamp? || old_position["_stamp"])
-              `xdotool key --clearmodifiers ctrl+c`
-            end
-            "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
-          else
-            "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
-          end
-    puts cmd
-    `#{cmd}`
+    case wm_class
+    when "smplayer"
+      if !re_move? && (d.stamp? || old_position["_stamp"])
+        system("xdotool key --clearmodifiers ctrl+c")
+        debug("send ctrl+c")
+      end
+      # This compensates for a bug in SMplayer
+      # that does not render the window properly if
+      # monitors have been switched
+      # or monitor comes back from sleep.
+      c = DE.window_border
+      run "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
+    else
+      run "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
+    end
   end # def
 
   def re_move?
