@@ -28,6 +28,7 @@ class Window
     @y = _y.to_i
     @w = _w.to_i
     @h = _h.to_i
+    @re_move = false
     @wm_class, @wm_instance = class_instance.split('.')
     @title = titles.join(' ')
     @user_time = DE.user_time_stamp
@@ -57,10 +58,6 @@ class Window
     activate
   end
 
-  def position=(str_or_position)
-    @position = str_or_position
-  end # def
-
   def next_window(dir = "under")
     list = DE.list
 
@@ -82,11 +79,17 @@ class Window
   end # def
 
   def move_to(new_position)
+    old_position = position
     d = if new_position.is_a?(Position)
           new_position
         else
           DE.direction_to_object(new_position)
         end
+    win_info = "#{wm_class} #{old_position} #{d.nickname}"
+    case win_info
+    when "smplayer right_bottom right_bottom"
+      d = Right_Bottom_Stamp unless re_move?
+    end
     @position = d.nickname
     cmd = case wm_class
           when "smplayer"
@@ -95,6 +98,9 @@ class Window
             # monitors have been switched
             # or monitor comes back from sleep.
             c = DE.window_border
+            if !re_move? && (d.stamp? || old_position["_stamp"])
+              `xdotool key --clearmodifiers ctrl+c`
+            end
             "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
           else
             "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
@@ -103,9 +109,16 @@ class Window
     `#{cmd}`
   end # def
 
+  def re_move?
+    @re_move
+  end
+
   def re_move
+    @re_move = true
     return nil unless position
-    move_to(position)
+    result = move_to(position)
+    @re_move = false
+    result
   end
 
   def summary
@@ -418,24 +431,11 @@ class DE
     end
 
     def direction_to_object(str)
-      case str
-      when "right_top"
-        Right_Top
-
-      when "right_bottom"
-        Right_Bottom
-
-      when "maximize"
-        Maximize
-
-      when "right"
-        Right
-
-      when "left"
-        Left
-      else
+      pos = Geo.positions.detect { |p| p.nickname == str }
+      if !pos
         raise "Unknown direction: #{str.inspect}"
       end
+      pos
     end
 
     def move(active_id, direction)
@@ -465,11 +465,14 @@ class Margin
     def right
       20
     end
-
   end # class
 end # class
 
 module Position
+  def stamp?
+    nickname["_stamp"]
+  end
+
   def nickname
     self.name.downcase
   end
@@ -584,8 +587,50 @@ class Right_Bottom
   end # class
 end # class
 
+class Right_Top_Stamp
+  class << self
+    include Position
+    def x
+      Geo.w - w - (DE.window_border * 2)
+    end
+
+    def y
+      Margin.top
+    end
+
+    def w
+      (Geo.w * 0.20).to_i
+    end
+
+    def h
+      (Geo.h * 0.20).to_i
+    end
+  end # class
+end # class
+
+class Right_Bottom_Stamp
+  class << self
+    include Position
+    def x
+      Geo.w - w - (DE.window_border * 2)
+    end
+
+    def y
+      Geo.h - h - (DE.window_border * 2)
+    end
+
+    def w
+      (Geo.w * 0.15).to_i
+    end
+
+    def h
+      (Geo.h * 0.15).to_i
+    end
+  end # class
+end # class
+
 class Geo
-  POSITIONS = [Left, Right_Top, Right_Bottom, Right, Maximize]
+  POSITIONS = [Left, Right_Top, Right_Bottom, Right, Maximize, Right_Bottom_Stamp, Right_Top_Stamp]
   class << self
 
     def _init
