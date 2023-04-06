@@ -105,9 +105,11 @@ class Window
       d = Right_Bottom_Stamp unless re_move?
     when "smplayer right_top right_top"
       d = Right_Top_Stamp unless re_move?
-    when "smplayer maximize maximize"
-      d = DE.direction_to_object(@previous_position)
     end # case
+
+    if current_position == Maximize.nickname && d == Maximize
+      d = DE.direction_to_object(@previous_position)
+    end
 
     debug("new position:  #{d.nickname}")
     debug("prev position: #{@previous_position}")
