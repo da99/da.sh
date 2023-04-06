@@ -13,11 +13,19 @@ WIN_LOG = "/tmp/windows.txt"
 DEBUG = ENV["DEBUG"] || false
 
 def debug(*str)
-  STDERR.puts(*str) if DEBUG
+  STDERR.puts(*(str.map { |s| "#{yellow(">>> ")} #{s}" })) if DEBUG
+end
+
+def bold(str)
+  "\e[1m#{str}\e[0m"
+end
+
+def yellow(str)
+  "\e[33m#{str}\e[0m"
 end
 
 def run(*str)
-  debug(*str) if DEBUG
+  debug(*(str.map { |s| bold(s) })) if DEBUG
   system(*str)
 end
 
@@ -103,11 +111,11 @@ class Window
     case wm_class
     when "smplayer"
       if !re_move? && (d.stamp? || old_position["_stamp"])
-        Thread.new {
-          sleep 0.1
-          system("xdotool key --clearmodifiers ctrl+c")
-          debug("send ctrl+c")
-        }
+        # Make sure this is activated on key release (e.g. super + @j)
+        # in SXHKD or else it won't work because
+        # it will be run while holding down
+        # alphanumeric keys.
+        run "xdotool key --clearmodifiers ctrl+c"
       end
       # This compensates for a bug in SMplayer
       # that does not render the window properly if
@@ -186,7 +194,7 @@ class DE
 
     def run_client_cmd(cmd_array)
       cmd = cmd_array.join(' ')
-      puts "RECEIVED: #{cmd}"
+      debug "RECEIVED: #{cmd}"
       case cmd
 
       when "close", "CLOSE"
@@ -270,9 +278,9 @@ class DE
       when "update list"
         update_list
         if DEBUG
-          STDERR.puts "--- Updated client list:"
+          debug "--- Updated client list:"
           list.each { |w|
-            STDERR.puts w.summary
+            debug w.summary
           }
         end
         "PASS: window list updated."
@@ -284,9 +292,9 @@ class DE
     end # def
 
     def close!
-      STDERR.puts "Closing server..."
+      STDERR.puts "--- Closing server..."
       STDERR.puts send_message("close")
-      STDERR.puts "Server should be closed by now."
+      STDERR.puts "--- Server should be closed by now."
     end
 
     def server
@@ -328,6 +336,7 @@ class DE
     def spy
       cmd = %w{xprop -spy -root _NET_CLIENT_LIST _NET_ACTIVE_WINDOW}
       first_run = true
+      last_window_focused = active_id
       Open3.popen2(*cmd) do |i, o, stat|
         i.close
         PIDS.push stat
@@ -343,20 +352,38 @@ class DE
             end
 
           when /^_NET_ACTIVE_WINDOW.+0x0\n$/
-            debug "--- Ignoring 0x0"
+            debug "--- Ignoring window 0x0"
+            # This is the root/desktop window
+            # focused.
+
           when /^_NET_ACTIVE_WINDOW/
+            win_id = line.strip.split.last.sub("0x", "0x0")
+            win = list.detect { |w| w.win_id == win_id }
+
+            # _NET_ACTIVE_WINDOW in Openbox often times
+            # gives duplicate events when a window is brought
+            # into focus.
+            # I have no idea why:
+            if last_window_focused == win.win_id
+              debug "Skipping duplicate active window event."
+              next
+            end
+
+            debug "Previous window focused: #{last_window_focused}"
+
             if pause_user_time?
-              debug "--- Unpauseing user time"
+              debug "Unpauseing user time: active #{win.win_id}"
               unpause_user_time
             else
-              debug "--- Updating user time."
-              active&.user_time! 
+              debug "Updating user time: #{win.win_id}"
+              win.user_time! 
             end
+            last_window_focused = win.win_id
           else # Window is actibe
             STDERR.puts "!!! Unknown xprop result: #{line}"
           end
         } # Open3
-        puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
+        puts "SPY process ended: #{cmd.first}: #{stat.value.success?.inspect}"
       end
     end # def
 
