@@ -29,6 +29,10 @@ def run(*str)
   system(*str)
 end
 
+def hex_str(x)
+  sprintf("%#010x", x)
+end
+
 class Window
 
   attr_reader :win_id, :wm_class, :wm_instance, :title, :user_time,
@@ -357,8 +361,12 @@ class DE
             # focused.
 
           when /^_NET_ACTIVE_WINDOW/
-            win_id = line.strip.split.last.sub("0x", "0x0")
-            win = list.detect { |w| w.win_id == win_id }
+            win_id = hex_str(line.strip.split.last)
+            win = DE.by_id(win_id)
+
+            if !win
+              debug yellow("!!! No window found in list for: #{win_id} #{list.map(&:win_id).join ', '}")
+            end
 
             # _NET_ACTIVE_WINDOW in Openbox often times
             # gives duplicate events when a window is brought
