@@ -124,12 +124,11 @@ class Window
       newly_max = d == Maximize && current_position != Maximize.nickname
       un_max = d != Maximize && current_position == Maximize.nickname
       if !re_move? && (d.stamp? || current_position["_stamp"] || newly_max || un_max)
-        # Make sure this is activated on key release (e.g. super + @j)
-        # in SXHKD or else it won't work because
-        # it will be run while holding down
-        # alphanumeric keys.
         run "wmctrl -b toggle,above -i -r #{win_id}"
-        run "xdotool key --clearmodifiers ctrl+c"
+
+        # Add `sleep 0.1` in case this sxhkd is holding the key event:
+        # https://bbs.archlinux.org/viewtopic.php?pid=2020445#p2020445
+        run "xdotool sleep 0.1 key --clearmodifiers ctrl+c"
       end
       # This compensates for a bug in SMplayer
       # that does not render the window properly if
