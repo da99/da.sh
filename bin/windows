@@ -36,7 +36,7 @@ end
 class Window
 
   attr_reader :win_id, :wm_class, :wm_instance, :title, :user_time,
-    :position,
+    :position, :previous_position,
     :x, :y, :w, :h
 
   def initialize(raw_pieces)
@@ -49,7 +49,7 @@ class Window
     @wm_class, @wm_instance = class_instance.split('.')
     @title = titles.join(' ')
     @user_time = DE.user_time_stamp
-    @position = nil
+    @previous_position = nil
     @position = begin
                   size = 14 # Compensates for window active/inactive borders.
                   Geo.positions.detect { |pos|
@@ -96,26 +96,32 @@ class Window
   end # def
 
   def move_to(new_position)
-    old_position = position
-    d = if new_position.is_a?(Position)
-          new_position
-        else
-          DE.direction_to_object(new_position)
-        end
-    win_info = "#{wm_class} #{old_position} #{d.nickname}"
+    current_position = position
+    d = DE.direction_to_object(new_position)
+    win_info = "#{wm_class} #{current_position} #{d.nickname}"
+
     case win_info
     when "smplayer right_bottom right_bottom"
       d = Right_Bottom_Stamp unless re_move?
     when "smplayer right_top right_top"
       d = Right_Top_Stamp unless re_move?
-    end
-    debug("new position: #{d.nickname}")
+    when "smplayer maximize maximize"
+      d = DE.direction_to_object(@previous_position)
+    end # case
+
+    debug("new position:  #{d.nickname}")
+    debug("prev position: #{@previous_position}")
     debug("win_info: #{win_info.inspect}")
     debug("re_move:  #{re_move?.inspect}")
+
+    @previous_position = current_position
     @position = d.nickname
+
     case wm_class
     when "smplayer"
-      if !re_move? && (d.stamp? || old_position["_stamp"])
+      newly_max = d == Maximize && current_position != Maximize.nickname
+      un_max = d != Maximize && current_position == Maximize.nickname
+      if !re_move? && (d.stamp? || current_position["_stamp"] || newly_max || un_max)
         # Make sure this is activated on key release (e.g. super + @j)
         # in SXHKD or else it won't work because
         # it will be run while holding down
@@ -481,11 +487,11 @@ class DE
       list.detect { |w| w.win_id == win_id }
     end
 
-    def direction_to_object(str)
+    def direction_to_object(str_or_position)
+      return str_or_position if str_or_position.is_a?(Position)
+      str = str_or_position
       pos = Geo.positions.detect { |p| p.nickname == str }
-      if !pos
-        raise "Unknown direction: #{str.inspect}"
-      end
+      raise "Unknown direction: #{str.inspect}" unless pos
       pos
     end
 
