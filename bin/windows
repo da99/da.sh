@@ -111,6 +111,7 @@ class Window
     end
     debug("new position: #{d.nickname}")
     debug("win_info: #{win_info.inspect}")
+    debug("re_move:  #{re_move?.inspect}")
     @position = d.nickname
     case wm_class
     when "smplayer"
@@ -261,11 +262,15 @@ class DE
 
       when /^move [:A-Za-z0-9]+ [a-z_]+$/
         id = (cmd_array[1] === ":ACTIVE:") ? active_id : cmd_array[1]
-        dir = DE.direction_to_object(cmd_array[2])
+        raw_dir = cmd_array[2]
+        dir = DE.direction_to_object(raw_dir) rescue nil
+        if !dir
+          return "FAILED: direction not found: #{raw_dir}"
+        end
         w = list.detect { |w| w.win_id === id }
         if w
           w.move_to(dir)
-          "PASS: --- Window #{id} was moved to: #{dir}"
+          "PASS: --- Window #{id} was moved to: #{w.position}"
         else
           "FAILED: window not found: #{id}"
         end
