@@ -108,7 +108,7 @@ class Window
     end # case
 
     if current_position == Maximize.nickname && d == Maximize
-      d = DE.direction_to_object(@previous_position)
+      d = DE.direction_to_object(@previous_position || "left")
     end
 
     debug("new position:  #{d.nickname}")
