@@ -146,11 +146,11 @@ class Window
   end
 
   def re_move
-    @re_move = true
     return nil unless position
-    result = move_to(position)
+    @re_move = true
+    move_to(position)
+  ensure
     @re_move = false
-    result
   end
 
   def summary
