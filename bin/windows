@@ -123,19 +123,22 @@ class Window
     when "smplayer"
       newly_max = d == Maximize && current_position != Maximize.nickname
       un_max = d != Maximize && current_position == Maximize.nickname
-      if !re_move? && (d.stamp? || current_position["_stamp"] || newly_max || un_max)
+      toggle_stamp = !re_move? && (d.stamp? || (current_position || "")["_stamp"] || newly_max || un_max)
+      if toggle_stamp
         run "wmctrl -b toggle,above -i -r #{win_id}"
 
         # Add `sleep 0.1` in case this sxhkd is holding the key event:
         # https://bbs.archlinux.org/viewtopic.php?pid=2020445#p2020445
         run "xdotool sleep 0.1 key --clearmodifiers ctrl+c"
+        run "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
+      else
+        # This compensates for a bug in SMplayer
+        # that does not render the window properly if
+        # monitors have been switched
+        # or monitor comes back from sleep.
+        c = DE.window_border
+        run "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
       end
-      # This compensates for a bug in SMplayer
-      # that does not render the window properly if
-      # monitors have been switched
-      # or monitor comes back from sleep.
-      c = DE.window_border
-      run "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
     else
       run "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
     end
@@ -671,7 +674,7 @@ class Right_Bottom_Stamp
   class << self
     include Position
     def x
-      Geo.w - w - (DE.window_border * 2)
+      Geo.w - w - (DE.window_border * 3)
     end
 
     def y
