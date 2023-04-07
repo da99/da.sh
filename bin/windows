@@ -382,6 +382,8 @@ class DE
 
             if !win
               debug yellow("!!! No window found in list for: #{win_id} #{list.map(&:win_id).join ', '}")
+              debug `wmctrl -lx`
+              next
             end
 
             # _NET_ACTIVE_WINDOW in Openbox often times
