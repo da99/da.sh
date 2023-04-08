@@ -382,6 +382,7 @@ class DE
 
             if !win
               debug yellow("!!! No window found in list for: #{win_id} #{list.map(&:win_id).join ', '}")
+              system("notify-send", "_NET_ACTIVE_WINDOW not found", "win_id from #{line}") rescue nil
               debug `wmctrl -lx`
               next
             end
