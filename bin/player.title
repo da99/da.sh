@@ -7,20 +7,44 @@
 class Player
   class << self
     def all_names
-      `playerctl --list-all`.strip.split("\n")
+      @all_names ||= `playerctl --list-all`.strip.split("\n")
     end
 
     def all
-      all_names.map { |name|
-        Player.new name
-      }.reject(&:stopped?)
+      @all ||= begin
+                 all_names
+                   .map { |name| Player.new name }
+                   .select(&:playing?)
+                   .sort_by(&:name)
+                   .reverse
+                   .each { |p|
+                     Window.all.each { |w|
+                       if p.pid && p.pid == w.pid
+                         w.player_name = name
+                         p.window = w
+                       else
+                         if p.main_name == w.wm_class
+                           w.player_name = name
+                           p.window = w
+                           p.pid = w.pid
+                         end
+                       end
+                     }
+                   }
+               end
     end
   end # class
 
-  attr_reader :name
+  attr_reader :name, :main_name, :instance_name, :title
+  attr_accessor :pid, :window
 
   def initialize(name)
     @name = name
+    @window = nil
+    @main_name, @instance_name = @name.split('.')
+    @pid = if @instance_name
+             @instance_name.sub("instance", '').to_i
+           end
     @status = `playerctl -p #{name} status`.strip
   end
 
@@ -33,59 +57,67 @@ class Player
     status === "Playing"
   end
 
-  def stopped?
-    status === "Stopped"
-  end
-
-  def window_id
-    pid # This caches the window title and the call to wmctrl is made.
-    @window_id
-  end
-
-  def pid
-    @pid ||= case name
-             when /\.instance\d+$/
-               pid = name.sub(/.+\.instance/, '').to_i
-             else
-               _win_id, _pid, _class_and_instance = `wmctrl -lxp | tr -s ' ' | cut -d' ' -f1,3,4 | grep "#{name}." | head -n 1`.strip.split
-               if _pid
-                 @window_id = _win_id
-                 _pid.to_i
-               end
-             end
+  def title
+    return nil unless playing?
+    return(window&.title || title) if name[/^(smplayer|vlc)/]
+    title
   end
 
   def title
-    return nil if stopped?
-    return window_title || player_title if name[/^(smplayer|vlc)/]
-    player_title
-  end
-
-  def player_title
-    @player_title ||= `playerctl -p #{name} metadata title`.strip
+    @title ||= begin
+                 _title = case main_name
+                          when "vlc", "smplayer"
+                            window&.title
+                          end
+                  _title ||  `playerctl -p #{name} metadata title`.strip
+               end
   end
 
   def url
-    return nil if stopped?
+    return nil if playing?
     `playerctl -p #{name} metadata url`.strip
   end
 
   def local?
-    return nil if stopped?
+    return nil if playing?
     !url[/^\//].nil?
   end
 
   def summary
-    "#{name} #{window_id}/#{pid.inspect} #{window_title.inspect}"
+    "#{name} #{window&.win_id}/#{pid.inspect} #{window&.title.inspect}"
   end
 
-  def window_title
-    return nil unless pid
-    @window_title ||= begin
-                        raw = `xtitle #{window_id}`.strip
-                        raw.empty? ? nil : raw
-                      end
+end # class
+
+class Window
+  class << self
+
+    def all
+      @list ||= begin
+                  `wmctrl -lxp | tr -s ' '`.strip.split("\n").map { |line|
+                    _winid, desktop, *_rest = pieces = line.split
+                    if desktop.to_i < 0
+                      nil
+                    else
+                      Window.new *pieces
+                    end
+                  }.compact
+                end
+    end # def
+
+  end # class self
+
+  attr_reader :win_id, :pid, :wm_class, :instance_name, :title, :player_name
+  attr_writer :player_name
+
+  def initialize(_win_id, _desktop, _pid, _class_instance, _host, *_title)
+    @win_id = _win_id
+    @pid = _pid.to_i
+    @wm_class, @instance_name = _class_instance.split('.')
+    @title = _title.join(" ")
+    @player_name= nil
   end
+
 end # class
 
 case ARGV.map(&:strip).join(' ')
