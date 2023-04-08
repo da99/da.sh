@@ -13,25 +13,26 @@ case "$@" in
     ;;
 
   "install time")
-    if ! test -e /var/service/openntpd ; then
-      set -x
-      sudo xbps-install -S openntpd
-      sudo ln -s /etc/sv/openntpd /var/service/
-      set +X
+    if test -e /var/service/openntpd ; then
+      echo "--- Already installed: openntpd" >&2
+      exit 0
     fi
+    set -x
+    sudo xbps-install -S openntpd
+    sudo ln -s /etc/sv/openntpd /var/service/
+    ;;
+
+  "upgrade void-packages")
+    set -x
+    cd /progs/void-packages
+    git pull
+    xcheckmypkgs
     ;;
 
   "upgrade packages")
     set -x
     sudo xbps-install -Su
     sudo xbps-remove -Oo
-    "$0" install time
-    set +x
-    if test -e /progs/void-packages ; then
-      cd /progs/void-packages
-      git pull
-      xcheckmypkgs
-    fi
     ;;
 
   "hud available packages")
