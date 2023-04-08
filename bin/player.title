@@ -89,6 +89,14 @@ class Player
 end # class
 
 case ARGV.map(&:strip).join(' ')
+when "-h", "--help", "help"
+  puts "  list"
+  puts "  list titles"
+  puts "  list playing titles"
+  puts "  hud list playing titles"
+  puts "  summary"
+
+
 when "list titles"
   Player.all.each { |p| puts p.title }
 
@@ -115,8 +123,6 @@ when "summary"
     puts p.summary
   }
 
-when "snoop"
-  raise "not implemented"  
 else
   raise "Unknown option: #{ARGV.inspect}" 
 

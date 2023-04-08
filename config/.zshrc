@@ -12,7 +12,6 @@ export TERM='xterm-256color'
 
 fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
-bindkey -v
 export KEYTIMEOUT=1
 cursor_mode
 
@@ -26,8 +25,14 @@ setopt appendhistory
 # =================================================================
 HISTORY_SUBSTRING_SEARCH_FUZZY="true"
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE="true"
- bindkey '^[[A' history-substring-search-up
- bindkey '^[[B' history-substring-search-down
+
+# https://jdhao.github.io/2019/06/13/zsh_bind_keys/
+bindkey -v # turn on VI bindings
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+bindkey "^[[H" beginning-of-line
+bindkey "^[[F" end-of-line
+bindkey "^W" forward-word
 # bindkey '^[[1;5A' history-substring-search-up
 # bindkey '^[[1;5B' history-substring-search-down
 # bindkey "$terminfo[kcuu1]" history-substring-search-up
@@ -58,7 +63,7 @@ zstyle :compinstall filename "/home/$USER/.zshrc"
 
 # =================================================================
 # NOTE: fzf-tab needs to be loaded after compinit, but before plugins which will wrap widgets, such as zsh-autosuggestions or fast-syntax-highlighting!!
-source /progs/fzf-tab/fzf-tab.plugin.zsh
+source /progs/fzf-tab/fzf-tab.zsh
 # set list-colors to enable filename colorizing
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 # =================================================================
