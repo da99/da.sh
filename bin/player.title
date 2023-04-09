@@ -12,31 +12,39 @@ class Player
 
     def all
       @all ||= begin
-                 all_names
-                   .map { |name| Player.new name }
-                   .select(&:playing?)
-                   .sort_by(&:name)
+                 first_pass = all_names
                    .reverse
-                   .each { |p|
-                     Window.all.each { |w|
-                       if p.pid && p.pid == w.pid
+                   .map { |name|
+                     p = Player.new name
+                     Window.all.detect { |w|
+                       next unless p.pid 
+                       if p.pid == w.pid
                          w.player_name = name
                          p.window = w
-                       else
-                         if p.main_name == w.wm_class
-                           w.player_name = name
-                           p.window = w
-                           p.pid = w.pid
-                         end
                        end
                      }
-                   }
+                     p
+                   }.select(&:playing?)
+                 second_pass = first_pass.map { |p|
+                   if !p.pid
+                     w = Window.all.detect { |w|
+                       !w.player_name && w.wm_class == p.main_name
+                     }
+                     if w
+                       w.player_name = p.name
+                       p.window = w
+                       p.pid = w.pid
+                     end
+                   end
+                   p
+                 }
                end
     end
   end # class
 
   attr_reader :name, :main_name, :instance_name, :title
-  attr_accessor :pid, :window
+  attr_accessor :window
+  attr_writer :pid
 
   def initialize(name)
     @name = name
@@ -71,6 +79,10 @@ class Player
                           end
                   _title ||  `playerctl -p #{name} metadata title`.strip
                end
+  end
+
+  def pid
+    @pid ||= instance_name && instance_name["instance"] && instance_name.sub("instance", "").to_i
   end
 
   def url
@@ -147,7 +159,7 @@ when "hud list playing titles"
   if titles.empty?
     puts ''
   else
-    puts "   #{titles.join('  |  ')}    "
+    puts "  #{titles.join('  |  ')}   "
   end
 
 when "summary"

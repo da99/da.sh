@@ -9,7 +9,6 @@ Signal.trap("INT") { Process.kill("INT", pid) if pid }
 Signal.trap("TERM") { Process.kill("INT", pid) if pid }
 
 def reload_genmon(id)
-  `xfce4-panel --plugin-event=genmon-#{id}:refresh:bool:true`
 end
 
 cmd  = ARGV.dup
@@ -20,7 +19,7 @@ Open3.popen2(*cmd) do |i, o, stat|
   puts "#{cmd.first} PID: #{stat.pid}"
   pid = stat.pid
   o.each_line { |line|
-    reload_genmon(genmon)
+    system "xfce4-panel", "--plugin-event=genmon-#{genmon}:refresh:bool:true" rescue nil
   }
   puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
 end
