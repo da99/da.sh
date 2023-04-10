@@ -436,33 +436,30 @@ class DE
       @list ||= begin
                    `wmctrl -lxG`.strip.split("\n").map { |line| 
                      pieces = line.split(/\ +/)
-                     if pieces[1] != "-1"
-                       w = Window.new(pieces)
-                       case w.wm_class
-                       when "chromium"
-                         if DE.new_window_id?(w.win_id)
+                     next if pieces[1] == "-1"
+                     w = Window.new(pieces)
+                     case w.wm_class
+                     when "chromium"
+                       if DE.new_window_id?(w.win_id)
+                         w.move_to "left"
+                       else
+                         w.re_move
+                       end
+                     when "Navigator"
+                       if DE.new_window_id?(w.win_id)
+                         Thread.new {
+                           # Firefox moves itself to
+                           # last known position shortly
+                           # after this program moves it.
+                           # So we re-move it after it has moved itself.
                            w.move_to "left"
-                         else
-                           w.re_move
-                         end
-                       when "Navigator"
-                         if DE.new_window_id?(w.win_id)
-                           Thread.new {
-                             # Firefox moves itself to
-                             # last known position shortly
-                             # after this program moves it.
-                             # So we re-move it after it has moved itself.
-                             w.move_to "left"
-                             sleep 0.2
-                           }
-                         end
-                        else
-                          w.re_move
-                       end # case
-                       w
+                           sleep 0.2
+                         }
+                       end
                      else
-                       nil
-                     end
+                       w.re_move if DE.new_window_id?(w.win_id)
+                     end # case
+                     w
                    }.compact
                  end
       @list
