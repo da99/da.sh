@@ -15,11 +15,11 @@ case "$@" in
   "install time")
     if test -e /var/service/openntpd ; then
       echo "--- Already installed: openntpd" >&2
-      exit 0
+      exit 1
     fi
     set -x
-    sudo xbps-install -S openntpd
-    sudo ln -s /etc/sv/openntpd /var/service/
+    sudo xbps-install -S chrony
+    sudo ln -s /etc/sv/chronyd /var/service/
     ;;
 
   "upgrade void-packages")
