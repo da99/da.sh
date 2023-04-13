@@ -121,9 +121,10 @@ class Window
 
     case wm_class
     when "smplayer"
+      new_window = !!@previous_position && DE.new_window_id?(win_id)
       newly_max = d == Maximize && current_position != Maximize.nickname
       un_max = d != Maximize && current_position == Maximize.nickname
-      toggle_stamp = !re_move? && (d.stamp? || (current_position || "")["_stamp"] || newly_max || un_max)
+      toggle_stamp = new_window && !re_move? && (d.stamp? || (current_position || "")["_stamp"] || newly_max || un_max)
       if toggle_stamp
         run "wmctrl -b toggle,above -i -r #{win_id}"
 
