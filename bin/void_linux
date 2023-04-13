@@ -9,17 +9,21 @@ case "$@" in
     echo "  $cmd hud available packages"
     echo "  $cmd upgrade packages"
     echo "  $cmd install time"
-    echo "       Installs and activates the openntpd service"
+    echo "       Installs and activates the chrony service"
     ;;
 
   "install time")
     if test -e /var/service/openntpd ; then
-      echo "--- Already installed: openntpd" >&2
+      echo "!!! REMOVE openntpd first." >&2
       exit 1
     fi
-    set -x
-    sudo xbps-install -S chrony
-    sudo ln -s /etc/sv/chronyd /var/service/
+    if ! which chrony ; then
+      sudo xbps-install -S chrony
+    fi
+    if ! test -e /var/service/chronyd ; then
+      sudo ln -s /etc/sv/chronyd /var/service/
+    fi
+    stat /var/service/chronyd
     ;;
 
   "upgrade void-packages")
