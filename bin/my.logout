@@ -28,6 +28,13 @@ case "$@" in
   "Screen Sleep")
     coproc ( da.sh screen sleep 2  > /dev/null  2>&1 )
     ;;
+  "menu")
+    if windows list is empty ; then
+      rofi -modes "logout:my.logout" -show logout
+    else
+      notify-send "Error:" "Windows open: $(windows list count)"
+    fi
+    ;;
   "")
     echo "Screen Sleep"
     echo "Power Off"
