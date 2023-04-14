@@ -59,6 +59,15 @@ class Window
                       h.between?(pos.h - size, pos.h + size)
                   }&.nickname
                 end
+    @detected_position = !!@position
+  end
+
+  def new?
+    DE.new_window_id?(win_id)
+  end
+
+  def detected_position?
+    @detected_position
   end
 
   def user_time!
@@ -96,6 +105,7 @@ class Window
   end # def
 
   def move_to(new_position)
+    orig_pos = @previous_position
     current_position = position
     d = DE.direction_to_object(new_position)
     win_info = "#{wm_class} #{current_position} #{d.nickname}"
@@ -117,20 +127,30 @@ class Window
     debug("re_move:  #{re_move?.inspect}")
 
     @previous_position = current_position
+    det_pos = detected_position?
     @position = d.nickname
+    @detected_position = false
 
     case wm_class
     when "smplayer"
-      new_window = !!@previous_position && DE.new_window_id?(win_id)
       newly_max = d == Maximize && current_position != Maximize.nickname
       un_max = d != Maximize && current_position == Maximize.nickname
-      toggle_stamp = new_window && !re_move? && (d.stamp? || (current_position || "")["_stamp"] || newly_max || un_max)
-      if toggle_stamp
-        run "wmctrl -b toggle,above -i -r #{win_id}"
+      going_into_stamp = d.stamp? && !(current_position || "")["_stamp"]
+      out_of_stamp = !d.stamp? && (current_position || "")["_stamp"]
 
+      # orig_pos is used to make sure smplayer is here
+      # because it was moved, not because it was placed here automatically
+      # when the window first opened.
+      if !re_move? && !det_pos
+        if going_into_stamp || out_of_stamp
+          run "wmctrl -b toggle,above -i -r #{win_id}" 
+          run "xdotool sleep 0.1 key --clearmodifiers ctrl+c"
+        end
+      end
+
+      if going_into_stamp
         # Add `sleep 0.1` in case this sxhkd is holding the key event:
         # https://bbs.archlinux.org/viewtopic.php?pid=2020445#p2020445
-        run "xdotool sleep 0.1 key --clearmodifiers ctrl+c"
         run "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
       else
         # This compensates for a bug in SMplayer
@@ -356,7 +376,6 @@ class DE
 
     def spy
       cmd = %w{xprop -spy -root _NET_CLIENT_LIST _NET_ACTIVE_WINDOW}
-      first_run = true
       last_window_focused = active_id
       Open3.popen2(*cmd) do |i, o, stat|
         i.close
