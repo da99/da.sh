@@ -141,16 +141,24 @@ class Window
       # orig_pos is used to make sure smplayer is here
       # because it was moved, not because it was placed here automatically
       # when the window first opened.
-      if !re_move? && !det_pos
-        if going_into_stamp || out_of_stamp
-          run "wmctrl -b toggle,above -i -r #{win_id}" 
+      if !re_move?
+        toggle_stamp = going_into_stamp || out_of_stamp
+        stamp_to_max = out_of_stamp && newly_max
+        max_to_stamp = un_max && going_into_stamp
+
+        if toggle_stamp && !stamp_to_max && !max_to_stamp
+          # Add `sleep 0.1` in case this sxhkd is holding the key event:
+          # https://bbs.archlinux.org/viewtopic.php?pid=2020445#p2020445
           run "xdotool sleep 0.1 key --clearmodifiers ctrl+c"
+        end
+        if going_into_stamp
+          run "wmctrl -b add,above -i -r #{win_id}" 
+        else
+          run "wmctrl -b remove,above -i -r #{win_id}" 
         end
       end
 
       if going_into_stamp
-        # Add `sleep 0.1` in case this sxhkd is holding the key event:
-        # https://bbs.archlinux.org/viewtopic.php?pid=2020445#p2020445
         run "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
       else
         # This compensates for a bug in SMplayer
