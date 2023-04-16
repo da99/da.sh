@@ -47,6 +47,7 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd repo is clean"
     echo "$cmd repo list dirty"
     echo "$cmd repo list"
+    echo "$cmd repo cmd [my cmd with args]"
     echo
     echo "$cmd wallpaper loop (cmd)"
     echo
@@ -431,6 +432,15 @@ case "$(echo "$@" | xargs)" in
       echo "$HOME"
     fi
     find -L /apps /media-lib -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
+    ;;
+
+  "repo cmd "*)
+    shift
+    shift
+    for x in $($0 repo list); do
+      cd "$x"
+      $@
+    done
     ;;
 
   "wallpaper loop "*)
