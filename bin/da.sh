@@ -68,6 +68,12 @@ case "$(echo "$@" | xargs)" in
         is_fine=""
       fi
     done
+    for x in 5 6 ; do
+      if test -e "/var/service/agetty-tty$x" ; then
+        is_fine=""
+        echo "--- sv down && rm /var/service/agetty-tty$x"
+      fi
+    done
     if test "$is_fine" = "yes" ; then
       echo "✔️ Everything setup."
     fi
