@@ -10,6 +10,7 @@ export TZ=:/etc/localtime
 export TERM='xterm-256color'
 
 
+export PATH="$HOME/my.bin:$PATH"
 fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
 export KEYTIMEOUT=1
