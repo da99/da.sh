@@ -82,6 +82,7 @@ source /progs/zsh-autosuggestions/zsh-autosuggestions.zsh
 alias .="git status"
 alias devcheck="git commit -m 'Development checkpoint.'"
 alias gc="git clone --depth 1"
+alias gtypo="git commit -am \"Typo.\""
 alias grep="grep --color=always"
 alias ls="exa -aF --icons --color=always --group-directories-first"
 # =================================================================
