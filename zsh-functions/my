@@ -11,13 +11,19 @@ fi
 dir="$1"
 if test -d "/apps/$dir"; then
   cd "/apps/$dir"
-else
-  if test -d "/apps/my_${dir}"; then
-    cd "/apps/my_${dir}"
-    return 0
-  else
-    echo "!!! Directory not found: /apps/$dir" >&2
-  fi
+  return 0
 fi
+
+if test -d "/media-lib/$dir"; then
+  cd "/media-lib/$dir"
+  return 0
+fi
+
+if test -d "/apps/my_${dir}"; then
+  cd "/apps/my_${dir}"
+  return 0
+fi
+
+echo "!!! Directory not found: /apps/$dir" >&2
 
 
