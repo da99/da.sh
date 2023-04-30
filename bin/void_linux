@@ -37,6 +37,13 @@ case "$@" in
     set -x
     sudo xbps-install -Su
     sudo xbps-remove -Oo
+    xbps-remove -yO
+    sudo xbps-remove -yo
+    sudo vkpurge rm all
+    cd /var/log
+    if test -f Xorg.0.log.old
+      sudo rm Xorg.0.log.old
+    fi
     ;;
 
   "hud available packages")
