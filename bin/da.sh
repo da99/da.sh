@@ -436,11 +436,11 @@ case "$(echo "$@" | xargs)" in
   "repo list")
     {
       test -e "$HOME/.git" && echo "$HOME" || :
-      dirs="/apps"
+      dirs=( /apps )
       if test -e /media-lib ; then
-        dirs="$dirs /media-lib"
+        dirs+=(/media-lib)
       fi
-      find -L $dirs -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
+      find -L ${dirs[@]} -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
     } | sort
     ;;
 
