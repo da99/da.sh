@@ -41,7 +41,7 @@ case "$@" in
     sudo xbps-remove -yo
     sudo vkpurge rm all
     cd /var/log
-    if test -f Xorg.0.log.old
+    if test -f Xorg.0.log.old ; then
       sudo rm Xorg.0.log.old
     fi
     ;;
