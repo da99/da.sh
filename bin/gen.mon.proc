@@ -8,9 +8,6 @@ puts "#{$PROGRAM_NAME} pid #{Process.pid}"
 Signal.trap("INT") { Process.kill("INT", pid) if pid }
 Signal.trap("TERM") { Process.kill("INT", pid) if pid }
 
-def reload_genmon(id)
-end
-
 cmd  = ARGV.dup
 genmon = cmd.shift
 puts cmd.inspect
