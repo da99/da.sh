@@ -415,9 +415,6 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "repo is clean")
-    if ! test -d .git ; then
-      exit 1
-    fi
     test -z "$(git status --porcelain --ignore-submodules)" && [[ "$(git status)" = *"Your branch is up to date with 'origin/"* ]]
     ;;
 
