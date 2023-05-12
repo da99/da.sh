@@ -161,12 +161,12 @@ class Window
       if going_into_stamp
         run "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
       else
-        # This compensates for a bug in SMplayer
-        # that does not render the window properly if
-        # monitors have been switched
-        # or monitor comes back from sleep.
         c = DE.window_border
-        run "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
+        if d == Left
+          run "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y},#{d.w},#{d.h}"
+        else
+          run "wmctrl -i -r #{win_id} -e 0,#{d.x + c},#{d.y + c},#{d.w},#{d.h}"
+        end
       end
     else
       run "wmctrl -i -r #{win_id} -e 0,#{d.x},#{d.y},#{d.w},#{d.h}"
