@@ -6,6 +6,13 @@ set -u -e -x
 # exec > /tmp/nhk_high.txt
 # exec 2>&1
 
+set -x
+count=0
+while test "$count" -lt 5 && ! ping -W 3 -c 1 8.8.8.8 ; do
+  sleep 5
+  count=$(( count + 1 ))
+done
+
 # M3U8="https://nhkwlive-xjp.akamaized.net/hls/live/2003458/nhkwlive-xjp-en/index_1M.m3u8"
 echo "=== Starting @ $(date) in $PWD:"
 exec streamlink       \
