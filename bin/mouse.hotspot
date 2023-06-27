@@ -52,10 +52,18 @@ case "$action" in
   #   notify-send "Mouse.location: bottom_edge" "No action set."
   #   ;;
   left_edge)
-    xdotool key --clearmodifiers Alt_L+Left
+    if xtitle | grep " - YouTube " ; then
+      true
+    else
+      xdotool key --clearmodifiers Alt_L+Left
+    fi
     ;;
   right_edge)
-    xdotool key --clearmodifiers Alt_L+Right
+    if xtitle | grep " - YouTube " ; then
+      true
+    else
+      xdotool key --clearmodifiers Alt_L+Right
+    fi
     ;;
   *)
     notify-send "!!! Unknown Action:" "$action"
