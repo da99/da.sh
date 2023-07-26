@@ -46,12 +46,18 @@ case "$@" in
     sudo xbps-remove -Oo
     xbps-remove -yO
     sudo xbps-remove -yo
-    sudo vkpurge rm all
-    set +x
+    efi_usage="$(df | grep --color=never "% /boot/efi" | tr -s ' ' | cut -d' ' -f5 | tr -d '%')"
     cd /var/log
     if test -f Xorg.0.log.old ; then
       sudo rm Xorg.0.log.old
     fi
+    if test "$efi_usage" -gt 45 ; then
+      sudo vkpurge rm all
+    else
+      set +x
+      echo "--- Skipping vkpurge because /boot/efi is at ${efi_usage}% used."
+    fi
+    set +x
     ;;
 
   "hud available packages")
