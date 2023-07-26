@@ -15,6 +15,17 @@ case "$@" in
     echo "       Installs and activates the chrony service"
     ;;
 
+  setup)
+    cd /etc/modprobe.d
+    if rg "options btusb enable_autosuspend=0" >/dev/null ; then
+      echo "--- Bluetooth auto-suspend has been disable." >&2
+    else
+      echo "!!! Disable Bluetooth auto-suspend." >&2
+      echo "echo \"options btusb enable_autosuspend=0\" | sudo tee /etc/modprobe.d/disable_btusb-autosuspend.conf" >&2
+      exit 1
+    fi
+    ;;
+
   "install time")
     if test -e /var/service/openntpd ; then
       echo "!!! REMOVE openntpd first." >&2
