@@ -16,8 +16,7 @@ case "$@" in
     ;;
 
   setup)
-    cd /etc/modprobe.d
-    if rg "options btusb enable_autosuspend=0" >/dev/null ; then
+    if rg "options btusb enable_autosuspend=0" /etc/modprobe.d >/dev/null ; then
       echo "--- Bluetooth auto-suspend has been disable." >&2
     else
       echo "!!! Disable Bluetooth auto-suspend." >&2
