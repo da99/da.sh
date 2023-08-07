@@ -30,12 +30,12 @@ case "$@" in
       echo "!!! REMOVE openntpd first." >&2
       exit 1
     fi
-    if ! which chrony ; then
-      sudo xbps-install -S chrony
+    which chronyd || sudo xbps-install -S chrony
+    if test -e /var/service/chronyd ; then
+      echo "--- Chronyd already installed" >&2
+      exit 0;
     fi
-    if ! test -e /var/service/chronyd ; then
-      sudo ln -s /etc/sv/chronyd /var/service/
-    fi
+    sudo ln -s /etc/sv/chronyd /var/service/
     stat /var/service/chronyd
     ;;
 
