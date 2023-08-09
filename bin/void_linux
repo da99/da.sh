@@ -30,13 +30,45 @@ case "$@" in
       echo "!!! REMOVE openntpd first." >&2
       exit 1
     fi
-    if ! which chrony ; then
-      sudo xbps-install -S chrony
+    which chronyd || sudo xbps-install -S chrony
+    if test -e /var/service/chronyd ; then
+      echo "--- Chronyd already installed" >&2
+      exit 0;
     fi
-    if ! test -e /var/service/chronyd ; then
-      sudo ln -s /etc/sv/chronyd /var/service/
-    fi
+    sudo ln -s /etc/sv/chronyd /var/service/
     stat /var/service/chronyd
+    ;;
+
+  "list packages")
+    if command -v xbps-install >/dev/null; then
+      cd "$(dirname "$0")"/..
+      cat config/void.packages.txt | tr '\n' ' '
+    else
+      lsb_release -a
+      exit 1
+    fi
+    ;;
+
+  "list packages devel")
+    if command -v xbps-install >/dev/null; then
+      cd "$(dirname "$0")"/..
+      cat config/void.packages.devel.txt | tr '\n' ' '
+    else
+      lsb_release -a
+      exit 1
+    fi
+    ;;
+
+  "install packages")
+    cd "$(dirname "$0")"/..
+    set -x
+    sudo xbps-install -S $("$0" list packages | tr '\n' ' ')
+    ;;
+
+  "install packages devel")
+    cd "$(dirname "$0")"/..
+    set -x
+    sudo xbps-install -S $("$0" list packages devel | tr '\n' ' ')
     ;;
 
   "upgrade void-packages")
@@ -56,7 +88,16 @@ case "$@" in
     sudo xbps-remove -Oo
     xbps-remove -yO
     sudo xbps-remove -yo
-    efi_usage="$(df | grep --color=never "% /boot/efi" | tr -s ' ' | cut -d' ' -f5 | tr -d '%')"
+    "$0" cleanup /boot/efi
+    ;;
+
+  "cleanup /boot/efi")
+    df_usage="$(df | grep --color=never "% /boot/efi" || : )"
+    if test -z "$df_usage" ; then
+      echo "--- Skipping cleaning /boot/efi. Not found." >&2
+      exit 0
+    fi
+    efi_usage="$(echo "$df_usage" | tr -s ' ' | cut -d' ' -f5 | tr -d '%')"
     cd /var/log
     if test -f Xorg.0.log.old ; then
       sudo rm Xorg.0.log.old
