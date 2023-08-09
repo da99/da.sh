@@ -49,11 +49,26 @@ when "watch"
   while true
     batt = Battery.new
     if batt.discharging? && batt.to_number < 25
-      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg --urgency=critical "Battery" "Plug in charger: #{batt.to_number}%"`
-      sleep(60 * 3)
-    else
+      if batt.to_number < 12
+        `loginctl suspend`
+        next
+      end
+
+      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg --urgency=critical "Battery!" "Plug in charger: #{batt.to_number}%"`
+      if batt.to_number < 15
+        sleep(60)
+        next
+      end
+
       sleep(60 * 5)
+      next
     end
+
+    if batt.charging? && batt.to_number > 95
+      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-full-charging.svg  "Battery Charged:" "Unplug charger: #{batt.to_number}%"`
+    end
+
+    sleep(60 * 5)
   end
 else
   raise "Unknown option: #{cmd}"
