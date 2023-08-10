@@ -8,7 +8,7 @@ colors:
   name: Alabaster
   author: tonsky
   primary:
-    background: "#F7F7F7"
+    background: "#ececec"
     foreground: "#434343"
   cursor:
     text: "#F7F7F7"
