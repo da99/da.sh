@@ -1,8 +1,9 @@
 git neovim zsh
+fd
 fish-shell ripgrep xtools tree htop bat trash-cli 
 inetutils bind-utils bmon lsof openssh 
 base-devel gcc libgcc libgcc-devel make 
-python-pip rust cargo ruby 
+python3-pip rust cargo ruby 
 upower 
 zip unzip exa fzf 
 rtx openssl-devel zlib-devel libyaml libyaml-devel gmp gmp-devel ncurses-devel libffi-devel gdbm-devel libuuid-devel 

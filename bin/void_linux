@@ -7,6 +7,7 @@ case "$@" in
   -h|--help|help)
     cmd="$(basename "$0")"
     echo "  $cmd hud available packages"
+    echo "  $cmd [list|install] packages [devel]"
     echo "  $cmd upgrade packages"
     echo "  $cmd upgrade void-packages"
     echo "     Updates /progs/void-packages"
