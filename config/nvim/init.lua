@@ -367,6 +367,11 @@ require('mini.pairs').setup()
 require('mini.comment').setup()
 require('mini.bracketed').setup()
 cmd(' highlight MiniTablineCurrent guibg=#000000 ')
+cmd(' highlight MiniTablineHidden guibg=#282c34 ')
+cmd(' highlight MiniTablineModifiedCurrent guibg=#e8ad00 guifg=#000000 ')
+cmd(' highlight MiniTablineModifiedVisible guibg=#7f5e36 guifg=#000000 ')
+cmd(' highlight MiniTablineModifiedHidden guibg=#7f5e36 guifg=#000000 ')
+
 local hipatterns = require('mini.hipatterns')
 hipatterns.setup({
   highlighters = {
