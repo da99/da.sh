@@ -516,6 +516,20 @@ case "$(echo "$@" | xargs)" in
       # echo "!!! Already installed." >&2
     ;;
 
+  "setup nvim")
+    mkdir -p /progs/tmp/nvim
+
+    if ! test -e $HOME/.config/nvim ; then
+      ln -s /apps/da.sh/config/nvim $HOME/.config/
+    fi
+    echo "--- Installing OS packages:" >&2
+    void_linux install packages devel
+    echo "--- Installing nvim packages:" >&2
+    nvim --headless -u NONE -c 'lua require("bootstrap").headless_paq()'
+    echo ""
+    echo "--- Done setting up nvim. ----" >&2
+  ;;
+
   *)
     "$THIS_NODE_RB" $@
     ;;
