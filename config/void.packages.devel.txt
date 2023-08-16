@@ -9,3 +9,4 @@ zip unzip exa fzf
 rtx openssl-devel zlib-devel libyaml libyaml-devel gmp gmp-devel ncurses-devel libffi-devel gdbm-devel libuuid-devel 
 wget curl 
 xmirror lazygit
+tree-sitter tree-sitter-devel
