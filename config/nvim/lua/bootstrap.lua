@@ -8,8 +8,8 @@
     end
   end
 
-  local function headless_paq()
-     local packages = {
+  local function packages()
+     return {
       "savq/paq-nvim", -- let paq manage itself
       "rktjmp/lush.nvim",
       "uloco/bluloco.nvim",
@@ -18,6 +18,10 @@
       -- 'nathom/filetype.nvim',
       -- 'simrat39/symbols-outline.nvim',
       "vim-crystal/vim-crystal",
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+
+      "folke/noice.nvim",
 
       -- Terminal-related:
       'kassio/neoterm',
@@ -45,14 +49,15 @@
       'nvim-telescope/telescope.nvim',
 
       -- tree-sitter
-      { 'nvim-treesitter/nvim-treesitter', run = ':TSupdate' },
+      { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
 
       -- Neo-tree
       "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
       { "nvim-neo-tree/neo-tree.nvim", branch = "v3.x", }
     }
+  end -- function
 
+  local function headless_paq()
     local first_install = clone_paq()
     vim.cmd.packadd("paq-nvim")
     local paq = require("paq")
@@ -63,13 +68,18 @@
     -- Set to exit nvim after installing plugins
     vim.cmd("autocmd User PaqDoneInstall quit")
     -- Read and install packages
-    paq(packages)
+    paq(packages())
     paq.clean()
     paq.update()
     paq.install()
     -- paq.sync()
+  end -- function
+
+  local function paq_packages()
+    return require('paq')(packages())
   end
 
   return {
     headless_paq = headless_paq,
+    paq_packages = paq_packages
   }

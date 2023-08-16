@@ -239,6 +239,12 @@ function tmp_run_filename(i)
   return vim.fn.substitute(raw_filename, '\\W\\+$', '' , '' )
 end
 
+function bootstrap()
+  local bs = require('bootstrap')
+  bs.paq_packages()
+  return require('paq')
+end -- function
+
 for i = 1, 3 do
   set_keymap('n', '<Leader>' .. i .. i, ":Topen<CR>:T da.sh run tmp/run " .. i .. "<CR>", {noremap=true})
   set_keymap( 'n', '<Leader>' .. i .. 'e', ":lua tmp_run_edit(" .. i .. ")<CR>", {noremap=true})
