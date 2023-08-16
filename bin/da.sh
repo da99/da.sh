@@ -23,7 +23,7 @@ case "$(echo "$@" | xargs)" in
     echo "       Waits 5 seconds and shuts off monitor."
     echo "$cmd all screens tear free"
     echo "       Waits 2 seconds and shuts off monitor."
-    echo "$cmd new zsh [new/file]"
+    echo "$cmd new zsh|ruby|tmp/run [new/file/path.ext]"
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
     echo
@@ -58,6 +58,10 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd pipewire install"
     echo
     echo "$cmd install obsidian theme"
+
+    echo
+    echo "$cmd mount sshfs [ssh:/point] [mount point]"
+    echo "$cmd filename|run tmp/run 1|2|3"
     ;;
 
   "check fs")
@@ -324,7 +328,33 @@ case "$(echo "$@" | xargs)" in
   ;;
   # ----------------------------------------------------------------
 
-  "new zsh "*|"new ruby "*)
+  "run tmp/run "*)
+    local filename="$("$0" filename tmp/run $3)"
+    test -n "$filename"
+    exec "$filename"
+  ;;
+
+  "filename tmp/run "*)
+    local file_name="run.${3}.sh"
+    local git_dir="$(git rev-parse --show-toplevel 2>/dev/null || : )"
+
+    if test -z "$git_dir" ; then
+      local tmp_dir="/tmp/tmp-run"
+      file_name="${PWD//\//.}.${file_name}"
+      mkdir -p "$tmp_dir"
+      full_name="${tmp_dir}/${file_name}"
+    else
+      local tmp_dir="${git_dir}/tmp"
+      mkdir -p "$tmp_dir"
+
+      full_name="${tmp_dir}/${file_name}"
+    fi
+
+    da.sh new tmp/run "$full_name" 2>/dev/null
+    echo  "$full_name"
+  ;;
+
+  "new zsh "*|"new ruby "*|"new tmp/run "*)
     this_bin="${0:a:h}/.."
     da_bin="${this_bin}/.."
     file_type="$2"
@@ -338,6 +368,9 @@ case "$(echo "$@" | xargs)" in
     case "$file_type" in
       zsh)
         cp -i "${this_bin}/templates/script.zsh" "$new_file"
+        ;;
+      "tmp/run")
+        cp -i "${this_bin}/templates/tmp.run.zsh" "$new_file"
         ;;
       ruby)
         cp -i "${this_bin}/templates/script.rb" "$new_file"
@@ -515,6 +548,51 @@ case "$(echo "$@" | xargs)" in
     done < <(find . -type d -maxdepth 1 -mindepth 1 -name "Obsidian*")
       # echo "!!! Already installed." >&2
     ;;
+
+  "setup nvim")
+    mkdir -p /progs/tmp/nvim
+
+    if ! test -e $HOME/.config/nvim ; then
+      ln -s /apps/da.sh/config/nvim $HOME/.config/
+    fi
+    echo "--- Installing OS packages:" >&2
+    void_linux install packages devel
+    echo "--- Installing nvim packages:" >&2
+    nvim --headless -u NONE -c 'lua require("bootstrap").headless_paq()'
+    echo ""
+    echo "--- Done setting up nvim. ----" >&2
+  ;;
+
+"mount sshfs "*)
+  local ssh_point="$3"
+  local mpoint="$4"
+
+  mkdir -p "$mpoint"
+
+  cd "$mpoint"
+  # -o Ciphers=arcfour \
+  if mountpoint -q "$mpoint" ; then
+    echo "--- Mounted: $mpoint" >&2
+    notify-send "Already mounted:" "$mpoint"
+    exit 0
+  fi
+
+  set -x
+  sshfs \
+    -o cache=yes \
+    -o kernel_cache \
+    -o reconnect \
+    -o idmap=user \
+    -o Ciphers=aes128-ctr \
+    -o Compression=no     \
+    -o ServerAliveCountMax=2 \
+    -o ServerAliveInterval=15 \
+    "$ssh_point" "$mpoint" &&
+    notify-send "Mounted:" "$mpoint" || {
+      notify-send "Error:" "Failed mounting $mpoint ($ssh_point)"
+      exit 1
+    }
+  ;;
 
   *)
     "$THIS_NODE_RB" $@
