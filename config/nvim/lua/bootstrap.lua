@@ -19,6 +19,9 @@
       -- 'simrat39/symbols-outline.nvim',
       "vim-crystal/vim-crystal",
 
+      -- Terminal-related:
+      'kassio/neoterm',
+
       -- Common:
       'nvim-lua/plenary.nvim',
       'nvim-tree/nvim-web-devicons',

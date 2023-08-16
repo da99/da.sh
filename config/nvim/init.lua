@@ -16,9 +16,11 @@ local lsp        = vim.lsp
 -- }
 -- require('filetype').setup({})
 
-g.indentLine_char                = '┊'
-g.indentLine_setColors           = 0
+g.indentLine_char         = '┊'
+g.indentLine_setColors    = 0
 g.mapleader               = ' '
+g.neoterm_autoscroll = 1
+g.neoterm_shell = 'zsh'
 
 if is_256 then
   -- require('lspconfig')
@@ -228,11 +230,20 @@ set_keymap('n', '__', '<CMD>:cprevious<CR>', {})
 -- " ===============================================
 -- " Dev:
 -- " ===============================================
-for i = 1, 3 do
-  set_keymap('n', '<Leader>' .. i .. 'e', ":! da.sh sh tmp/run." .. i .. ".sh<CR><CR>:e tmp/run." ..  i .. ".sh<CR>G", {noremap=true})
-  set_keymap('n', '<Leader>' .. i .. i, ":lua local f = require('FTerm'); f.toggle(); vim.defer_fn(function () f.run(vim.fn.getcwd() .. '/tmp/run." .. i .. ".sh'); end, 450); <CR>", {noremap=true})
+function tmp_run_edit(i)
+  return vim.cmd.edit(tmp_run_filename(i))
 end
-set_keymap('n', '<Leader>pp', ':lua print(vim.inspect())<Left><Left>', {})
+
+function tmp_run_filename(i)
+  local raw_filename = vim.fn.system('da.sh filename tmp/run ' .. i )
+  return vim.fn.substitute(raw_filename, '\\W\\+$', '' , '' )
+end
+
+for i = 1, 3 do
+  set_keymap('n', '<Leader>' .. i .. i, ":Topen<CR>:T da.sh run tmp/run " .. i .. "<CR>", {noremap=true})
+  set_keymap( 'n', '<Leader>' .. i .. 'e', ":lua tmp_run_edit(" .. i .. ")<CR>", {noremap=true})
+end
+set_keymap('n', '<Leader>pp', ':lua print(vim.inspect())<Left><Left>', {noremap=true})
 
 -- ===============================================
 -- Buffers:
@@ -315,15 +326,15 @@ end
 -- =============================================================================
 
 -- =============================================================================
-cmd([[
-  augroup my_defaults
-    autocmd!
-    autocmd TermOpen * IndentLinesDisable | startinsert
-    autocmd TermClose * if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif
-    autocmd BufNewFile,BufRead *.njk, set ft=jinja
-    autocmd BufRead,BufNewFile *.xdefaults setfiletype xdefaults
-  augroup END
-]])
+-- cmd([[
+--   augroup my_defaults
+--     autocmd!
+--     autocmd TermOpen * IndentLinesDisable | startinsert
+--     autocmd TermClose * if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif
+--     autocmd BufNewFile,BufRead *.njk, set ft=jinja
+--     autocmd BufRead,BufNewFile *.xdefaults setfiletype xdefaults
+--   augroup END
+-- ]])
 -- =============================================================================
 
 -- ===============================================

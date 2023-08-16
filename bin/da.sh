@@ -23,7 +23,7 @@ case "$(echo "$@" | xargs)" in
     echo "       Waits 5 seconds and shuts off monitor."
     echo "$cmd all screens tear free"
     echo "       Waits 2 seconds and shuts off monitor."
-    echo "$cmd new zsh [new/file]"
+    echo "$cmd new zsh|ruby|tmp/run [new/file/path.ext]"
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
     echo
@@ -61,6 +61,7 @@ case "$(echo "$@" | xargs)" in
 
     echo
     echo "$cmd mount sshfs [ssh:/point] [mount point]"
+    echo "$cmd filename|run tmp/run 1|2|3"
     ;;
 
   "check fs")
@@ -327,7 +328,33 @@ case "$(echo "$@" | xargs)" in
   ;;
   # ----------------------------------------------------------------
 
-  "new zsh "*|"new ruby "*)
+  "run tmp/run "*)
+    local filename="$("$0" filename tmp/run $3)"
+    test -n "$filename"
+    exec "$filename"
+  ;;
+
+  "filename tmp/run "*)
+    local file_name="run.${3}.sh"
+    local git_dir="$(git rev-parse --show-toplevel 2>/dev/null || : )"
+
+    if test -z "$git_dir" ; then
+      local tmp_dir="/tmp/tmp-run"
+      file_name="${PWD//\//.}.${file_name}"
+      mkdir -p "$tmp_dir"
+      full_name="${tmp_dir}/${file_name}"
+    else
+      local tmp_dir="${git_dir}/tmp"
+      mkdir -p "$tmp_dir"
+
+      full_name="${tmp_dir}/${file_name}"
+    fi
+
+    da.sh new tmp/run "$full_name" 2>/dev/null
+    echo  "$full_name"
+  ;;
+
+  "new zsh "*|"new ruby "*|"new tmp/run "*)
     this_bin="${0:a:h}/.."
     da_bin="${this_bin}/.."
     file_type="$2"
@@ -341,6 +368,9 @@ case "$(echo "$@" | xargs)" in
     case "$file_type" in
       zsh)
         cp -i "${this_bin}/templates/script.zsh" "$new_file"
+        ;;
+      "tmp/run")
+        cp -i "${this_bin}/templates/tmp.run.zsh" "$new_file"
         ;;
       ruby)
         cp -i "${this_bin}/templates/script.rb" "$new_file"
