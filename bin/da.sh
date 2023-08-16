@@ -58,6 +58,9 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd pipewire install"
     echo
     echo "$cmd install obsidian theme"
+
+    echo
+    echo "$cmd mount sshfs [ssh:/point] [mount point]"
     ;;
 
   "check fs")
@@ -528,6 +531,37 @@ case "$(echo "$@" | xargs)" in
     nvim --headless -u NONE -c 'lua require("bootstrap").headless_paq()'
     echo ""
     echo "--- Done setting up nvim. ----" >&2
+  ;;
+
+"mount sshfs "*)
+  local ssh_point="$3"
+  local mpoint="$4"
+
+  mkdir -p "$mpoint"
+
+  cd "$mpoint"
+  # -o Ciphers=arcfour \
+  if mountpoint -q "$mpoint" ; then
+    echo "--- Mounted: $mpoint" >&2
+    notify-send "Already mounted:" "$mpoint"
+    exit 0
+  fi
+
+  set -x
+  sshfs \
+    -o cache=yes \
+    -o kernel_cache \
+    -o reconnect \
+    -o idmap=user \
+    -o Ciphers=aes128-ctr \
+    -o Compression=no     \
+    -o ServerAliveCountMax=2 \
+    -o ServerAliveInterval=15 \
+    "$ssh_point" "$mpoint" &&
+    notify-send "Mounted:" "$mpoint" || {
+      notify-send "Error:" "Failed mounting $mpoint ($ssh_point)"
+      exit 1
+    }
   ;;
 
   *)

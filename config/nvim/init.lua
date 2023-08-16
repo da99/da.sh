@@ -23,6 +23,7 @@ g.mapleader               = ' '
 if is_256 then
   -- require('lspconfig')
   local util = require 'lspconfig.util'
+  require'lspconfig'.jsonls.setup{}
   require'lspconfig'.crystalline.setup{
   }
   require'lspconfig'.denols.setup{
