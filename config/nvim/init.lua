@@ -9,11 +9,25 @@ local env        = vim.env
 local is_256     = env.TERM == "xterm-256color"
 local lsp        = vim.lsp
 
+-- require "paq" {
+--   'nathom/filetype.nvim',
+--   'simrat39/symbols-outline.nvim',
+--   "vim-crystal/vim-crystal",
+-- }
+-- require('filetype').setup({})
+
 g.indentLine_char                = '┊'
 g.indentLine_setColors           = 0
 g.mapleader               = ' '
 
 if is_256 then
+  -- require('lspconfig')
+  local util = require 'lspconfig.util'
+  require'lspconfig'.crystalline.setup{
+  }
+  require'lspconfig'.denols.setup{
+    root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
+  }
   set.termguicolors = true
   g.rg_highlight                   = true -- Highlight :Rg results
   g.rg_command                     = "rg --vimgrep --hidden -g '!.git/'"
@@ -178,7 +192,7 @@ set_keymap('n', '<Leader><TAB>', '<CMD>tabnext<CR>', {noremap=true, silent=true}
 set_keymap('n', '<Leader>ol', '<CMD>:call ToggleLocationList()<CR>', {})
 set_keymap('n', '<Leader>op', '<CMD>:call ToggleQuickfixList()<CR>', {})
 
-set_keymap('n', '<Leader>ee', '<CMD>NvimTreeFindFileToggle<CR>', {})
+set_keymap('n', '<Leader>ee', '<CMD>Neotree<CR>', {})
 
 set_keymap('n', '<Leader>bb', '<CMD>bnext<CR>', {})
 set_keymap('n', '<Leader>bd', ':Bdelete menu<CR>', {silent = true})
@@ -392,21 +406,31 @@ local telescope = require('telescope')
 telescope.setup()
 telescope.load_extension('fzf')
 
+require('gitsigns').setup()
+-- require("symbols-outline").setup()
 
+-- =============================================================================
+-- Mason.nvim
+-- =============================================================================
+require('mason').setup()
+require("mason-lspconfig").setup()
+
+-- require("filetype").setup({})
+
+-- =============================================================================
 if true then
   return 0
 end
-
-
+-- =============================================================================
 
 -- =============================================================================
-require("filetype").setup({
-  overrides = {
-    extensions = {
-      cr = "crystal"
-    }
-  }
-})
+-- require("filetype").setup({
+--   overrides = {
+--     extensions = {
+--       cr = "crystal"
+--     }
+--   }
+-- })
 -- =============================================================================
 
 -- =============================================================================

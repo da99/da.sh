@@ -15,6 +15,18 @@
       "uloco/bluloco.nvim",
       'tpope/vim-sensible',
       'folke/which-key.nvim',
+      -- 'nathom/filetype.nvim',
+      -- 'simrat39/symbols-outline.nvim',
+      "vim-crystal/vim-crystal",
+
+      -- Common:
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons',
+      'neovim/nvim-lspconfig',
+
+      -- Mason.nvim
+      'williamboman/mason.nvim',
+      'williamboman/mason-lspconfig.nvim',
 
       -- mini statusline
       'lewis6991/gitsigns.nvim',
@@ -22,9 +34,7 @@
       { 'echasnovski/mini.nvim', branch = 'main' },
 
       -- telescope
-      'nvim-lua/plenary.nvim',
       'burntsushi/ripgrep',
-      'nvim-tree/nvim-web-devicons',
       {
         'nvim-telescope/telescope-fzf-native.nvim',
         run = 'make'
@@ -32,8 +42,12 @@
       'nvim-telescope/telescope.nvim',
 
       -- tree-sitter
-      { 'nvim-treesitter/nvim-treesitter', run = ':tsupdate' },
-      -- List your packages
+      { 'nvim-treesitter/nvim-treesitter', run = ':TSupdate' },
+
+      -- Neo-tree
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      { "nvim-neo-tree/neo-tree.nvim", branch = "v3.x", }
     }
 
     local first_install = clone_paq()
