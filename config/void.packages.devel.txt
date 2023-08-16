@@ -10,3 +10,4 @@ rtx openssl-devel zlib-devel libyaml libyaml-devel gmp gmp-devel ncurses-devel l
 wget curl
 xmirror lazygit
 tree-sitter tree-sitter-devel
+fuse-sshfs
