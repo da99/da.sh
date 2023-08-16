@@ -24,11 +24,19 @@ if is_256 then
   -- require('lspconfig')
   local util = require 'lspconfig.util'
   require'lspconfig'.jsonls.setup{}
-  require'lspconfig'.crystalline.setup{
-  }
+  require'lspconfig'.bashls.setup{}
+  require'lspconfig'.crystalline.setup{}
+  require'lspconfig'.cssls.setup{}
+
+  -- =============================================================================
+  -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
+  -- NOTE: To appropriately highlight codefences returned from denols:
+  vim.g.markdown_fenced_languages = { "ts=typescript" }
   require'lspconfig'.denols.setup{
     root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
   }
+  -- =============================================================================
+
   set.termguicolors = true
   g.rg_highlight                   = true -- Highlight :Rg results
   g.rg_command                     = "rg --vimgrep --hidden -g '!.git/'"
