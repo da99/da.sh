@@ -21,8 +21,6 @@
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
 
-      "folke/noice.nvim",
-
       -- Terminal-related:
       'kassio/neoterm',
 
@@ -34,6 +32,7 @@
       -- Mason.nvim
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
+      'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- mini statusline
       'lewis6991/gitsigns.nvim',
@@ -75,11 +74,42 @@
     -- paq.sync()
   end -- function
 
+  local function headless_mason()
+    require("mason").setup()
+    vim.cmd("MasonUpdate")
+    local mti = require('mason-tool-installer')
+    mti.setup {
+      auto_update = true,
+      run_on_start = false,
+      start_delay = 0,
+      ensure_installed = {
+        "bash-language-server",
+        "crystalline",
+        "css-lsp",
+        "deno",
+        "json-lsp",
+        "lua-language-server",
+        "shellcheck"
+      }
+    }
+    vim.api.nvim_create_autocmd('User', {
+      pattern = 'MasonToolsUpdateCompleted',
+      callback = function(e)
+        vim.schedule(function()
+          print(vim.inspect(e.data)) -- print the table that lists the programs that were installed
+          vim.cmd("qall")
+        end)
+      end,
+    })
+    mti.check_install(true)
+  end -- function
+
   local function paq_packages()
     return require('paq')(packages())
   end
 
   return {
     headless_paq = headless_paq,
+    headless_mason = headless_mason,
     paq_packages = paq_packages
   }

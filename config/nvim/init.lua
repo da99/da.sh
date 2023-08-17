@@ -24,21 +24,6 @@ g.neoterm_shell = 'zsh'
 vim.opt.report = 1000 -- https://www.reddit.com/r/vim/comments/nk3xss/how_to_disable_messages_from_ypu/
 
 if is_256 then
-  -- require('lspconfig')
-  local util = require 'lspconfig.util'
-  require'lspconfig'.jsonls.setup{}
-  require'lspconfig'.bashls.setup{}
-  require'lspconfig'.crystalline.setup{}
-  require'lspconfig'.cssls.setup{}
-
-  -- =============================================================================
-  -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
-  -- NOTE: To appropriately highlight codefences returned from denols:
-  vim.g.markdown_fenced_languages = { "ts=typescript" }
-  require'lspconfig'.denols.setup{
-    root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
-  }
-  -- =============================================================================
 
   set.termguicolors = true
   g.rg_highlight                   = true -- Highlight :Rg results
@@ -440,30 +425,23 @@ require('gitsigns').setup()
 -- Mason.nvim
 -- =============================================================================
 require('mason').setup()
-require("mason-lspconfig").setup()
+require("mason-lspconfig").setup{}
+-- require('lspconfig')
+local util = require 'lspconfig.util'
+require'lspconfig'.jsonls.setup{}
+require'lspconfig'.bashls.setup{}
+require'lspconfig'.crystalline.setup{}
+require'lspconfig'.cssls.setup{}
 
--- =============================================================================
--- Noice:
--- =============================================================================
-require("noice").setup({
-  lsp = {
-    -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
-    override = {
-      ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-      ["vim.lsp.util.stylize_markdown"] = true,
-      ["cmp.entry.get_documentation"] = true,
-    },
-  },
-  -- you can enable a preset for easier configuration
-  presets = {
-    bottom_search = false, -- use a classic bottom cmdline for search
-    command_palette = true, -- position the cmdline and popupmenu together
-    long_message_to_split = true, -- long messages will be sent to a split
-    inc_rename = false, -- enables an input dialog for inc-rename.nvim
-    lsp_doc_border = false, -- add a border to hover docs and signature help
-  },
-})
--- =============================================================================
+  -- =============================================================================
+  -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
+  -- NOTE: To appropriately highlight codefences returned from denols:
+  vim.g.markdown_fenced_languages = { "ts=typescript" }
+  require'lspconfig'.denols.setup{
+    root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
+  }
+  -- =============================================================================
+
 
 -- =============================================================================
 if true then
