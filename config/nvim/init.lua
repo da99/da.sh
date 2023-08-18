@@ -30,28 +30,27 @@ if is_256 then
   g.rg_command                     = "rg --vimgrep --hidden -g '!.git/'"
 
   require("bluloco").setup({
-  style = "auto",               -- "auto" | "dark" | "light"
-  transparent = false,
-  italics = true,
-  terminal = vim.fn.has("gui_running") == 1, -- bluoco colors are enabled in gui terminals per default.
-  guicursor   = true,
+    style = "auto",  -- "auto" | "dark" | "light"
+    transparent = false,
+    italics = true,
+    terminal = vim.fn.has("gui_running") == 1, -- bluoco colors are enabled in gui terminals per default.
+    guicursor   = true,
   })
 
-  vim.opt.termguicolors = true
-    cmd([[
-      set cursorlineopt=number
-      set cursorline
-      set background=light
-      hi Search ctermbg=2    ctermfg=232    guibg=#000000  guifg=NONE  cterm=bold      gui=bold,italic
-      hi Pmenu  ctermbg=233  ctermfg=137    guibg=#D5D5D5  guifg=#171717  cterm=none      gui=NONE
-      hi PmenuSel guifg=#E5C078 guibg=#000000
-      hi PmenuThumb guibg=#C3A56A
-      hi NormalFloat guibg=#000000
-      hi Conceal guifg=#1E1E1E
-      " hi PmenuThumb      ctermbg=235  ctermfg=137    guibg=NONE     guifg=#171717  cterm=none      gui=none
-      highlight Comment cterm=italic gui=italic
-      " set guicursor+=n-v-c-sm:blinkon1
-    ]])
+  cmd([[
+    set cursorlineopt=number
+    set cursorline
+    set background=light
+    hi Search ctermbg=2    ctermfg=232    guibg=#000000  guifg=NONE  cterm=bold      gui=bold,italic
+    hi Pmenu  ctermbg=233  ctermfg=137    guibg=#D5D5D5  guifg=#171717  cterm=none      gui=NONE
+    hi PmenuSel guifg=#E5C078 guibg=#000000
+    hi PmenuThumb guibg=#C3A56A
+    hi NormalFloat guibg=#000000
+    hi Conceal guifg=#1E1E1E
+    " hi PmenuThumb      ctermbg=235  ctermfg=137    guibg=NONE     guifg=#171717  cterm=none      gui=none
+    highlight Comment cterm=italic gui=italic
+    " set guicursor+=n-v-c-sm:blinkon1
+  ]])
 
   if (fn.filereadable('/tmp/light.editor') == 1) then
     cmd([[
@@ -68,6 +67,9 @@ if is_256 then
       colorscheme bluloco
     ]])
   end
+  cmd([[
+    hi Search guifg=#FFFFFF
+  ]])
 end
 
 set.signcolumn  = "number"
@@ -709,3 +711,4 @@ require('mini.completion').setup({
 cmd(' autocmd! MiniCompletion InsertCharPre * ')
 -- =============================================================================
 
+-- #197046
