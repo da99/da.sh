@@ -21,6 +21,9 @@
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
 
+      -- Completion:
+      'folke/neodev.nvim',
+
       -- Terminal-related:
       'kassio/neoterm',
 
@@ -48,7 +51,7 @@
       'nvim-telescope/telescope.nvim',
 
       -- tree-sitter
-      { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
+      { 'nvim-treesitter/nvim-treesitter', run = function() vim.cmd 'TSUpdate' end },
 
       -- Neo-tree
       "nvim-lua/plenary.nvim",
@@ -65,13 +68,10 @@
     end
 
     -- Set to exit nvim after installing plugins
-    vim.cmd("autocmd User PaqDoneInstall quit")
+    vim.cmd("autocmd User PaqDoneSync quit")
     -- Read and install packages
     paq(packages())
-    paq.clean()
-    paq.update()
-    paq.install()
-    -- paq.sync()
+    paq:sync()
   end -- function
 
   local function headless_mason()
