@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+#
+#
+
+
+PORT=2112
+require "json"
+
+case ARGV.join(" ")
+when /^record next .+/
+  raw = `curl -sL https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
+  o = JSON.parse(raw)
+  time_now = Time.now.utc.to_i
+  shows = o["channel"]["item"]
+  pattern = ARGV[2..-1].join(" ")
+  STDERR.puts "Pattern: #{pattern.inspect}"
+  show = shows.find { |s|
+    title = "#{s["title"]} #{s["subtitle"]} #{s["description"]} #{"content"}"[/#{pattern}/i]
+    show_in_future = s["pubDate"].to_f > (time_now * 1000)
+    title && show_in_future
+  }
+  if show
+    STDERR.puts "#{show["title"]}"
+    show_starts = show["pubDate"].to_f / 1000
+    STDERR.puts "   at #{Time.at(show_starts).asctime}"
+    show_ends   = show["endDate"].to_f / 1000
+    time_to_start = (show_starts - time_now).to_i
+    show_has_ended = time_to_start < 0
+    if show_has_ended
+      STDERR.puts "!!! Show has ended."
+      exit 2
+    end
+    show_secs = begin
+                  secs = (show_ends - show_starts).to_i
+                  (secs < 61) ? 60 : secs
+                end
+    show_mins = (show_secs / 60).to_i
+    file_title = "nhk.#{show["seriesId"]}.#{show['airingId']}.#{show["title"].gsub(/[^a-zA-Z0-9\.\-]/, '.')}.mp4"
+    cmd = "curl --silent -o /play/Movies/#{file_title} --max-time #{show_secs + 60} http://localhost:#{PORT}"
+    STDERR.puts "Minutes to wait: #{(time_to_start/60)}"
+    STDERR.puts "Title:           #{file_title}"
+    STDERR.puts "Length in mins:  #{show_mins}"
+    STDERR.puts "At:              #{Time.at(show_starts).asctime}"
+    STDERR.puts "CMD:             #{cmd}"
+    timer = time_to_start
+    while timer > 120
+      STDERR.print "\r\e[K #{(timer/60).to_i} more minutes"
+      timer = timer - 60
+      sleep 60
+    end
+    sleep time_to_start - 10
+    system(cmd)
+  else
+    STDERR.puts "Not found."
+    exit 1
+  end
+when "inspect"
+  raw = `curl -sL https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
+  o = JSON.parse(raw)
+  puts o["channel"]["item"].first.keys.inspect
+else
+  STDERR.puts "Invalid arguments: #{ARGV.inspect}"
+  exit 1
+end # case
+

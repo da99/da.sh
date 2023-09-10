@@ -1,0 +1,19 @@
+#!/bin/env zsh
+
+PORT=2112
+
+for x in streamlink curl ; do
+  which "$x" || {
+    echo "!!! $x not installed." >&2
+    exit 1
+  }
+done
+
+set -x
+exec streamlink       \
+  --http-no-ssl-verify           \
+  --player-external-http          \
+  --player-external-http-port $PORT \
+  "https://www3.nhk.or.jp/nhkworld/en/live/"  best
+
+
