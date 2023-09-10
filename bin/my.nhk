@@ -1,13 +1,24 @@
 #!/usr/bin/env ruby
 #
 #
-
+require 'socket'
+require "json"
 
 PORT=2112
-require "json"
+
+
 
 case ARGV.join(" ")
 when /^record next .+/
+  is_open= nil
+  Socket.tcp("localhost", 2112, connect_timeout: 5) { |sock|
+    sock.close_write
+    is_open = true
+  }
+  if not is_open
+    STDERR.puts "!!! Stream is not open."
+    exit 1
+  end
   raw = `curl -sL https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
   o = JSON.parse(raw)
   time_now = Time.now.utc.to_i
