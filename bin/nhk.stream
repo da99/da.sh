@@ -1,5 +1,6 @@
 #!/bin/env zsh
 
+set -u -e -x
 PORT=2112
 
 for x in streamlink curl ; do
@@ -9,11 +10,20 @@ for x in streamlink curl ; do
   }
 done
 
+count=0
+while test "$count" -lt 60 && ! ping -W 3 -c 1 8.8.8.8 ; do
+  sleep 5
+  echo -n "."
+  count=$(( count + 1 ))
+done
+
+echo "=== Starting at $(date):"
 set -x
-exec streamlink       \
-  --http-no-ssl-verify           \
-  --player-external-http          \
+exec streamlink           \
+  --http-no-ssl-verify    \
+  --player-external-http  \
   --player-external-http-port $PORT \
-  "https://www3.nhk.or.jp/nhkworld/en/live/"  best
+  --default-stream best   \
+  nhk.or.jp/nhkworld  best
 
 
