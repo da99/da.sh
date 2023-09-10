@@ -10,7 +10,7 @@ set -x
 
 case "$action" in
   left_top_window_corner)
-    left_top_window_corner || notify-send "Error:" "left_top_window_corner"
+    left_top_window_corner || notify-send "Error:" "left_top_window_corner -> $?"
     ;;
 
   left_top_corner|left_top_edge)
