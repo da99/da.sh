@@ -1,29 +1,59 @@
-#!/bin/env zsh
+#!/bin/env bash
 
-set -u -e -x
-PORT=2112
+set -u -e
+stream_it () {
+  PORT="$1"
+  for x in streamlink curl ; do
+    which "$x" || {
+      echo "!!! $x not installed." >&2
+          exit 1
+        }
+      done
 
-for x in streamlink curl ; do
-  which "$x" || {
-    echo "!!! $x not installed." >&2
+      count=0
+      while test "$count" -lt 60 && ! ping -W 3 -c 1 8.8.8.8 ; do
+        sleep 5
+        echo -n "."
+        count=$(( count + 1 ))
+      done
+
+      echo "=== Starting at $(date):"
+      set -x
+      exec streamlink           \
+        --http-no-ssl-verify    \
+        --player-external-http  \
+        --player-external-http-port $PORT \
+        --default-stream best   \
+        nhk.or.jp/nhkworld  best
+} # stream_it
+
+default_port=2112
+record_port=2113
+case "$@" in
+  "-h"|help)
+    echo "$0        -> start stream on PORT $default_port"
+    echo "$0 record -> start record stream on PORT $record_port"
+    echo "$0 port   -> show PORT of stream"
+    echo "$0 record port -> show PORT of record stream"
+    ;;
+  "")
+    stream_it "$default_port"
+    ;;
+  record)
+    stream_it "$record_port"
+    ;;
+  port)
+    echo "$default_port"
+    ;;
+  "record port")
+    echo "$record_port"
+    ;;
+  *)
+    echo "!!! Unknown options: $*" >&2
     exit 1
-  }
-done
+    ;;
+esac
 
-count=0
-while test "$count" -lt 60 && ! ping -W 3 -c 1 8.8.8.8 ; do
-  sleep 5
-  echo -n "."
-  count=$(( count + 1 ))
-done
 
-echo "=== Starting at $(date):"
-set -x
-exec streamlink           \
-  --http-no-ssl-verify    \
-  --player-external-http  \
-  --player-external-http-port $PORT \
-  --default-stream best   \
-  nhk.or.jp/nhkworld  best
 
 

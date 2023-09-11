@@ -4,14 +4,118 @@
 require 'socket'
 require "json"
 
-PORT=2112
+PORT=`nhk.stream record port`.strip
 
+class Show
 
+  class << self
+    def list
+      raw = `curl -sL https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
+      o = JSON.parse(raw)
+      o["channel"]["item"].map { |s| Show.new(s) }
+    end
+  end # class
+
+  attr_reader :raw
+
+  def initialize(show)
+    @raw = show
+    @now = nil
+  end
+
+  def now
+    Time.now.utc.to_i
+  end
+
+  def file_name
+    "nhk.#{seriesId}.#{airingId}.#{title.gsub(/[^a-zA-Z0-9\.\-]/, '.')}.mp4"
+  end
+
+  def seriesId
+    raw["seriesId"]
+  end
+
+  def airingId
+    raw["airingId"]
+  end
+
+  def start_time
+    raw["pubDate"].to_f / 1000
+  end
+
+  def end_time
+    raw["endDate"].to_f / 1000
+  end
+
+  def ended?
+    end_time < now
+  end
+
+  def started?
+    start_time < now
+  end
+
+  def running?
+    started? && !ended?
+  end
+
+  def seconds_length
+    end_time - start_time
+  end
+
+  def minutes_length
+    (seconds_length / 60).to_i
+  end
+
+  def seconds_to_begin
+    return 0 if started?
+    start_time - now
+  end
+
+  def minutes_to_begin
+    (seconds_to_begin / 60).to_i
+  end
+
+  def seconds_left
+     return (end_time - now) if running?
+     0
+  end
+
+  def minutes_left
+    (seconds_left / 60).to_i
+  end
+
+  def title
+    raw["title"]
+  end
+
+  def subtitle
+    (raw["subtitle"] || "").strip
+  end
+
+  def subtitle?
+    !subtitle.empty?
+  end
+
+  def full_title
+    return title unless subtitle?
+    "#{title}: #{subtitle}"
+  end
+
+  def description
+    raw["description"]
+  end
+
+  def content
+    raw["content"]
+  end
+
+end # class
 
 case ARGV.join(" ")
 when /^record next .+/
   is_open= nil
-  Socket.tcp("localhost", 2112, connect_timeout: 5) { |sock|
+  Socket.tcp("localhost", PORT, connect_timeout: 5) { |sock|
     sock.close_write
     is_open = true
   }
@@ -19,56 +123,46 @@ when /^record next .+/
     STDERR.puts "!!! Stream is not open."
     exit 1
   end
-  raw = `curl -sL https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
-  o = JSON.parse(raw)
-  time_now = Time.now.utc.to_i
-  shows = o["channel"]["item"]
+  shows = Show.list
   pattern = ARGV[2..-1].join(" ")
   STDERR.puts "Pattern: #{pattern.inspect}"
   show = shows.find { |s|
-    title = "#{s["title"]} #{s["subtitle"]} #{s["description"]} #{"content"}"[/#{pattern}/i]
-    show_in_future = s["pubDate"].to_f > (time_now * 1000)
-    title && show_in_future
+    !s.started? && "#{s.full_title} #{s.description} #{s.content}"[/#{pattern}/i]
   }
   if show
-    STDERR.puts "#{show["title"]}"
-    show_starts = show["pubDate"].to_f / 1000
-    STDERR.puts "   at #{Time.at(show_starts).asctime}"
-    show_ends   = show["endDate"].to_f / 1000
-    time_to_start = (show_starts - time_now).to_i
-    show_has_ended = time_to_start < 0
-    if show_has_ended
+    STDERR.puts "#{show.full_title}"
+    STDERR.puts "   at #{Time.at(show.start_time).asctime}"
+    if show.ended?
       STDERR.puts "!!! Show has ended."
       exit 2
     end
-    show_secs = begin
-                  secs = (show_ends - show_starts).to_i
-                  (secs < 61) ? 60 : secs
-                end
-    show_mins = (show_secs / 60).to_i
-    file_title = "nhk.#{show["seriesId"]}.#{show['airingId']}.#{show["title"].gsub(/[^a-zA-Z0-9\.\-]/, '.')}.mp4"
-    cmd = "curl --silent -o /play/Movies/#{file_title} --max-time #{show_secs + 60} http://localhost:#{PORT}"
-    STDERR.puts "Minutes to wait: #{(time_to_start/60)}"
-    STDERR.puts "Title:           #{file_title}"
-    STDERR.puts "Length in mins:  #{show_mins}"
-    STDERR.puts "At:              #{Time.at(show_starts).asctime}"
+    cmd = "curl --silent -o /play/Movies/#{show.file_name} --max-time #{show.seconds_length + 120} http://localhost:#{PORT}"
+    STDERR.puts "Minutes to wait: #{(show.minutes_to_begin)}"
+    STDERR.puts "Title:           #{show.file_name}"
+    STDERR.puts "Length in mins:  #{show.minutes_length}"
+    STDERR.puts "At:              #{Time.at(show.start_time).asctime}"
     STDERR.puts "CMD:             #{cmd}"
-    timer = time_to_start
-    while timer > 120
-      STDERR.print "\r\e[K #{(timer/60).to_i} more minutes"
-      timer = timer - 60
+    while show.minutes_to_begin > 1
+      STDERR.print "\r\e[K #{show.minutes_to_begin} more minutes (#{Time.now})"
       sleep 60
     end
-    sleep time_to_start - 10
+    STDERR.print "\r\e[K Recording @ #{Time.now}:\n"
     system(cmd)
   else
     STDERR.puts "Not found."
     exit 1
   end
+
+when "list"
+  Show.list.each { |show|
+    puts "#{show.minutes_to_begin} : #{show.full_title}"
+  }
+
 when "inspect"
-  raw = `curl -sL https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
-  o = JSON.parse(raw)
-  puts o["channel"]["item"].first.keys.inspect
+  Show.list.each { |r|
+    show = Show.new(r)
+    puts "#{show.running?} : #{show.minutes_left} : #{show.minutes_to_begin} #{show.title}"
+  }
 else
   STDERR.puts "Invalid arguments: #{ARGV.inspect}"
   exit 1
