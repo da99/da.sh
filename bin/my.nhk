@@ -60,7 +60,7 @@ class Show
   end
 
   def seconds_length
-    end_time - start_time
+    (end_time - start_time).to_i
   end
 
   def minutes_length
