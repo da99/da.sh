@@ -75,7 +75,7 @@ case "$@" in
   "upgrade void-packages")
     set -x
     cd /progs/void-packages
-    # git pull
+    git pull
     # https://github.com/void-linux/void-packages
     # xcheckmypkgs
     # ./xbps-src show-sys-updates
@@ -86,6 +86,7 @@ case "$@" in
 
   "upgrade packages")
     set -x
+    sudo xbps-install -u xbps
     sudo xbps-install -Su
     ;;
 
