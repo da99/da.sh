@@ -77,6 +77,8 @@ case "$@" in
     cd /progs/void-packages
     git pull
     xcheckmypkgs
+    ./xbps-src show-sys-updates
+    echo "? ./xbps-src update-sys"
     ;;
 
   "upgrade packages")
