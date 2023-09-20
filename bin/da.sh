@@ -62,6 +62,9 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd mount sshfs [ssh:/point] [mount point]"
     echo "$cmd filename|run tmp/run 1|2|3"
+
+    echo
+    echo "$cmd mobile-repos"
     ;;
 
   "check fs")
@@ -593,6 +596,15 @@ case "$(echo "$@" | xargs)" in
       notify-send "Error:" "Failed mounting $mpoint ($ssh_point)"
       exit 1
     }
+  ;;
+
+  mobile-repos)
+  echo /apps/alegria
+  echo /apps/da.sh
+  echo /apps/my_uni
+  echo /apps/my_dev01
+  echo /apps/my_bdrm
+  echo /apps/jaki.club
   ;;
 
   *)
