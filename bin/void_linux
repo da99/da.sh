@@ -73,12 +73,12 @@ case "$@" in
     ;;
 
   "upgrade void-packages")
-    set -x
     cd /progs/void-packages
-    # git pull
+    git pull
     # https://github.com/void-linux/void-packages
     # xcheckmypkgs
-    # ./xbps-src show-sys-updates
+    set -x
+    ./xbps-src show-sys-updates
     ./xbps-src show-local-updates
     ./xbps-src update-check nmap
     ./xbps-src update-check google-chrome
