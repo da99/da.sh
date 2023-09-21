@@ -1,0 +1,14 @@
+# From: http://www.tenshu.net/2012/02/sysadmin-talks-openssh-tips-and-tricks.html
+HashKnownHosts no
+# AddressFamily inet
+
+Host *
+  ForwardAgent no
+
+  # Ensure ssh-agent uses the right key for the host.
+  # If IdentitiesOnly is not used, it will offer each
+  # key to the host until it finds one.
+  IdentitiesOnly yes
+  AddKeysToAgent yes
+  PreferredAuthentications publickey,password
+
