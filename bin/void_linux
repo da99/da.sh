@@ -77,11 +77,14 @@ case "$@" in
     git pull
     # https://github.com/void-linux/void-packages
     # xcheckmypkgs
+    if which flatpak >/dev/null ; then
+      flatpak update
+    fi
     set -x
     ./xbps-src show-sys-updates
     ./xbps-src show-local-updates
     ./xbps-src update-check nmap
-    ./xbps-src update-check google-chrome
+    # ./xbps-src update-check google-chrome
     ;;
 
   "upgrade packages")
