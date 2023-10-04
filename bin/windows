@@ -405,7 +405,12 @@ class DE
             # focused.
 
           when /^_NET_ACTIVE_WINDOW/
-            win_id = hex_str(line.strip.split.last)
+            raw_id = line.strip.split.last
+            unless raw_id[/0x.+/]
+              STDERR.puts "--- Skipping: #{line.strip}"
+              next
+            end
+            win_id = hex_str(raw_id)
             win = DE.by_id(win_id)
 
             if !win
