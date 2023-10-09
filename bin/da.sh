@@ -23,7 +23,7 @@ case "$(echo "$@" | xargs)" in
     echo "       Waits 5 seconds and shuts off monitor."
     echo "$cmd all screens tear free"
     echo "       Waits 2 seconds and shuts off monitor."
-    echo "$cmd new zsh|ruby|tmp/run [new/file/path.ext]"
+    echo "$cmd new zsh|ruby|bash|tmp/run [new/file/path.ext]"
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
     echo
@@ -357,7 +357,7 @@ case "$(echo "$@" | xargs)" in
     echo  "$full_name"
   ;;
 
-  "new zsh "*|"new ruby "*|"new tmp/run "*)
+  "new zsh "*|"new ruby "*|"new bash "*|"new tmp/run "*)
     this_bin="${0:a:h}/.."
     da_bin="${this_bin}/.."
     file_type="$2"
@@ -371,6 +371,9 @@ case "$(echo "$@" | xargs)" in
     case "$file_type" in
       zsh)
         cp -i "${this_bin}/templates/script.zsh" "$new_file"
+        ;;
+      bash)
+        cp -i "${this_bin}/templates/script.bash" "$new_file"
         ;;
       "tmp/run")
         cp -i "${this_bin}/templates/tmp.run.zsh" "$new_file"

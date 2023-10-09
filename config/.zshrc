@@ -25,19 +25,6 @@ setopt appendhistory
 HISTORY_SUBSTRING_SEARCH_FUZZY="true"
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE="true"
 
-# https://jdhao.github.io/2019/06/13/zsh_bind_keys/
-bindkey -v # turn on VI bindings
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
-bindkey "^[[H" beginning-of-line
-bindkey "^[[F" end-of-line
-bindkey "^W" forward-word
-# bindkey '^[[1;5A' history-substring-search-up
-# bindkey '^[[1;5B' history-substring-search-down
-# bindkey "$terminfo[kcuu1]" history-substring-search-up
-# bindkey "$terminfo[kcud1]" history-substring-search-down
-# =================================================================
-
 
 setopt CORRECT # suggest correct commands
 setopt PROMPT_SUBST
@@ -110,4 +97,18 @@ if test -f /tmp/last.cd ;
 then
   builtin cd "$(cat /tmp/last.cd)"
 fi
+# =================================================================
+
+# Put bindings on last to prevent issues with Ubuntu:
+# https://jdhao.github.io/2019/06/13/zsh_bind_keys/
+bindkey -v # turn on VI bindings
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+bindkey "^[[H" beginning-of-line
+bindkey "^[[F" end-of-line
+bindkey "^W" forward-word
+# bindkey '^[[1;5A' history-substring-search-up
+# bindkey '^[[1;5B' history-substring-search-down
+# bindkey "$terminfo[kcuu1]" history-substring-search-up
+# bindkey "$terminfo[kcud1]" history-substring-search-down
 # =================================================================
