@@ -5,7 +5,7 @@ set -u -e -o pipefail
 
 THIS_DIR="$(dirname "$0")/.."
 THIS_NODE_RB="$THIS_DIR/src/node.rb"
-THIS_SRC="$THIS_DIR/src"
+# THIS_SRC="$THIS_DIR/src"
 
 case "$(echo "$@" | xargs)" in
   help|-h)
@@ -480,7 +480,7 @@ case "$(echo "$@" | xargs)" in
     shift
     while read -r line ; do
       echo "$line"
-      $@ || notify-send "Error:" "music snoop command: $@"
+      $* || notify-send "Error:" "music snoop command: $@"
     done < <( playerctl --follow --all-players status )
     ;;
 
@@ -587,19 +587,26 @@ case "$(echo "$@" | xargs)" in
     echo /apps/jaki.club
   ;;
 
+  "verbose run "*)
+    shift
+    shift
+    set -x
+    $*
+  ;;
   "ssh port "*)
     l_port="$3" # local port
     r_port="$4" # remote port
     r_name="$5" # remote name
     cmd="ssh -N -L $l_port:127.0.0.1:$r_port $r_name"
-    set -x
     if pgrep -a -f "$cmd" ; then
-      exit 1
+      notify-send "Already running:" "$cmd"
+    else
+      set -x
+      konsole --profile devrack -e da.sh verbose run $cmd
     fi
-    $cmd
   ;;
 
   *)
-    "$THIS_NODE_RB" $@
+    "$THIS_NODE_RB" $*
     ;;
 esac
