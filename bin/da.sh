@@ -547,6 +547,7 @@ case "$(echo "$@" | xargs)" in
   ;;
 
 "mount sshfs "*)
+  set -x
   ssh_point="$3"
   mpoint="$4"
 
@@ -570,8 +571,8 @@ case "$(echo "$@" | xargs)" in
     -o Compression=no     \
     -o ServerAliveCountMax=2 \
     -o ServerAliveInterval=15 \
-    "$ssh_point" ; then
-      "$mpoint" && notify-send "Mounted:" "$mpoint"
+    "$ssh_point" "$mpoint"  ; then
+      notify-send "Mounted:" "$mpoint"
   else
     notify-send "Error:" "Failed mounting $mpoint ($ssh_point)"
     exit 1
