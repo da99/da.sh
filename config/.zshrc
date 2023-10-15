@@ -25,6 +25,31 @@ setopt appendhistory
 HISTORY_SUBSTRING_SEARCH_FUZZY="true"
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE="true"
 
+echo_git_prompt() {
+  autoload -U colors && colors
+  if ! git -C $PWD rev-parse 2> /dev/null; then
+    echo ''
+    return
+  fi
+
+  git_prompt=''
+  current_branch="$(git branch --show)"
+  if da.sh repo is clean; then
+    case "$current_branch" in
+      main|master)
+        git_prompt='[%F{71}'${current_branch}'%f]'
+        ;;
+      *)
+        git_prompt='[%S%F{214}'${current_branch}'%f%s]'
+        ;;
+    esac
+  else
+    git_prompt="[%{$fg[red]%}${current_branch}%{$reset_color%}]"
+  fi
+  if test -n "$git_prompt"; then
+    echo "${git_prompt} "
+  fi
+}
 
 setopt CORRECT # suggest correct commands
 setopt PROMPT_SUBST
@@ -32,7 +57,7 @@ setopt PROMPT_SUBST
 autoload -U add-zsh-hook
 add-zsh-hook precmd precmd_git_prompt
 precmd_git_prompt() {
-  git_prompt="$(da.sh zsh git prompt)"
+  git_prompt="$(echo_git_prompt)"
 }
 
 # =================================================================

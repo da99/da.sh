@@ -1,9 +1,9 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 #
 #
 set -u -e -o pipefail
 
-THIS_DIR="${0:a:h}/.."
+THIS_DIR="$(dirname "$0")/.."
 THIS_NODE_RB="$THIS_DIR/src/node.rb"
 THIS_SRC="$THIS_DIR/src"
 
@@ -65,6 +65,9 @@ case "$(echo "$@" | xargs)" in
 
     echo
     echo "$cmd mobile-repos"
+
+    echo
+    echo "$cmd ssh port [local port] [remote port] [remote name]"
     ;;
 
   "check fs")
@@ -139,7 +142,7 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "screen sleep")
-    "$0" $@ 5
+    "$0" screen sleep 5
     ;;
 
   "screen sleep "*)
@@ -219,7 +222,7 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "install progs")
-    "$0" check check fs || { "$0" check fs && exit 1 }
+    "$0" check check fs || { "$0" check fs && exit 1; }
     for repo in "Aloxaf/fzf-tab" "zsh-users/zsh-syntax-highlighting" "zsh-users/zsh-autosuggestions" "zsh-users/zsh-history-substring-search" ; do
       dname="$(basename "$repo")"
       if test -d "/progs/$dname"; then
@@ -386,33 +389,6 @@ case "$(echo "$@" | xargs)" in
     echo "=== Created: $new_file" >&2
     ;;
 
-
-  "zsh git prompt")
-    autoload -U colors && colors
-    if ! git -C $PWD rev-parse 2> /dev/null; then
-      echo ''
-      exit 0
-    fi
-
-    git_prompt=''
-    current_branch="$(git branch --show)"
-    if $0 repo is clean; then
-      case "$current_branch" in
-        main|master)
-          git_prompt='[%F{71}'${current_branch}'%f]'
-          ;;
-        *)
-          git_prompt='[%S%F{214}'${current_branch}'%f%s]'
-          ;;
-      esac
-    else
-      git_prompt="[%{$fg[red]%}${current_branch}%{$reset_color%}]"
-    fi
-    if test -n "$git_prompt"; then
-      echo "${git_prompt} "
-    fi
-    ;;
-
   # =========================================================================
   # DENO
   # =========================================================================
@@ -471,7 +447,7 @@ case "$(echo "$@" | xargs)" in
 
   "repo list")
     {
-      test -e "$HOME/.git" && echo "$HOME" || :
+      { test -e "$HOME/.git" && echo "$HOME"; } || :
       dirs=( /apps )
       if test -e /media-lib ; then
         dirs+=(/media-lib)
@@ -485,7 +461,7 @@ case "$(echo "$@" | xargs)" in
     shift
     for x in $($0 repo list); do
       cd "$x"
-      $@
+      $*
     done
     ;;
 
@@ -571,8 +547,8 @@ case "$(echo "$@" | xargs)" in
   ;;
 
 "mount sshfs "*)
-  local ssh_point="$3"
-  local mpoint="$4"
+  ssh_point="$3"
+  mpoint="$4"
 
   mkdir -p "$mpoint"
 
@@ -585,7 +561,7 @@ case "$(echo "$@" | xargs)" in
   fi
 
   set -x
-  sshfs \
+  if sshfs \
     -o cache=yes \
     -o kernel_cache \
     -o reconnect \
@@ -594,20 +570,33 @@ case "$(echo "$@" | xargs)" in
     -o Compression=no     \
     -o ServerAliveCountMax=2 \
     -o ServerAliveInterval=15 \
-    "$ssh_point" "$mpoint" &&
-    notify-send "Mounted:" "$mpoint" || {
-      notify-send "Error:" "Failed mounting $mpoint ($ssh_point)"
-      exit 1
-    }
+    "$ssh_point" ; then
+      "$mpoint" && notify-send "Mounted:" "$mpoint"
+  else
+    notify-send "Error:" "Failed mounting $mpoint ($ssh_point)"
+    exit 1
+  fi
   ;;
 
   mobile-repos)
-  echo /apps/alegria
-  echo /apps/da.sh
-  echo /apps/my_uni
-  echo /apps/my_dev01
-  echo /apps/my_bdrm
-  echo /apps/jaki.club
+    echo /apps/alegria
+    echo /apps/da.sh
+    echo /apps/my_uni
+    echo /apps/my_dev01
+    echo /apps/my_bdrm
+    echo /apps/jaki.club
+  ;;
+
+  "ssh port "*)
+    l_port="$3" # local port
+    r_port="$4" # remote port
+    r_name="$5" # remote name
+    cmd="ssh -N -L $l_port:127.0.0.1:$r_port $r_name"
+    set -x
+    if pgrep -a -f "$cmd" ; then
+      exit 1
+    fi
+    $cmd
   ;;
 
   *)
