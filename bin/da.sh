@@ -361,7 +361,7 @@ case "$(echo "$@" | xargs)" in
   ;;
 
   "new zsh "*|"new ruby "*|"new bash "*|"new tmp/run "*)
-    this_bin="${0:a:h}/.."
+    this_bin="$(dirname "$0")/.."
     da_bin="${this_bin}/.."
     file_type="$2"
     new_file="$3"
