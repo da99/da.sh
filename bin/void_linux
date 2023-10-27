@@ -72,6 +72,21 @@ case "$@" in
     sudo xbps-install -S $("$0" list packages devel | tr '\n' ' ')
     ;;
 
+  "edit packages")
+    cd "$(dirname "$0")"/..
+    e config/void.packages.txt || e config/void.packages.txt
+    ;;
+
+  "list packages")
+    cd "$(dirname "$0")"/..
+    cat config/void.packages.txt | tr '\n' ' '
+    ;;
+
+  "list packages devel")
+    cd "$(dirname "$0")"/..
+    cat config/void.packages.devel.txt | tr '\n' ' '
+    ;;
+
   "upgrade void-packages")
     cd /progs/void-packages
     git pull

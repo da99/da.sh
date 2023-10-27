@@ -27,11 +27,6 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
     echo
-    echo "$cmd edit packages"
-    echo "$cmd list packages"
-    echo "$cmd install packages"
-    echo "       packages for software development."
-    echo
     echo "$cmd install progs"
     echo "$cmd progs list"
     echo "$cmd upgrade progs"
@@ -222,6 +217,8 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   "install progs")
+    test -e /progs || { echo "!!! Create /progs" >&2; exit 1; }
+    mkdir -p /progs/bin
     "$0" check check fs || { "$0" check fs && exit 1; }
     for repo in "Aloxaf/fzf-tab" "zsh-users/zsh-syntax-highlighting" "zsh-users/zsh-autosuggestions" "zsh-users/zsh-history-substring-search" ; do
       dname="$(basename "$repo")"
@@ -271,37 +268,6 @@ case "$(echo "$@" | xargs)" in
       wget "https://github.com/mbadolato/iTerm2-Color-Schemes/raw/master/konsole/Chester.colorscheme"
     fi
     ;;
-
-  "install packages"|"install dev packages")
-    if command -v xbps-install >/dev/null; then
-      cd "$(dirname "$0")"/..
-      set -x
-      sudo xbps-install -S $("$0" list packages | tr '\n' ' ')
-    else
-      lsb_release -a
-      exit 1
-    fi
-    ;;
-
-  "edit packages")
-    if which xbps-install ; then
-      cd "$(dirname "$0")"/..
-      lvim config/void.packages.txt || nvim config/void.packages.txt
-    fi
-    ;;
-
-  "list packages")
-    if command -v xbps-install >/dev/null; then
-      cd "$(dirname "$0")"/..
-      cat config/void.packages.txt | tr '\n' ' '
-    else
-      lsb_release -a
-      exit 1
-    fi
-    ;;
-
-  # ----------------------------------------------------------------
-
 
   # ----------------------------------------------------------------
   "node install latest")
