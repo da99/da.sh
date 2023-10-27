@@ -8,22 +8,44 @@ case "$@" in
     cmd="$(basename "$0")"
     echo "  $cmd hud available packages"
     echo "  $cmd [list|install] packages [devel]"
+    echo "  $cmd setup"
     echo "  $cmd upgrade packages"
     echo "  $cmd upgrade void-packages"
     echo "     Updates /progs/void-packages"
     echo "  $cmd cleanup"
+    echo "  $cmd sv enable|disable [name]"
     echo "  $cmd install time"
     echo "       Installs and activates the chrony service"
     ;;
 
   setup)
+    errs=""
     if rg "options btusb enable_autosuspend=0" /etc/modprobe.d >/dev/null ; then
-      echo "--- Bluetooth auto-suspend has been disable." >&2
+      echo "--- Bluetooth auto-suspend has been disabled." >&2
     else
       echo "!!! Disable Bluetooth auto-suspend." >&2
       echo "echo \"options btusb enable_autosuspend=0\" | sudo tee /etc/modprobe.d/disable_btusb-autosuspend.conf" >&2
-      exit 1
+      errs="true"
     fi
+
+    if grep "FastConnectable = true" main.conf >/dev/null; then
+      echo "--- Bluetooth FactConnectable has been enabled." >&2
+    else
+      echo "!!! Enable Bluetooth FastConnectable:" >&2
+      echo "sudoedit /etc/bluetooth/main.conf" >&2
+      errs="true"
+    fi
+
+    for x in /progs /apps ; do
+      if test -e /progs ; then
+        echo "--- Found: $x" >&2
+      else
+        echo "!!! /progs not found." >&2
+        errs="true"
+      fi
+    done
+
+    test -z "$errs"
     ;;
 
   "install time")
@@ -142,6 +164,35 @@ case "$@" in
       echo
     else
       echo "New packages: $count"
+    fi
+    ;;
+
+  "sv enable "*)
+    cd /etc/sv
+    sv_name="$3"
+    if test -e "/var/service/$sv_name" ; then
+      echo "=== Already installed: $sv_name" >&2
+    else
+      set -x
+      if ! test -e "/etc/sv/$sv_name" ; then
+        echo "!!! Service does not exist: $sv_name" >&2
+        exit 1
+      fi
+      sudo ln -s "/etc/sv/$sv_name" /var/service/
+    fi
+    ;;
+
+  "sv disable "*)
+    sv_name="$3"
+    if test -e "/var/service/$sv_name" ; then
+      set -x
+      sudo rm "/var/service/$sv_name"
+      set +x
+    else
+      echo "==== Service already disabled: $sv_name" >&2
+      if ! test -e "/etc/sv/$sv_name" ; then
+        echo "NOTE: Service does not exist: /etc/sv/$sv_name" >&2
+      fi
     fi
     ;;
 
