@@ -8,7 +8,7 @@ THIS_NODE_RB="$THIS_DIR/src/node.rb"
 # THIS_SRC="$THIS_DIR/src"
 
 case "$(echo "$@" | xargs)" in
-  help|-h)
+  --help|help|-h)
     cmd="da.sh"
     echo "$cmd check fs"
     echo "       Lists all things that need to be done."
@@ -29,7 +29,10 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd install progs"
     echo "$cmd progs list"
+    echo
+    echo "$cmd mobile-repos"
     echo "$cmd upgrade progs"
+    echo "$cmd upgrade repos"
     echo
     echo "$cmd node latest"
     echo "$cmd node latest install"
@@ -59,7 +62,6 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd filename|run tmp/run 1|2|3"
 
     echo
-    echo "$cmd mobile-repos"
 
     echo
     echo "$cmd ssh port [local port] [remote port] [remote name]"
@@ -205,7 +207,7 @@ case "$(echo "$@" | xargs)" in
   "update") # update
     "$0" check dirs
     "$0" upgrade progs
-    "$0" install packages
+    void_linux install packages
     "$0" update .ssh
     "$0" update sshd
 
@@ -249,6 +251,25 @@ case "$(echo "$@" | xargs)" in
           ;;
       esac
     done < <(find /progs/ -mindepth 2 -maxdepth 2 -type d -name .git)
+    ;;
+
+  mobile-repos)
+    for x in alegria da.sh my_uni my_dev01 my_bdrm jaki.club ; do
+      if test -e "/apps/$x" ; then
+        echo "/apps/$x"
+      fi
+    done
+    if test -e "$HOME/.git" ; then
+      echo "$HOME"
+    fi
+  ;;
+
+  "upgrade repos")
+    while read -r dir ; do
+      cd "$dir"
+      echo -n "=== $PWD: "
+      git pull
+    done < <("$0" mobile-repos)
     ;;
 
   "check dirs") # check dirs
@@ -543,15 +564,6 @@ case "$(echo "$@" | xargs)" in
     notify-send "Error:" "Failed mounting $mpoint ($ssh_point)"
     exit 1
   fi
-  ;;
-
-  mobile-repos)
-    echo /apps/alegria
-    echo /apps/da.sh
-    echo /apps/my_uni
-    echo /apps/my_dev01
-    echo /apps/my_bdrm
-    echo /apps/jaki.club
   ;;
 
   "verbose run "*)
