@@ -254,7 +254,7 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   mobile-repos)
-    for x in alegria da.sh my_uni my_dev01 my_bdrm jaki.club ; do
+    for x in alegria slides da.sh my_uni my_dev01 my_bdrm jaki.club ; do
       if test -e "/apps/$x" ; then
         echo "/apps/$x"
       fi
