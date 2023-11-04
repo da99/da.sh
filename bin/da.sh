@@ -229,7 +229,7 @@ case "$(echo "$@" | xargs)" in
       else
         cd /progs
         echo "=== Cloning: $repo into $PWD/$dname ===" >&2
-        echo git clone --depth 1 "https://github.com/$repo"
+        git clone --depth 1 "https://github.com/$repo"
       fi
     done
     ;;
