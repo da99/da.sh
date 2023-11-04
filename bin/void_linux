@@ -28,7 +28,7 @@ case "$@" in
       errs="true"
     fi
 
-    if grep "FastConnectable = true" main.conf >/dev/null; then
+    if grep "FastConnectable = true" /etc/bluetooth/main.conf >/dev/null; then
       echo "--- Bluetooth FactConnectable has been enabled." >&2
     else
       echo "!!! Enable Bluetooth FastConnectable:" >&2
