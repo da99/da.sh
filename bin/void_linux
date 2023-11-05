@@ -44,11 +44,22 @@ case "$@" in
         errs="true"
       fi
     done
+    test -z "$errs"
 
     void_linux sv disable agetty-tty5
     void_linux sv disable agetty-tty6
-    test -z "$errs"
+    void_linux sv disable dhcpcd
+    void_linux sv enable  dbus
+    void_linux sv enable  elogind
+    void_linux sv enable  NetworkManager
+    void_linux sv enable  polkitd
+    "$0" install time
     ;;
+
+  "setup bluetooth")
+    void_linux sv enable bluetoothd
+    sudo usermod -a -G bluetooth "$USER"
+  ;;
 
   "install time")
     if test -e /var/service/openntpd ; then
