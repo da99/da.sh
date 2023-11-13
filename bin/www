@@ -1,0 +1,118 @@
+#!/usr/bin/env ruby
+#
+#
+require "json"
+cmd = ARGV.join(" ")
+prog = __FILE__.split('/').last
+
+class Public_File
+  class << self
+  end # class << self
+
+  attr_reader :dir, :raw, :etag, :path
+
+  def initialize(dir, raw)
+    @raw = raw
+    @dir = Bucket.normalize_dir(dir)
+    pieces = raw.split
+    @etag = pieces.shift
+    if pieces.size != 1
+      STDERR.puts "!!! Invalid file path: #{path.join(' ')}"
+      exit 2
+    end
+    @path = pieces.shift
+  end # def
+
+  def public_path
+    pieces = path.split('.')
+    pieces[pieces.size - 1] = "#{etag[0..5]}.#{pieces.last}"
+    pieces.join('.').sub(dir, "")
+  end
+
+  def summary
+    {"path"=>path, dir => dir, "public_path"=>public_path, "etag"=> etag}
+  end # def
+end # class
+
+class Bucket
+
+  class << self
+    def normalize_dir(raw)
+      raw.sub(/^\.?\//, "")
+    end
+
+    def dir_exist!(raw)
+      dir = normalize_dir(raw)
+      if !Dir.exist?(dir)
+        STDERR.puts "!!! Directory not found: #{dir}"
+        exit 1
+      end
+      dir
+    end
+
+    def file_json
+      "bucket_files.json"
+    end
+  end # class << self
+
+  attr_reader :dir, :files, :bucket
+
+  def initialize(raw_dir, bucket)
+    @bucket = bucket
+    @dir = self.class.normalize_dir(raw_dir)
+    @files = begin
+               `touch "#{self.class.file_json}"`
+               txt = File.read(self.class.file_json).strip
+               if txt.empty?
+                 []
+               else
+                 JSON.parse(txt)
+               end
+             end
+  end # def
+
+  def upload
+    self.class.dir_exist!(dir)
+    old_etag = files.map { |x| x["etag"] }
+    new_files = `find #{dir} -type f | xargs sha256sum`
+      .strip
+      .split("\n")
+      .map { |l| Public_File.new(dir, l) }
+      .reject { |f| old_etag.include?(f.etag)}
+      .map { |f|
+        cmd = %[bunx wrangler r2 object put #{File.join(bucket, f.public_path)} --file="#{f.path}"]
+        # puts "--- Uploading: #{f.path}"
+        puts ""
+        puts "--- #{cmd}"
+        success = system(cmd)
+        exit(1) unless success
+        f.summary
+      }
+    if new_files.empty?
+      puts "=== No new files to upload. ==="
+      return false
+    end
+    @files = @files.concat(new_files)
+    puts "=== Finished uploading."
+    puts "=== Saving to: #{self.class.file_json}"
+    File.write(self.class.file_json, @files.to_json)
+    true
+  end # def
+
+end # class
+
+
+case cmd
+when "-h", "--help", "help"
+  puts "#{prog} -h|--help|help  --  Show this message."
+  puts "#{prog} upload public [dir] to [bucket]"
+
+when /^upload public ([\.\/0-9A-Z]+) to (\w+)$/i
+  `touch bucket_files.json`
+  b = Bucket.new($1, $2)
+  b.upload
+else
+  STDERR.puts "!!! Unknown command: #{cmd}"
+  exit 1
+end # case
+

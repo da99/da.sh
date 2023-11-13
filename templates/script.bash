@@ -4,4 +4,13 @@
 set -u -e -o pipefail
 
 
-echo "--- Not implemented: $0" >&2
+case "$*" in
+  "-h"|"--help"|"help")
+    echo "$0 -h|--help|help -- Show this message."
+    echo
+    ;;
+  *)
+    echo "!!! Unknown command: $*" >&2
+    exit 1
+    ;;
+esac
