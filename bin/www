@@ -7,13 +7,40 @@ prog = __FILE__.split('/').last
 
 class Public_File
   class << self
+    def all(raw_dir)
+      dir = normalize_dir(raw_dir)
+      Public_File.dir_exist!(dir)
+      `find #{dir} -type f | xargs sha256sum`
+        .strip
+        .split("\n")
+        .map { |l| Public_File.new(dir, l) }
+    end # def
+
+    def normalize_dir(raw)
+      raw.sub(/^\.?\//, "")
+    end
+
+    def dir_exist!(raw)
+      dir = normalize_dir(raw)
+      if !Dir.exist?(dir)
+        STDERR.puts "!!! Directory not found: #{dir}"
+        exit 1
+      end
+      dir
+    end
+
+    def write_manifest(dir)
+      js = all(dir).map { |f| %[ "#{f.path.sub(dir, "")}": {"public_path": "#{f.public_path}", "etag": "#{f.etag[0..8]}" } ] }.join(", ")
+      File.write("files.mjs", %[const a = { #{js} };\nexport default a;\n])
+      puts "=== Wrote: files.mjs"
+    end
   end # class << self
 
   attr_reader :dir, :raw, :etag, :path
 
   def initialize(dir, raw)
     @raw = raw
-    @dir = Bucket.normalize_dir(dir)
+    @dir = Public_File.normalize_dir(dir)
     pieces = raw.split
     @etag = pieces.shift
     if pieces.size != 1
@@ -37,19 +64,6 @@ end # class
 class Bucket
 
   class << self
-    def normalize_dir(raw)
-      raw.sub(/^\.?\//, "")
-    end
-
-    def dir_exist!(raw)
-      dir = normalize_dir(raw)
-      if !Dir.exist?(dir)
-        STDERR.puts "!!! Directory not found: #{dir}"
-        exit 1
-      end
-      dir
-    end
-
     def file_json
       "bucket_files.json"
     end
@@ -59,7 +73,7 @@ class Bucket
 
   def initialize(raw_dir, bucket)
     @bucket = bucket
-    @dir = self.class.normalize_dir(raw_dir)
+    @dir = Public_File.normalize_dir(raw_dir)
     @files = begin
                `touch "#{self.class.file_json}"`
                txt = File.read(self.class.file_json).strip
@@ -72,14 +86,10 @@ class Bucket
   end # def
 
   def upload
-    self.class.dir_exist!(dir)
     old_etag = files.map { |x| x["etag"] }
-    new_files = `find #{dir} -type f | xargs sha256sum`
-      .strip
-      .split("\n")
-      .map { |l| Public_File.new(dir, l) }
-      .reject { |f| old_etag.include?(f.etag)}
-      .map { |f|
+
+    new_files = Public_File.all(dir).reject { |f| old_etag.include?(f.etag)}
+    summarys = Public_File.all.map { |f|
         cmd = %[bunx wrangler r2 object put #{File.join(bucket, f.public_path)} --file="#{f.path}"]
         # puts "--- Uploading: #{f.path}"
         puts ""
@@ -87,18 +97,17 @@ class Bucket
         success = system(cmd)
         exit(1) unless success
         f.summary
-      }
-    if new_files.empty?
+    }
+    if summarys.empty?
       puts "=== No new files to upload. ==="
       return false
     end
-    @files = @files.concat(new_files)
+    @files = @files.concat(summarys)
     puts "=== Finished uploading."
     puts "=== Saving to: #{self.class.file_json}"
     File.write(self.class.file_json, @files.to_json)
     true
   end # def
-
 end # class
 
 
@@ -111,6 +120,10 @@ when /^upload public ([\.\/0-9A-Z]+) to (\w+)$/i
   `touch bucket_files.json`
   b = Bucket.new($1, $2)
   b.upload
+
+when /^write file manifest for ([\.\/0-9A-Z]+)$/i
+  Public_File.write_manifest($1)
+
 else
   STDERR.puts "!!! Unknown command: #{cmd}"
   exit 1
