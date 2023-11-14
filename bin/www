@@ -29,10 +29,20 @@ class Public_File
       dir
     end
 
-    def write_manifest(dir)
-      js = all(dir).map { |f| %[ "#{f.path.sub(dir, "")}": {"public_path": "#{f.public_path}", "etag": "#{f.etag[0..8]}" } ] }.join(", ")
-      File.write("files.mjs", %[const a = { #{js} };\nexport default a;\n])
+    def manifest(raw_dir)
+      dir = normalize_dir(raw_dir)
+      all(dir).inject({}) { |memo, f|
+        memo[f.path.sub(dir, "")] = {"public_path" => f.public_path, "etag"=>f.etag[0..8]}
+        memo
+      }
+    end
+
+    def write_manifest(raw_dir)
+      json = manifest(raw_dir).to_json
+      File.write("files.mjs", %[const a = #{json} ;\nexport default a;\n])
       puts "=== Wrote: files.mjs"
+      File.write("files.json", json)
+      puts "=== Wrote: files.json"
     end
   end # class << self
 
@@ -115,6 +125,8 @@ case cmd
 when "-h", "--help", "help"
   puts "#{prog} -h|--help|help  --  Show this message."
   puts "#{prog} upload public [dir] to [bucket]"
+  puts "#{prog} write file manifest for [dir]"
+  puts "#{prog} set src to [domain]"
 
 when /^upload public ([\.\/0-9A-Z]+) to (\w+)$/i
   `touch bucket_files.json`
@@ -123,6 +135,35 @@ when /^upload public ([\.\/0-9A-Z]+) to (\w+)$/i
 
 when /^write file manifest for ([\.\/0-9A-Z]+)$/i
   Public_File.write_manifest($1)
+
+when /^set src to (.+)$/i
+  dir = "dist"
+  domain = $2
+  manifest = Public_File.manifest(dir)
+  files = `find "#{dir}" -type f -name '*.html'`.strip.split('\n')
+  if files.empty?
+    puts "--- No files found for: setting #{$1}"
+  else
+    puts "--- Setting #{$1} to https://#{$2}..."
+  end
+  files.each { |raw|
+    origin = File.read(raw)
+    new_body = origin.gsub(/(src|href)="([^"]+)"/) { |match|
+      new_val = manifest[$2]
+      if new_val
+        %[#{$1}="https://#{File.join domain, new_val["public_path"]}"]
+      else
+        match
+      end
+    }
+    if origin == new_body
+      STDERR.puts "--- Skipping: #{raw}"
+      next
+    end
+    STDERR.puts "=== Updated: #{raw}"
+    File.write(raw, new_body)
+
+  } # files.each
 
 else
   STDERR.puts "!!! Unknown command: #{cmd}"
