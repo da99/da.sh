@@ -30,7 +30,14 @@ case "$*" in
     ;;
 
   "edit bootstrap")
-    nvim ~/.config/nvim/lua/bootstrap.lua
+    file="$HOME/.config/nvim/lua/bootstrap.lua"
+    old_content="$(cat "$file")"
+    nvim "$file"
+    new_content="$(cat "$file")"
+    set -x
+    if test "$old_content" != "$new_content" ; then
+      "$0" setup
+    fi
     ;;
 
   *)
