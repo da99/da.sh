@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+#
+set -u -e -o pipefail
+
+
+case "$*" in
+  "-h"|"--help"|"help")
+    echo "$0 -h|--help|help -- Show this message."
+    echo "$0 setup"
+    echo "$0 edit init|bootstrap"
+    echo
+    ;;
+
+  "setup")
+    mkdir -p /progs/tmp/nvim
+
+    if ! test -e "$HOME/.config/nvim" ; then
+      ln -s /apps/da.sh/config/nvim "$HOME/.config/"
+    fi
+    echo "--- Installing nvim packages:" >&2
+    nvim --headless -u NONE -c 'lua require("bootstrap").headless_paq()'
+    nvim --headless -u NONE -c 'lua require("bootstrap").headless_mason()'
+    echo ""
+    echo "--- Done setting up nvim. ----" >&2
+    ;;
+
+  "edit init")
+    nvim ~/.config/nvim/init.lua
+    ;;
+
+  "edit bootstrap")
+    nvim ~/.config/nvim/lua/bootstrap.lua
+    ;;
+
+  *)
+    echo "!!! Unknown command: $*" >&2
+    exit 1
+    ;;
+esac

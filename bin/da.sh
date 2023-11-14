@@ -518,21 +518,6 @@ case "$(echo "$@" | xargs)" in
       # echo "!!! Already installed." >&2
     ;;
 
-  "setup nvim"|"setup neovim")
-    mkdir -p /progs/tmp/nvim
-
-    if ! test -e $HOME/.config/nvim ; then
-      ln -s /apps/da.sh/config/nvim $HOME/.config/
-    fi
-    # echo "--- Installing OS packages:" >&2
-    # void_linux install packages devel
-    echo "--- Installing nvim packages:" >&2
-    nvim --headless -u NONE -c 'lua require("bootstrap").headless_paq()'
-    nvim --headless -u NONE -c 'lua require("bootstrap").headless_mason()'
-    echo ""
-    echo "--- Done setting up nvim. ----" >&2
-  ;;
-
 "mount sshfs "*)
   set -x
   ssh_point="$3"
