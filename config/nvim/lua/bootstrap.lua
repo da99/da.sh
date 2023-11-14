@@ -12,12 +12,10 @@
      return {
       "savq/paq-nvim", -- let paq manage itself
       "rktjmp/lush.nvim",
-      "uloco/bluloco.nvim",
       "olimorris/onedarkpro.nvim",
       'tpope/vim-sensible',
       'folke/which-key.nvim',
-      -- 'nathom/filetype.nvim',
-      -- 'simrat39/symbols-outline.nvim',
+      "numToStr/FTerm.nvim",
       "vim-crystal/vim-crystal",
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",

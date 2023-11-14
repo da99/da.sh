@@ -80,7 +80,7 @@ set.showtabline = 1 -- Only when 2 or more tab pages
 set.wrap        = false
 set.expandtab   = true
 set.list        = true -- https://www.reddit.com/r/neovim/comments/chlmfk/highlight_trailing_whitespaces_in_neovim/
-set.cmdheight   = 2
+set.cmdheight   = 0
 set.shiftwidth  = 2
 set.ignorecase  = true
 
