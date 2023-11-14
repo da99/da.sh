@@ -13,6 +13,7 @@
       "savq/paq-nvim", -- let paq manage itself
       "rktjmp/lush.nvim",
       "uloco/bluloco.nvim",
+      "olimorris/onedarkpro.nvim",
       'tpope/vim-sensible',
       'folke/which-key.nvim',
       -- 'nathom/filetype.nvim',
@@ -46,12 +47,12 @@
       'burntsushi/ripgrep',
       {
         'nvim-telescope/telescope-fzf-native.nvim',
-        run = 'make'
+        build = 'make'
       },
       'nvim-telescope/telescope.nvim',
 
       -- tree-sitter
-      { 'nvim-treesitter/nvim-treesitter', run = function() vim.cmd 'TSUpdate' end },
+      { 'nvim-treesitter/nvim-treesitter', build = function() vim.cmd 'TSUpdate' end },
 
       -- Neo-tree
       "nvim-lua/plenary.nvim",

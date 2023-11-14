@@ -518,7 +518,7 @@ case "$(echo "$@" | xargs)" in
       # echo "!!! Already installed." >&2
     ;;
 
-  "setup nvim")
+  "setup nvim"|"setup neovim")
     mkdir -p /progs/tmp/nvim
 
     if ! test -e $HOME/.config/nvim ; then

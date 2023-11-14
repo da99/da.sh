@@ -29,13 +29,13 @@ if is_256 then
   g.rg_highlight                   = true -- Highlight :Rg results
   g.rg_command                     = "rg --vimgrep --hidden -g '!.git/'"
 
-  require("bluloco").setup({
-    style = "auto",  -- "auto" | "dark" | "light"
-    transparent = false,
-    italics = true,
-    terminal = vim.fn.has("gui_running") == 1, -- bluoco colors are enabled in gui terminals per default.
-    guicursor   = true,
-  })
+  -- require("bluloco").setup({
+  --   style = "auto",  -- "auto" | "dark" | "light"
+  --   transparent = false,
+  --   italics = true,
+  --   terminal = vim.fn.has("gui_running") == 1, -- bluoco colors are enabled in gui terminals per default.
+  --   guicursor   = true,
+  -- })
 
   cmd([[
     set cursorlineopt=number
@@ -64,7 +64,7 @@ if is_256 then
   else
     vim.cmd([[
       set background=dark
-      colorscheme bluloco
+      colorscheme onedark
     ]])
   end
   cmd([[
