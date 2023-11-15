@@ -435,12 +435,8 @@ require('gitsigns').setup()
 -- Mason.nvim
 -- =============================================================================
 require('mason').setup()
-require("mason-lspconfig").setup {
-  ensure_installed = {
-    "jsonls", "bashls", "crystalline", "cssls", "solargraph",
-    "denols", "lua_ls",
-  }
-}
+require("mason-lspconfig").setup{}
+
 -- require('lspconfig')
 local util = require 'lspconfig.util'
 require'lspconfig'.jsonls.setup{}
@@ -461,6 +457,13 @@ require("inc_rename").setup()
 
 vim.notify = require("notify")
 require("noice").setup()
+
+require('mason-tool-installer').setup {
+  ensure_installed = {
+    "jsonls", "bashls", "crystalline", "cssls", "solargraph",
+    "denols", "lua_ls", "shellcheck"
+  }
+}
 
 -- =============================================================================
 if true then
