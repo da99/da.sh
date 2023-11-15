@@ -12,7 +12,9 @@
      return {
       "savq/paq-nvim", -- let paq manage itself
       "stevearc/dressing.nvim",
-      "rcarriga/nvim-notify", 
+      "rcarriga/nvim-notify",
+      'MunifTanjim/nui.nvim',
+      "folke/noice.nvim",
       "rktjmp/lush.nvim",
       "olimorris/onedarkpro.nvim",
       'tpope/vim-sensible',
