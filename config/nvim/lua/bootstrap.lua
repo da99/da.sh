@@ -11,6 +11,8 @@
   local function packages()
      return {
       "savq/paq-nvim", -- let paq manage itself
+      "stevearc/dressing.nvim",
+      "rcarriga/nvim-notify", 
       "rktjmp/lush.nvim",
       "olimorris/onedarkpro.nvim",
       'tpope/vim-sensible',
