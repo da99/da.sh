@@ -35,6 +35,7 @@
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
+      "smjonas/inc-rename.nvim",
 
       -- mini statusline
       'lewis6991/gitsigns.nvim',

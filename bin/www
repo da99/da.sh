@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
-#
-#
-require "json"
-cmd = ARGV.join(" ")
+# frozen_string_literal: true
+
+require 'json'
+cmd = ARGV.join(' ')
 prog = __FILE__.split('/').last
 
 class Public_File
@@ -17,13 +17,13 @@ class Public_File
     end # def
 
     def normalize_dir(raw)
-      raw.sub(/^\.?\//, "")
+      raw.sub(%r{^\.?/}, '')
     end
 
     def dir_exist!(raw)
       dir = normalize_dir(raw)
-      if !Dir.exist?(dir)
-        STDERR.puts "!!! Directory not found: #{dir}"
+      unless Dir.exist?(dir)
+        warn "!!! Directory not found: #{dir}"
         exit 1
       end
       dir
@@ -31,18 +31,18 @@ class Public_File
 
     def manifest(raw_dir)
       dir = normalize_dir(raw_dir)
-      all(dir).inject({}) { |memo, f|
-        memo[f.path.sub(dir, "")] = {"public_path" => f.public_path, "etag"=>f.etag[0..8]}
+      all(dir).inject({}) do |memo, f|
+        memo[f.path.sub(dir, '')] = { 'public_path' => f.public_path, 'etag' => f.etag[0..8] }
         memo
-      }
+      end
     end
 
     def write_manifest(raw_dir)
       json = manifest(raw_dir).to_json
-      File.write("files.mjs", %[const a = #{json} ;\nexport default a;\n])
-      puts "=== Wrote: files.mjs"
-      File.write("files.json", json)
-      puts "=== Wrote: files.json"
+      File.write('files.mjs', %(const a = #{json} ;\nexport default a;\n))
+      puts '=== Wrote: files.mjs'
+      File.write('files.json', json)
+      puts '=== Wrote: files.json'
     end
   end # class << self
 
@@ -54,7 +54,7 @@ class Public_File
     pieces = raw.split
     @etag = pieces.shift
     if pieces.size != 1
-      STDERR.puts "!!! Invalid file path: #{path.join(' ')}"
+      warn "!!! Invalid file path: #{path.join(' ')}"
       exit 2
     end
     @path = pieces.shift
@@ -122,51 +122,52 @@ end # class
 
 
 case cmd
-when "-h", "--help", "help"
+when '-h', '--help', 'help'
   puts "#{prog} -h|--help|help  --  Show this message."
   puts "#{prog} upload public [dir] to [bucket]"
   puts "#{prog} write file manifest for [dir]"
   puts "#{prog} set src to [domain]"
 
-when /^upload public ([\.\/0-9A-Z]+) to (\w+)$/i
+when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
   `touch bucket_files.json`
-  b = Bucket.new($1, $2)
+  dir = Regexp.last_match(1)
+  domain = Regexp.last_match(2)
+  b = Bucket.new(dir, domain)
   b.upload
 
-when /^write file manifest for ([\.\/0-9A-Z]+)$/i
-  Public_File.write_manifest($1)
+when %r{^write file manifest for ([./0-9A-Z]+)$}i
+  Public_File.write_manifest(Regexp.last_match(1))
 
 when /^set src to (.+)$/i
-  dir = "dist"
-  domain = $2
+  dir = 'dist'
+  domain = Regexp.last_match(1)
   manifest = Public_File.manifest(dir)
   files = `find "#{dir}" -type f -name '*.html'`.strip.split('\n')
   if files.empty?
-    puts "--- No files found for: setting #{$1}"
+    puts "--- No files found for: setting #{dir}"
   else
-    puts "--- Setting #{$1} to https://#{$2}..."
+    puts "--- Setting #{dir} to https://#{domain}..."
   end
-  files.each { |raw|
+  files.each do |raw|
     origin = File.read(raw)
-    new_body = origin.gsub(/(src|href)="([^"]+)"/) { |match|
-      new_val = manifest[$2]
+    new_body = origin.gsub(/(src|href)="([^"]+)"/) do |match|
+      attr = Regexp.last_match(1)
+      new_val = manifest[Regexp.last_match(2)]
       if new_val
-        %[#{$1}="https://#{File.join domain, new_val["public_path"]}"]
+        %(#{attr}="https://#{File.join domain, new_val['public_path']}")
       else
         match
       end
-    }
+    end # .gsub
     if origin == new_body
-      STDERR.puts "--- Skipping: #{raw}"
+      warn "--- Skipping: #{raw}"
       next
     end
-    STDERR.puts "=== Updated: #{raw}"
+    warn "=== Updated: #{raw}"
     File.write(raw, new_body)
-
-  } # files.each
+  end # files.each
 
 else
-  STDERR.puts "!!! Unknown command: #{cmd}"
+  warn "!!! Unknown command: #{cmd}"
   exit 1
 end # case
-

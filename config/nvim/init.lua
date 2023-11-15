@@ -80,7 +80,7 @@ set.showtabline = 1 -- Only when 2 or more tab pages
 set.wrap        = false
 set.expandtab   = true
 set.list        = true -- https://www.reddit.com/r/neovim/comments/chlmfk/highlight_trailing_whitespaces_in_neovim/
-set.cmdheight   = 0
+set.cmdheight   = 2
 set.shiftwidth  = 2
 set.ignorecase  = true
 
@@ -207,7 +207,8 @@ set_keymap('n', '<Leader>L', 'O<ESC>', {})
 set_keymap('n', '<Leader>qa', '<CMD>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', { noremap=true, silent=true })
 set_keymap('n', '<Leader>qq', '<CMD>lua vim.lsp.buf.hover()<CR>', {})
 set_keymap('n', '<Leader>qw', '<CMD>lua vim.lsp.buf.definition()<CR>', {noremap = true})
-set_keymap('n', '<Leader>qr', '<CMD>lua vim.lsp.buf.rename()<CR>', {noremap = true})
+-- set_keymap('n', '<Leader>qr', '<CMD>lua vim.lsp.buf.rename()<CR>', {noremap = true})
+set_keymap('n', '<Leader>qr', ':IncRename ', {noremap = true})
 -- " ===============================================
 
 set_keymap('n', '<Leader>rg', '<CMD>:Rg<CR>', {})
@@ -434,14 +435,21 @@ require('gitsigns').setup()
 -- Mason.nvim
 -- =============================================================================
 require('mason').setup()
-require("mason-lspconfig").setup{}
+require("mason-lspconfig").setup {
+  ensure_installed = {
+    "jsonls", "bashls", "crystalline", "cssls", "solargraph",
+    "denols", "lua_ls",
+  }
+}
 -- require('lspconfig')
 local util = require 'lspconfig.util'
 require'lspconfig'.jsonls.setup{}
 require'lspconfig'.bashls.setup{}
 require'lspconfig'.crystalline.setup{}
 require'lspconfig'.cssls.setup{}
+require'lspconfig'.solargraph.setup{}
 
+require("inc_rename").setup()
   -- =============================================================================
   -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
   -- NOTE: To appropriately highlight codefences returned from denols:
@@ -695,7 +703,6 @@ lsp.handlers["textDocument/publishDiagnostics"] = lsp.with(
     border = 'rounded'
   }
   )
-
 -- require "lsp_signature".setup({
 --   bind = true, -- This is mandatory, otherwise border config won't get registered.
 --   handler_opts = {
