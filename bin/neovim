@@ -23,6 +23,10 @@ case "$*" in
     nvim --headless -u NONE -c 'lua require("bootstrap").headless_mason()'
     echo ""
     echo "--- Done setting up nvim. ----" >&2
+
+    if which gem && ! gem list | grep neovim ; then
+      gem install neovim
+    fi
     ;;
 
   "edit init")

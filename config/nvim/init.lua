@@ -456,7 +456,7 @@ require("inc_rename").setup()
   -- =============================================================================
 
 vim.notify = require("notify")
-require("noice").setup()
+-- require("noice").setup()
 
 require('mason-tool-installer').setup {
   ensure_installed = {
