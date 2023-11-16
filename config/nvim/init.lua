@@ -395,6 +395,8 @@ require('mini.trailspace').setup()
 require('mini.pairs').setup()
 require('mini.comment').setup()
 require('mini.bracketed').setup()
+require('mini.surround').setup({})
+
 cmd(' highlight MiniTablineCurrent guibg=#000000 ')
 cmd(' highlight MiniTablineHidden guibg=#282c34 ')
 cmd(' highlight MiniTablineModifiedCurrent guibg=#e8ad00 guifg=#000000 ')
@@ -418,7 +420,21 @@ hipatterns.setup({
 -- You dont need to set any of these options. These are the default ones. Only
 -- the loading is important
 local telescope = require('telescope')
-telescope.setup()
+telescope.setup{
+  defaults = {
+    -- Default configuration for telescope goes here:
+    -- config_key = value,
+    mappings = {
+      i = {
+        ["<C-h>"] = "which_key"
+      },
+      n = {
+        ["<C-h>"] = "which_key"
+      },
+    },
+    initial_mode = "insert"
+  },
+}
 telescope.load_extension('fzf')
 
 require('gitsigns').setup()
@@ -458,159 +474,18 @@ require("inc_rename").setup()
 vim.notify = require("notify")
 -- require("noice").setup()
 
-require('mason-tool-installer').setup {
-  ensure_installed = {
-    "jsonls", "bashls", "crystalline", "cssls", "solargraph",
-    "denols", "lua_ls", "shellcheck"
-  }
-}
-
--- =============================================================================
-if true then
-  return 0
-end
--- =============================================================================
-
--- =============================================================================
--- require("filetype").setup({
---   overrides = {
---     extensions = {
---       cr = "crystal"
---     }
---   }
--- })
--- =============================================================================
-
--- =============================================================================
-require("which-key").setup({ })
-require'FTerm'.setup({ cmd = 'fish -i' })
-require('neoscroll').setup()
-require('nvim-autopairs').setup{
-  disable_filetype = { "TelescopePrompt" , "guihua", "guihua_rust", "clap_input" },
-  map_cr = false
-}
-require'nvim-tree'.setup {}
-
--- =====================================
--- BufferLine
--- =====================================
-require('bufferline').setup({
-  highlights = {
-    -- tab = { bg = "#000000" },
-    background = { bg = "#000000" },
-    fill = { bg = "#000000" },
-    tab            = { bg = "#000000" },
-    buffer_visible = { bg = "#000000" },
-  },
-  options = {
-    show_buffer_close_icons = false,
-    separator_style = "thin",
-    diagnostics = "nvim_lsp",
-    numbers = function(opts)
-      return string.format('%s·%s', opts.ordinal, opts.id)
-    end
-  }
-})
-
--- =====================================
--- LuaLine:
--- =====================================
-local function a_file()
-  local ft = vim.bo.filetype
-  local bt = vim.bo.buftype
-  return not (ft == "help" or ft == "alpha" or ft == "" or bt == "terminal" or bt == "nofile")
-end
-
-local function dirname()
-  -- local ft = vim.bo.filetype
-  if a_file() or vim.bo.filetype == "help" then
-    local filename = fn.expand('%')
-    local basename = fn.fnamemodify(filename, ":t")
-    local dir      = fn.fnamemodify(filename, ":h")
-    local base_dir = fn.fnamemodify(dir, ":t")
-    return base_dir.."/"..basename
-  elseif vim.bo.buftype == "terminal" then
-    return fn.matchstr(fn.expand('%'), '[^:]\\+$')
-  else
-    return ""
-  end
-  --  if vim.bo.modified then
-  --  elseif vim.bo.modifiable  vim.bo.readonly
-end -- function
-
-local function branch_or_base_name(x)
-  local ft = vim.bo.filetype
-  if (ft == "help" or ft == "alpha" or ft == "") then
-    return ""
-  else
-    return x
-  end
-end -- function
-
-require('lualine').setup {
-  options = {
-    theme = 'onedark',
-    component_separators = { left = '', right = ''},
-  },
-  sections = {
-    lualine_a = { 'mode' },
-    lualine_b = { },
-    lualine_c = {{'branch', fmt = branch_or_base_name}, dirname, 'filetype'},
-    lualine_x = { },
-    lualine_y = { 'diagnostics', 'fileformat', 'encoding', 'progress', 'location' },
-    lualine_z = { },
-  },
-  inactive_sections = {
-    lualine_a = { 'filename', dirname },
-    lualine_b = { },
-    lualine_c = { },
-    lualine_x = { },
-    lualine_y = { },
-    lualine_z = { },
-  }
-}
--- =============================================================================
--- End LuaLine
--- =============================================================================
-
-
--- =============================================================================
--- Kommentary:
--- =============================================================================
-local komm = require('kommentary.config')
-set_keymap('n', '<Leader>kommd', '<Plug>kommentary_line_decrease', {})
-komm.configure_language("default", {
-  prefer_single_line_comments = true,
-  ignore_whitespace = false
-})
-komm.configure_language("fish", {
-  prefer_single_line_comments = true,
-  single_line_comment_string = "#",
-})
--- =============================================================================
-
--- =============================================================================
--- Colorizer:
--- =============================================================================
-require('colorizer').setup({
-  'typescript';
-  'vim';
-  'lua';
-  'jinja';
-  'less';
-  'html';
-  'sh';
-  'zsh';
-  css = {names = true}
-}, {names = false})
--- =============================================================================
-
-
 -- =============================================================================
 -- Treesitter:
 -- =============================================================================
-require'nvim-treesitter.configs'.setup({
-  ensure_installed = {"bash", "css", "fish", "json", "lua","ruby", "scss", "toml", "vim", "yaml"},
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = {
+    "bash", "css", "fish",
+    "json", "lua","ruby", "scss", "toml", "vim", "yaml",
+    "markdown", "markdown_inline", "regex",
+    "gitignore"
+  },
+  sync_install = false,
+  auto_install = true,
   rainbow = {
     enable = true,
     extended_mode = true,
@@ -620,61 +495,33 @@ require'nvim-treesitter.configs'.setup({
     enable = true,
     additional_vim_regex_highlighting = false,
   }
-})
-
-
--- =============================================================================
--- Telescope:
--- =============================================================================
-require('telescope').setup{
-  defaults = {
-    -- Default configuration for telescope goes here:
-    -- config_key = value,
-    mappings = {
-      i = {
-        ["<C-h>"] = "which_key"
-      },
-      n = {
-        ["<C-h>"] = "which_key"
-      },
-    },
-    initial_mode = "insert"
-  },
-  pickers = {
-    -- Default configuration for builtin pickers goes here:
-    command_history = {
-      mappings = {
-        i = {
-          ["<CR>"] = "edit_command_line"
-        },
-      },
-    }
-    -- Now the picker_config_key will be applied every time you call this
-    -- builtin picker
-  },
-  extensions = {
-    -- Your extension configuration goes here:
-    -- extension_name = {
-    --   extension_config_key = value,
-    -- }
-    -- please take a look at the readme of the extension you want to configure
-  }
 }
 -- =============================================================================
+-- Colorizer:
+-- =============================================================================
+require('colorizer').setup({
+  'typescript',
+  'vim',
+  'lua',
+  'jinja',
+  'less',
+  'html',
+  'sh',
+  'zsh',
+  'ruby',
+  css = {names = true}
+}, {names = false})
+
+require('neoscroll').setup()
 
 -- =============================================================================
--- Lightspeed:
+if true then
+  return 0
+end
 -- =============================================================================
-require'lightspeed'.setup {
-  ignore_case = true,
-  safe_labels = {},
-  jump_to_unique_chars = false,
-  labels = {
-    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=",
-    "!", "@", "#", "$", "%", "^", "&", "*", "(", ")",      "+"
-  }
-}
--- =============================================================================
+
+
+
 
 -- =============================================================================
 -- LSP:
@@ -720,7 +567,6 @@ lsp.handlers["textDocument/publishDiagnostics"] = lsp.with(
 -- =============================================================================
 -- Mini.nvim:
 -- =============================================================================
-require('mini.surround').setup({})
 require('mini.completion').setup({
   mappings = {
     force_twostep = '', -- Force two-step completion
@@ -730,4 +576,3 @@ require('mini.completion').setup({
 cmd(' autocmd! MiniCompletion InsertCharPre * ')
 -- =============================================================================
 
--- #197046

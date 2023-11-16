@@ -12,6 +12,8 @@
      return {
       "savq/paq-nvim", -- let paq manage itself
       "stevearc/dressing.nvim",
+      "norcalli/nvim-colorizer.lua",
+      "karb94/neoscroll.nvim",
       "rcarriga/nvim-notify",
       'MunifTanjim/nui.nvim',
       "folke/noice.nvim",
@@ -93,7 +95,9 @@
         "deno",
         "json-lsp",
         "lua-language-server",
-        "shellcheck"
+        "shellcheck",
+        "jsonls", "bashls", "crystalline", "cssls", "solargraph",
+        "denols", "lua_ls", "shellcheck"
       }
     }
     vim.api.nvim_create_autocmd('User', {

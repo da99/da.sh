@@ -19,12 +19,18 @@ case "$*" in
       ln -s /apps/da.sh/config/nvim "$HOME/.config/"
     fi
     echo "--- Installing nvim packages:" >&2
+    echo "--- Paq:"
     nvim --headless -u NONE -c 'lua require("bootstrap").headless_paq()'
+    echo
+    echo "--- Mason:"
     nvim --headless -u NONE -c 'lua require("bootstrap").headless_mason()'
+    echo
+    echo "--- Treesitter:"
+    nvim --headless +TSUpdateSync -c "echo 'done'" +q
     echo ""
     echo "--- Done setting up nvim. ----" >&2
 
-    if which gem && ! gem list | grep neovim ; then
+    if { which gem && ! gem list | grep neovim; } &>/dev/null; then
       gem install neovim
     fi
     ;;

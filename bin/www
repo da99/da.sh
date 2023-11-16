@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require 'json'
+
 cmd = ARGV.join(' ')
 prog = __FILE__.split('/').last
 

@@ -13,11 +13,3 @@ Hetzner + Void
 * https://0x0f0f0f.github.io/blog/supercharge-hetzner/
 
 
-Neovim
-  * TreeSitteR: lua bash markdown markdown_inline vim regex
-  * rtx:
-      go = "latest"
-      julia = "latest"
-      perl = "latest"
-      java = "latest"
-
