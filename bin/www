@@ -121,7 +121,6 @@ class Bucket
   end # def
 end # class
 
-
 case cmd
 when '-h', '--help', 'help'
   puts "#{prog} -h|--help|help  --  Show this message."

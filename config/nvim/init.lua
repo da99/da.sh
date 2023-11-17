@@ -16,10 +16,10 @@ local lsp        = vim.lsp
 -- }
 -- require('filetype').setup({})
 
-g.indentLine_char         = '┊'
-g.indentLine_setColors    = 0
-g.mapleader               = ' '
-g.neoterm_autoscroll = 1
+g.indentLine_char      = '┊'
+g.indentLine_setColors = 0
+g.mapleader            = ' '
+g.neoterm_autoscroll   = 1
 g.neoterm_shell = 'zsh'
 vim.opt.report = 1000 -- https://www.reddit.com/r/vim/comments/nk3xss/how_to_disable_messages_from_ypu/
 
@@ -115,7 +115,8 @@ set_keymap('n', '<SPACE>', '<NOP>', {noremap = true})
 -- ============================================================================
 -- ======================= Dangerous ==========================================
 -- ============================================================================
-set_keymap('n', '<Leader>die', '<CMD>:Delete!<CR>', {})
+set_keymap('n', '<Leader>die', '<CMD>call delete(expand("%:p")) | bdelete! | lua vim.notify("")<CR>', {noremap = true})
+set_keymap('n', '<Leader>die', '<CMD>lua local x = vim.fn.expand("%:p"); vim.fn.delete(x); vim.notify("Deleted: " .. x, "warn"); vim.cmd("bdelete!")<CR>', {noremap = true})
 -- ============================================================================
 
 -- =============================================================================
@@ -163,7 +164,7 @@ set_keymap('n', '<Leader>blo', '<Leader>div<Leader>div<UP><UP>i<BS><CR>', {norem
 
 set_keymap('n', '<Leader>hy', ':! xdg-open https://www.google.com/search?q=<C-r><C-w>', {noremap=true, silent=false})
 
-set_keymap('n', '<Leader>xx', '<CMD>TroubleToggle document_diagnostics<CR>', {noremap=true, silent=true})
+-- set_keymap('n', '<Leader>xx', '<CMD>TroubleToggle document_diagnostics<CR>', {noremap=true, silent=true})
 -- " Turn off the highlighted items searched for:
 -- "   <C-l> is nvim default for :
 -- "     n  <C-L>       * <Cmd>nohlsearch|diffupdate|normal! <C-L><CR>
@@ -194,7 +195,7 @@ set_keymap('n', '<Leader>op', '<CMD>:call ToggleQuickfixList()<CR>', {})
 set_keymap('n', '<Leader>ee', '<CMD>Neotree<CR>', {})
 
 set_keymap('n', '<Leader>bb', '<CMD>bnext<CR>', {})
-set_keymap('n', '<Leader>bd', ':Bdelete menu<CR>', {silent = true})
+set_keymap('n', '<Leader>bd', ':bdelete<CR>', {})
 set_keymap('n', '<Leader>bv', '<CMD>bprevious<CR>', {})
 -- set_keymap('n', '<Leader>a', ':Startify<CR>', {})
 set_keymap('n', '<Leader>000', ':qa<CR>', {})
@@ -204,7 +205,7 @@ set_keymap('n', '<Leader>L', 'O<ESC>', {})
 -- " ===============================================
 -- " LSP:
 -- " ===============================================
-set_keymap('n', '<Leader>qa', '<CMD>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', { noremap=true, silent=true })
+set_keymap('n', '<Leader>qa', '<CMD>lua vim.diagnostic.open_float()<CR>', { noremap=true, silent=true })
 set_keymap('n', '<Leader>qq', '<CMD>lua vim.lsp.buf.hover()<CR>', {})
 set_keymap('n', '<Leader>qw', '<CMD>lua vim.lsp.buf.definition()<CR>', {noremap = true})
 -- set_keymap('n', '<Leader>qr', '<CMD>lua vim.lsp.buf.rename()<CR>', {noremap = true})
@@ -388,7 +389,8 @@ end -- if is_256
 
 
 -- =============================================================================
--- Mini nvim
+-- Mini.nvim:
+-- =============================================================================
 require('mini.statusline').setup()
 require('mini.tabline').setup()
 require('mini.trailspace').setup()
@@ -396,6 +398,15 @@ require('mini.pairs').setup()
 require('mini.comment').setup()
 require('mini.bracketed').setup()
 require('mini.surround').setup({})
+
+require('mini.completion').setup({
+  mappings = {
+    force_twostep = '', -- Force two-step completion
+    force_fallback = '', -- Force fallback completion
+  }
+})
+cmd(' autocmd! MiniCompletion InsertCharPre * ')
+-- =============================================================================
 
 cmd(' highlight MiniTablineCurrent guibg=#000000 ')
 cmd(' highlight MiniTablineHidden guibg=#282c34 ')
@@ -472,6 +483,9 @@ require("inc_rename").setup()
   -- =============================================================================
 
 vim.notify = require("notify")
+vim.notify.setup{
+  render = "wrapped-compact"
+}
 -- require("noice").setup()
 
 -- =============================================================================
@@ -563,16 +577,4 @@ lsp.handlers["textDocument/publishDiagnostics"] = lsp.with(
 -- })
 -- =============================================================================
 
-
--- =============================================================================
--- Mini.nvim:
--- =============================================================================
-require('mini.completion').setup({
-  mappings = {
-    force_twostep = '', -- Force two-step completion
-    force_fallback = '', -- Force fallback completion
-  }
-})
-cmd(' autocmd! MiniCompletion InsertCharPre * ')
--- =============================================================================
 
