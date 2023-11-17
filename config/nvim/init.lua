@@ -463,23 +463,51 @@ require('gitsigns').setup()
 require('mason').setup()
 require("mason-lspconfig").setup{}
 
+require("inc_rename").setup()
+
 -- require('lspconfig')
 local util = require 'lspconfig.util'
 require'lspconfig'.jsonls.setup{}
+-- require'lspconfig'.jsonls.setup{ cmd = { "vscode-json-languageserver", "--stdio" } } -- https://github.com/pwntester/nvim-lsp
+-- require'lspconfig'.sumneko_lua.setup({ })
 require'lspconfig'.bashls.setup{}
 require'lspconfig'.crystalline.setup{}
 require'lspconfig'.cssls.setup{}
 require'lspconfig'.solargraph.setup{}
+-- =============================================================================
+-- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
+-- NOTE: To appropriately highlight codefences returned from denols:
+vim.g.markdown_fenced_languages = { "ts=typescript" }
+require'lspconfig'.denols.setup{
+  root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
+}
+-- require "lspconfig".efm.setup {
+--     init_options = {documentFormatting = true},
+--     settings = { rootMarkers = {".git/"}, },
+--     filetypes = {'sh'}
+-- }
+-- local lsp_util = require('lspconfig.util')
+-- # From: https://github.com/samhh/dotfiles/blob/99e67298fbcb61d7398ad1850f3c2df31d90bd0d/home/.config/nvim/plugin/lsp.lua#L120
+-- lsp.handlers["textDocument/publishDiagnostics"] = lsp.with(
+--   lsp.diagnostic.on_publish_diagnostics,
+--   {
+--     virtual_text = false,
+--     signs = true,
+--     update_in_insert = false,
+--     underline = true,
+--     border = 'rounded'
+--   }
+--   )
+-- require "lsp_signature".setup({
+--   bind = true, -- This is mandatory, otherwise border config won't get registered.
+--   handler_opts = {
+--     border = "rounded"
+--   }
+-- })
+-- =============================================================================
 
-require("inc_rename").setup()
-  -- =============================================================================
-  -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
-  -- NOTE: To appropriately highlight codefences returned from denols:
-  vim.g.markdown_fenced_languages = { "ts=typescript" }
-  require'lspconfig'.denols.setup{
-    root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
-  }
-  -- =============================================================================
+-- =============================================================================
+
 
 vim.notify = require("notify")
 vim.notify.setup{
@@ -527,53 +555,9 @@ require('colorizer').setup({
 
 require('neoscroll').setup()
 
--- =============================================================================
-if true then
-  return 0
-end
--- =============================================================================
+-- require'lspkind'.init({ mode = 'symbol_text' })
 
 
 
-
--- =============================================================================
--- LSP:
--- =============================================================================
--- local lsp_util = require('lspconfig.util')
-require'trouble'.setup({})
-require'lspkind'.init({ mode = 'symbol' })
-require'lspconfig'.denols.setup{}
-require'lspconfig'.cssls.setup{}
-require'lspconfig'.sumneko_lua.setup({ })
-require'lspconfig'.jsonls.setup{ cmd = { "vscode-json-languageserver", "--stdio" } } -- https://github.com/pwntester/nvim-lsp
-require'lspconfig'.crystalline.setup{}
-require "lspconfig".efm.setup {
-    init_options = {documentFormatting = true},
-    settings = { rootMarkers = {".git/"}, },
-    filetypes = {'sh'}
-}
-lsp.handlers["textDocument/hover"] = lsp.with( lsp.handlers.hover, {
-  -- border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" }
-  -- border = { "/", "-", "\\", "|" }
-  border = 'rounded'
-})
--- # From: https://github.com/samhh/dotfiles/blob/99e67298fbcb61d7398ad1850f3c2df31d90bd0d/home/.config/nvim/plugin/lsp.lua#L120
-lsp.handlers["textDocument/publishDiagnostics"] = lsp.with(
-  lsp.diagnostic.on_publish_diagnostics,
-  {
-    virtual_text = false,
-    signs = true,
-    update_in_insert = false,
-    underline = true,
-    border = 'rounded'
-  }
-  )
--- require "lsp_signature".setup({
---   bind = true, -- This is mandatory, otherwise border config won't get registered.
---   handler_opts = {
---     border = "rounded"
---   }
--- })
--- =============================================================================
 
 

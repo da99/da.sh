@@ -12,6 +12,7 @@
      return {
       "savq/paq-nvim", -- let paq manage itself
       "stevearc/dressing.nvim",
+      "onsails/lspkind.nvim",
       "norcalli/nvim-colorizer.lua",
       "karb94/neoscroll.nvim",
       "rcarriga/nvim-notify",
