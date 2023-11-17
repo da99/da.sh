@@ -115,7 +115,6 @@ set_keymap('n', '<SPACE>', '<NOP>', {noremap = true})
 -- ============================================================================
 -- ======================= Dangerous ==========================================
 -- ============================================================================
-set_keymap('n', '<Leader>die', '<CMD>call delete(expand("%:p")) | bdelete! | lua vim.notify("")<CR>', {noremap = true})
 set_keymap('n', '<Leader>die', '<CMD>lua local x = vim.fn.expand("%:p"); vim.fn.delete(x); vim.notify("Deleted: " .. x, "warn"); vim.cmd("bdelete!")<CR>', {noremap = true})
 -- ============================================================================
 
