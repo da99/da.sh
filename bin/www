@@ -6,15 +6,16 @@ require 'json'
 cmd = ARGV.join(' ')
 prog = __FILE__.split('/').last
 
-class Public_File
+# Represents a file in the public directory.
+class PublicFile
   class << self
     def all(raw_dir)
       dir = normalize_dir(raw_dir)
-      Public_File.dir_exist!(dir)
+      PublicFile.dir_exist!(dir)
       `find #{dir} -type f | xargs sha256sum`
         .strip
         .split("\n")
-        .map { |l| Public_File.new(dir, l) }
+        .map { |l| PublicFile.new(dir, l) }
     end # def
 
     def normalize_dir(raw)
@@ -32,8 +33,8 @@ class Public_File
 
     def manifest(raw_dir)
       dir = normalize_dir(raw_dir)
-      all(dir).inject({}) do |memo, f|
-        memo[f.path.sub(dir, '')] = { 'public_path' => f.public_path, 'etag' => f.etag[0..8] }
+      all(dir).inject({}) do |memo, new_file|
+        memo[new_file.path.sub(dir, '')] = { 'public_path' => new_file.public_path, 'etag' => new_file.etag[0..8] }
         memo
       end
     end
@@ -51,7 +52,7 @@ class Public_File
 
   def initialize(dir, raw)
     @raw = raw
-    @dir = Public_File.normalize_dir(dir)
+    @dir = PublicFile.normalize_dir(dir)
     pieces = raw.split
     @etag = pieces.shift
     if pieces.size != 1
@@ -64,19 +65,24 @@ class Public_File
   def public_path
     pieces = path.split('.')
     pieces[pieces.size - 1] = "#{etag[0..5]}.#{pieces.last}"
-    pieces.join('.').sub(dir, "")
+    pieces.join('.').sub(dir, '')
   end
 
   def summary
-    {"path"=>path, dir => dir, "public_path"=>public_path, "etag"=> etag}
+    Hash.new(
+      'path' => path,
+      'dir' => dir,
+      'public_path' => public_path,
+      'etag' => etag
+    )
   end # def
 end # class
 
+# Manage a files for a Bucket.
 class Bucket
-
   class << self
     def file_json
-      "bucket_files.json"
+      'bucket_files.json'
     end
   end # class << self
 
@@ -84,37 +90,32 @@ class Bucket
 
   def initialize(raw_dir, bucket)
     @bucket = bucket
-    @dir = Public_File.normalize_dir(raw_dir)
-    @files = begin
-               `touch "#{self.class.file_json}"`
-               txt = File.read(self.class.file_json).strip
-               if txt.empty?
-                 []
-               else
-                 JSON.parse(txt)
-               end
-             end
+    @dir = PublicFile.normalize_dir(raw_dir)
+
+    `touch "#{self.class.file_json}"`
+    txt = File.read(self.class.file_json).strip
+    @files = txt.empty? ? [] : JSON.parse(txt)
   end # def
 
   def upload
-    old_etag = files.map { |x| x["etag"] }
+    old_etags = files.map { |x| x['etag'] }
 
-    new_files = Public_File.all(dir).reject { |f| old_etag.include?(f.etag)}
-    summarys = Public_File.all.map { |f|
-        cmd = %[bunx wrangler r2 object put #{File.join(bucket, f.public_path)} --file="#{f.path}"]
-        # puts "--- Uploading: #{f.path}"
-        puts ""
-        puts "--- #{cmd}"
-        success = system(cmd)
-        exit(1) unless success
-        f.summary
-    }
+    summarys = PublicFile.all(dir).map do |new_file|
+      next if old_etags.include?(new_file.etag)
+
+      cmd = %( bunx wrangler r2 object put "#{File.join(bucket, new_file.public_path)}" --file="#{new_file.path}" )
+      puts "\n--- Uploading: #{cmd}"
+      exit(1) unless system(cmd)
+      new_file.summary
+    end
+
     if summarys.empty?
-      puts "=== No new files to upload. ==="
+      puts '=== No new files to upload. ==='
       return false
     end
-    @files = @files.concat(summarys)
-    puts "=== Finished uploading."
+
+    @files.concat(summarys)
+    puts '=== Finished uploading.'
     puts "=== Saving to: #{self.class.file_json}"
     File.write(self.class.file_json, @files.to_json)
     true
@@ -136,12 +137,12 @@ when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
   b.upload
 
 when %r{^write file manifest for ([./0-9A-Z]+)$}i
-  Public_File.write_manifest(Regexp.last_match(1))
+  PublicFile.write_manifest(Regexp.last_match(1))
 
 when /^set src to (.+)$/i
   dir = 'dist'
   domain = Regexp.last_match(1)
-  manifest = Public_File.manifest(dir)
+  manifest = PublicFile.manifest(dir)
   files = `find "#{dir}" -type f -name '*.html'`.strip.split('\n')
   if files.empty?
     puts "--- No files found for: setting #{dir}"

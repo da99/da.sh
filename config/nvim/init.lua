@@ -209,6 +209,9 @@ set_keymap('n', '<Leader>qq', '<CMD>lua vim.lsp.buf.hover()<CR>', {})
 set_keymap('n', '<Leader>qw', '<CMD>lua vim.lsp.buf.definition()<CR>', {noremap = true})
 -- set_keymap('n', '<Leader>qr', '<CMD>lua vim.lsp.buf.rename()<CR>', {noremap = true})
 set_keymap('n', '<Leader>qr', ':IncRename ', {noremap = true})
+set_keymap('n', '<Leader>qo', '<CMD>Outline<CR>', {noremap = true, desc = "Toggle outline."})
+set_keymap('n', '<Leader>fr', '<CMD>References<CR>', {noremap = true, desc = "Find references."})
+set_keymap('n', '<Leader>ff', '<CMD>DocumentSymbols<CR>', {noremap = true, desc = "Find document symbols."})
 -- " ===============================================
 
 set_keymap('n', '<Leader>rg', '<CMD>:Rg<CR>', {})
@@ -474,6 +477,7 @@ require'lspconfig'.bashls.setup{}
 require'lspconfig'.crystalline.setup{}
 require'lspconfig'.cssls.setup{}
 require'lspconfig'.solargraph.setup{}
+require'lspconfig'.lua_ls.setup{}
 -- =============================================================================
 -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
 -- NOTE: To appropriately highlight codefences returned from denols:
@@ -556,7 +560,12 @@ require('colorizer').setup({
 require('neoscroll').setup()
 
 -- require'lspkind'.init({ mode = 'symbol_text' })
-
+require("outline").setup {
+   symbol_folding = {
+    -- Depth past which nodes will be folded by default
+    autofold_depth = 0,
+  },
+}
 
 
 
