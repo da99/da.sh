@@ -65,6 +65,8 @@ case "$(echo "$@" | xargs)" in
 
     echo
     echo "$cmd ssh port [local port] [remote port] [remote name]"
+    echo
+    echo "$cmd font setup"
     ;;
 
   "check fs")
@@ -569,6 +571,33 @@ case "$(echo "$@" | xargs)" in
       konsole --profile devrack -e da.sh verbose run $cmd
     fi
   ;;
+
+"font setup")
+  dir="$HOME/.local/share/fonts"
+  mkdir -p "$dir"
+  
+  install_font () {
+    cd "$dir"
+    url="$1"
+    file="$(basename "$url")"
+    fname="$(basename "$file" ".zip")"
+    if test -e "$fname" ; then
+      echo "=== $fname ($file) is setup."
+    else
+      echo "=== Installing $fname font:"
+      mkdir "$fname"
+      cd "$fname"
+      wget "$url"
+      unzip "$file"
+      rm "$file"
+    fi
+  }
+
+  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SourceCodePro.zip"
+  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SpaceMono.zip"
+  fc-cache
+  ;;
+
 
   *)
     "$THIS_NODE_RB" $*
