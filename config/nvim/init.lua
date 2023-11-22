@@ -567,6 +567,7 @@ require("outline").setup {
   },
 }
 
+require("ibl").setup()
 
 
 

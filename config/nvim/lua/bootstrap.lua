@@ -10,10 +10,10 @@
 
   local function packages()
      return {
-       'gfanto/fzf-lsp.nvim',
-       'nvim-lua/plenary.nvim',
-
       "savq/paq-nvim", -- let paq manage itself
+      'gfanto/fzf-lsp.nvim',
+      'nvim-lua/plenary.nvim',
+      "lukas-reineke/indent-blankline.nvim",
       "stevearc/dressing.nvim",
       "onsails/lspkind.nvim",
       "norcalli/nvim-colorizer.lua",
