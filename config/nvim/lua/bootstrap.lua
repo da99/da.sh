@@ -55,10 +55,7 @@
 
       -- telescope
       'burntsushi/ripgrep',
-      {
-        'nvim-telescope/telescope-fzf-native.nvim',
-        build = 'make'
-      },
+      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
       'nvim-telescope/telescope.nvim',
 
       -- tree-sitter
@@ -108,10 +105,12 @@
         "css-lsp",
         "deno",
         "json-lsp",
+        "emmet-ls",
         "lua-language-server",
         "shellcheck",
         "jsonls", "bashls", "crystalline", "cssls", "solargraph",
-        "denols", "lua_ls", "shellcheck"
+        "denols", "lua_ls", "shellcheck",
+        "prettierd"
       }
     }
     vim.api.nvim_create_autocmd('User', {

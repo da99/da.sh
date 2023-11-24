@@ -471,23 +471,47 @@ require("inc_rename").setup()
 -- require('lspconfig')
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 local util = require 'lspconfig.util'
-require'lspconfig'.jsonls.setup{}
--- require'lspconfig'.jsonls.setup{ cmd = { "vscode-json-languageserver", "--stdio" } } -- https://github.com/pwntester/nvim-lsp
--- require'lspconfig'.sumneko_lua.setup({ })
-require'lspconfig'.bashls.setup{}
-require'lspconfig'.crystalline.setup{}
-require'lspconfig'.cssls.setup{}
-require'lspconfig'.solargraph.setup{
+local lspconfig = require 'lspconfig'
+lspconfig.jsonls.setup{}
+-- lspconfig.jsonls.setup{ cmd = { "vscode-json-languageserver", "--stdio" } } -- https://github.com/pwntester/nvim-lsp
+-- lspconfig.sumneko_lua.setup({ })
+lspconfig.bashls.setup{}
+lspconfig.crystalline.setup{}
+lspconfig.cssls.setup{}
+lspconfig.solargraph.setup{
   capabilities = capabilities,
 }
-require'lspconfig'.lua_ls.setup{}
+lspconfig.lua_ls.setup{}
 -- =============================================================================
 -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
 -- NOTE: To appropriately highlight codefences returned from denols:
 vim.g.markdown_fenced_languages = { "ts=typescript" }
-require'lspconfig'.denols.setup{
+lspconfig.denols.setup{
   root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
 }
+
+lspconfig.html.setup{
+  filetypes = { "html" }
+}
+
+-- Emmet HTML completion:
+-- From: https://github.com/aca/emmet-ls
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+lspconfig.emmet_ls.setup({
+    -- on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "svelte", "pug", "typescriptreact", "vue" },
+    init_options = {
+      html = {
+        options = {
+          -- For possible options, see: https://github.com/emmetio/emmet/blob/master/src/config.ts#L79-L267
+          ["bem.enabled"] = true,
+        },
+      },
+    }
+})
+
 -- require "lspconfig".efm.setup {
 --     init_options = {documentFormatting = true},
 --     settings = { rootMarkers = {".git/"}, },
@@ -527,8 +551,8 @@ vim.notify.setup{
 -- =============================================================================
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    "bash", "css", "fish",
-    "json", "lua","ruby", "scss", "toml", "vim", "yaml",
+    "bash", "css", "fish", "lua",
+    "json", "html", "css", "ruby", "scss", "toml", "vim", "yaml",
     "markdown", "markdown_inline", "regex",
     "gitignore"
   },
