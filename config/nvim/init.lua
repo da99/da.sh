@@ -469,6 +469,7 @@ require("mason-lspconfig").setup{}
 require("inc_rename").setup()
 
 -- require('lspconfig')
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 local util = require 'lspconfig.util'
 require'lspconfig'.jsonls.setup{}
 -- require'lspconfig'.jsonls.setup{ cmd = { "vscode-json-languageserver", "--stdio" } } -- https://github.com/pwntester/nvim-lsp
@@ -476,7 +477,9 @@ require'lspconfig'.jsonls.setup{}
 require'lspconfig'.bashls.setup{}
 require'lspconfig'.crystalline.setup{}
 require'lspconfig'.cssls.setup{}
-require'lspconfig'.solargraph.setup{}
+require'lspconfig'.solargraph.setup{
+  capabilities = capabilities,
+}
 require'lspconfig'.lua_ls.setup{}
 -- =============================================================================
 -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
@@ -578,10 +581,41 @@ lspkind.init({ mode = 'symbol_text' })
 -- NVIM-CMP
 -- =============================================================================
 local cmp = require'cmp'
+local function has_words_before()
+  local line, col = (table.unpack)(vim.api.nvim_win_get_cursor(0))
+  return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match "%s" == nil
+end
 cmp.setup({
+  snippet = {
+    -- REQUIRED - you must specify a snippet engine
+    expand = function(args)
+      vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+      -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+      -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+    end,
+  },
   mapping = cmp.mapping.preset.insert({
     ['<C-c>'] = cmp.mapping.complete(),
     ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    ['<C-e>'] = cmp.mapping { i = cmp.mapping.abort(), c = cmp.mapping.close() },
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif has_words_before() then
+        cmp.complete()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+    ["<S-Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+
   }),
   formatting = {
     fields = { "kind", "abbr", "menu" },
@@ -594,7 +628,23 @@ cmp.setup({
   sources = cmp.config.sources({
     { name = 'nvim_lsp', priority = 1000 },
     { name = 'buffer', priority = 500 },
-    { name = 'path', priority = 250 }
+    { name = 'path', priority = 250 },
+    { name = 'vsnip', priority = 100 },
+
   })
 })
 
+  cmp.setup.cmdline({ '/', '?' }, {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources(
+      { { name = 'path' } },
+      { { name = 'cmdline' } }
+    )
+  })
