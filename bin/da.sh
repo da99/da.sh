@@ -595,6 +595,8 @@ case "$(echo "$@" | xargs)" in
 
   install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SourceCodePro.zip"
   install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SpaceMono.zip"
+  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.0/JetBrainsMono.zip"
+  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.0/UbuntuMono.zip"
   fc-cache
   ;;
 

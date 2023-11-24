@@ -66,7 +66,14 @@
 
       -- Neo-tree
       "nvim-lua/plenary.nvim",
-      { "nvim-neo-tree/neo-tree.nvim", branch = "v3.x", }
+      { "nvim-neo-tree/neo-tree.nvim", branch = "v3.x", },
+
+      -- Nvim-cmp
+      'hrsh7th/cmp-nvim-lsp',
+     'hrsh7th/cmp-buffer',
+     'hrsh7th/cmp-path',
+     'hrsh7th/cmp-cmdline',
+     'hrsh7th/nvim-cmp'
     }
   end -- function
 
