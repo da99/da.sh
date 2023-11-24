@@ -74,7 +74,8 @@
      'hrsh7th/cmp-path',
      'hrsh7th/cmp-cmdline',
      'hrsh7th/nvim-cmp',
-     'hrsh7th/vim-vsnip'
+     'dcampos/nvim-snippy',
+     'dcampos/cmp-snippy'
     }
   end -- function
 
