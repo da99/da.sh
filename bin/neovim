@@ -37,8 +37,6 @@ case "$*" in
     if which npm ; then
       if ! which vscode-html-language-server ; then
         npm install -g vscode-html-language-server
-      else
-        npm update -g
       fi
     else
       echo "!!! Install npm (ie node) via rtx"
