@@ -26,7 +26,8 @@ case "$*" in
     nvim --headless -u NONE -c 'lua require("bootstrap").headless_mason()'
     echo
     echo "--- Treesitter:"
-    nvim --headless +TSUpdateSync -c "echo 'done'" +q
+    # nvim --headless +TSUpdateSync -c "echo 'done'" +q
+    nvim --headless -u NORC -c 'lua require("bootstrap").headless_treesitter()' +qa
     echo ""
     echo "--- Done setting up nvim. ----" >&2
 
@@ -34,13 +35,6 @@ case "$*" in
       gem install neovim
     fi
 
-    if which npm ; then
-      if ! which vscode-html-language-server ; then
-        npm install -g vscode-html-language-server
-      fi
-    else
-      echo "!!! Install npm (ie node) via rtx"
-    fi
     ;;
 
   "edit init")

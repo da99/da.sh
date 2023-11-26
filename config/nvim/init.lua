@@ -9,13 +9,6 @@ local env        = vim.env
 local is_256     = env.TERM == "xterm-256color"
 local lsp        = vim.lsp
 
--- require "paq" {
---   'nathom/filetype.nvim',
---   'simrat39/symbols-outline.nvim',
---   "vim-crystal/vim-crystal",
--- }
--- require('filetype').setup({})
-
 g.indentLine_char      = '┊'
 g.indentLine_setColors = 0
 g.mapleader            = ' '
@@ -223,11 +216,11 @@ function tmp_run_filename(i)
   return vim.fn.substitute(raw_filename, '\\W\\+$', '' , '' )
 end
 
-function bootstrap()
-  local bs = require('bootstrap')
-  bs.paq_packages()
-  return require('paq')
-end -- function
+-- function bootstrap()
+--   local bs = require('bootstrap')
+--   bs.paq_packages()
+--   return require('paq')
+-- end -- function
 
 for i = 1, 3 do
   set_keymap('n', '<Leader>' .. i .. i, ":Topen<CR>:T da.sh run tmp/run " .. i .. "<CR>", {noremap=true})
@@ -462,38 +455,50 @@ require("inc_rename").setup()
 
 -- require('lspconfig')
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
 local util = require 'lspconfig.util'
 local lspconfig = require 'lspconfig'
 lspconfig.jsonls.setup{}
 -- lspconfig.jsonls.setup{ cmd = { "vscode-json-languageserver", "--stdio" } } -- https://github.com/pwntester/nvim-lsp
 -- lspconfig.sumneko_lua.setup({ })
-lspconfig.bashls.setup{}
+lspconfig.bashls.setup{
+  capabilities = capabilities,
+}
 lspconfig.crystalline.setup{}
-lspconfig.cssls.setup{}
+lspconfig.cssls.setup{
+  capabilities = capabilities,
+}
+
 lspconfig.solargraph.setup{
   capabilities = capabilities,
 }
-lspconfig.lua_ls.setup{}
+
+lspconfig.lua_ls.setup{
+  capabilities = capabilities,
+}
+
 -- =============================================================================
 -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
 -- NOTE: To appropriately highlight codefences returned from denols:
 vim.g.markdown_fenced_languages = { "ts=typescript" }
 lspconfig.denols.setup{
+  capabilities = capabilities,
   root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
 }
 
 lspconfig.html.setup{
-  filetypes = { "html" }
+  filetypes = { "html" },
+  capabilities = capabilities,
 }
 
 -- Emmet HTML completion:
 -- From: https://github.com/aca/emmet-ls
-capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 lspconfig.emmet_ls.setup({
     -- on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "svelte", "pug", "typescriptreact", "vue" },
+    filetypes = { "eruby", "html", "javascriptreact", "svelte", "pug", "typescriptreact", "vue" },
     init_options = {
       html = {
         options = {
@@ -542,12 +547,6 @@ vim.notify.setup{
 -- Treesitter:
 -- =============================================================================
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = {
-    "bash", "css", "fish", "lua",
-    "json", "html", "css", "ruby", "scss", "toml", "vim", "yaml",
-    "markdown", "markdown_inline", "regex",
-    "gitignore"
-  },
   sync_install = false,
   auto_install = true,
   rainbow = {
