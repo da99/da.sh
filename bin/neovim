@@ -13,6 +13,10 @@ case "$*" in
     ;;
 
   "setup")
+    void_linux install packages devel
+    if which gem && ! { gem list | grep neovim ; } ; then
+      gem install --user-install neovim
+    fi
     mkdir -p /progs/tmp/nvim
 
     if ! test -e "$HOME/.config/nvim" ; then

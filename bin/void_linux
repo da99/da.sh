@@ -105,6 +105,9 @@ case "$@" in
     cd "$(dirname "$0")"/..
     set -x
     sudo xbps-install -S $("$0" list packages devel | tr '\n' ' ')
+    if ! which node; then
+      rtx use --global node@latest
+    fi
     rtx use --global go@latest
     rtx use --global julia@latest
     rtx use --global perl@latest
