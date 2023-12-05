@@ -17,6 +17,11 @@ case "$*" in
     if which gem && ! { gem list | grep neovim ; } ; then
       gem install --user-install neovim
     fi
+
+    if which npm && ! { npm list --global | grep neovim ; } ; then
+      npm install -g neovim
+    fi
+
     mkdir -p /progs/tmp/nvim
 
     if ! test -e "$HOME/.config/nvim" ; then
@@ -34,10 +39,6 @@ case "$*" in
     nvim --headless -u NORC -c 'lua require("bootstrap").headless_treesitter()' +qa
     echo ""
     echo "--- Done setting up nvim. ----" >&2
-
-    if { which gem && ! gem list | grep neovim; } &>/dev/null; then
-      gem install neovim
-    fi
 
     ;;
 
