@@ -110,7 +110,7 @@ case "$@" in
     rtx use --global perl@latest
     rtx use --global java@latest
     if ! which node; then
-      rtx use --global node@latest
+      rtx use --global nodejs@latest
     fi
     if ! which ruby ; then
       echo
