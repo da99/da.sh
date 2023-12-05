@@ -441,7 +441,7 @@ case "$(echo "$@" | xargs)" in
       if test -e /media-lib ; then
         dirs+=(/media-lib)
       fi
-      find -L ${dirs[@]} -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
+      find -L "${dirs[@]}" -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
     } | sort
     ;;
 
@@ -499,7 +499,7 @@ case "$(echo "$@" | xargs)" in
       exit 1
     fi
     set -x
-    ln -s "$da_dir"/config/plainborder $PWD/plainborder
+    ln -s "$da_dir"/config/plainborder "$PWD"/plainborder
     ;;
 
   "install obsidian theme")
