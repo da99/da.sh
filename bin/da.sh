@@ -67,6 +67,8 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd ssh port [local port] [remote port] [remote name]"
     echo
     echo "$cmd font setup"
+    echo
+    echo "$cmd rtx upgrade all"
     ;;
 
   "check fs")
@@ -570,6 +572,13 @@ case "$(echo "$@" | xargs)" in
       set -x
       konsole --profile devrack -e da.sh verbose run $cmd
     fi
+  ;;
+
+"rtx upgrade all")
+  while read -r LINE ; do
+    echo "=== Checking $LINE"
+    rtx use --global "$LINE"@latest
+  done < <( rtx ls | cut -d' ' -f1 )
   ;;
 
 "font setup")
