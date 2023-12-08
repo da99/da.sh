@@ -7,12 +7,12 @@ set -u -e -o pipefail
 case "$*" in
   "-h"|"--help"|"help")
     echo "$0 -h|--help|help -- Show this message."
-    echo "$0 setup"
+    echo "$0 setup|upgrade"
     echo "$0 edit init|bootstrap"
     echo
     ;;
 
-  "setup")
+  "setup"|"upgrade")
     void_linux install packages devel
     if which gem && ! { gem list | grep neovim ; } ; then
       gem install --user-install neovim
