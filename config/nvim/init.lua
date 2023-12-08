@@ -9,8 +9,6 @@ local env        = vim.env
 local is_256     = env.TERM == "xterm-256color"
 local lsp        = vim.lsp
 
-vim.lsp.set_log_level("debug")
-
 g.indentLine_char      = '┊'
 g.indentLine_setColors = 0
 g.mapleader            = ' '
