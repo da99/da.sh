@@ -15,11 +15,11 @@ class Battery
   end
 
   def charging?
-    state === "charging"
+    state === 'charging'
   end
 
   def discharging?
-    state === "discharging"
+    state === 'discharging'
   end
 
   def find(str)
@@ -37,16 +37,16 @@ class Battery
 end # class
 
 case cmd
-when "current"
+when 'current'
   batt = Battery.new
   puts batt.to_number
 
-when "status"
+when 'status'
   batt = Battery.new
   puts "#{batt.state} #{batt.to_number}"
 
-when "watch"
-  while true
+when 'watch'
+  Kernel.loop do
     batt = Battery.new
     if batt.discharging? && batt.to_number < 25
       if batt.to_number < 12
@@ -54,7 +54,7 @@ when "watch"
         next
       end
 
-      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg --urgency=critical "Battery!" "Plug in charger: #{batt.to_number}%"`
+      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg  "Battery!" "Plug in charger: #{batt.to_number}%"`
       if batt.to_number < 15
         sleep(60)
         next
@@ -69,7 +69,7 @@ when "watch"
     end
 
     sleep(60 * 5)
-  end
+  end # Kernel.loop
 else
   raise "Unknown option: #{cmd}"
 end
