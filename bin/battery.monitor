@@ -46,6 +46,10 @@ when 'status'
   puts "#{batt.state} #{batt.to_number}"
 
 when 'watch'
+  msg_id = nil
+  low_icon = '/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg'
+  full_icon = '/usr/share/icons/hicolor/scalable/apps/xfce4-battery-full-charging.svg'
+  msg_app_name = 'battery.monitor'
   Kernel.loop do
     batt = Battery.new
     if batt.discharging? && batt.to_number < 25
@@ -54,7 +58,7 @@ when 'watch'
         next
       end
 
-      `notify-send --app-name=battery.monitor --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg  "Battery!" "Plug in charger: #{batt.to_number}%"`
+      msg_id = `notify-send --replace-id='#{msg_id || 10000}' --app-name='#{msg_app_name}' --icon='#{low_icon}' --print-id  "BATTERY!" "PLUG IN"`.strip
       if batt.to_number < 15
         sleep(60)
         next
@@ -65,7 +69,7 @@ when 'watch'
     end
 
     if batt.charging? && batt.to_number > 95
-      `notify-send --app-name=battery.monitor --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-full-charging.svg  "Battery Charged:" "Unplug charger: #{batt.to_number}%"`
+      msg_id = `notify-send --replace-id='#{msg_id || 10000}' --app-name=#{msg_app_name} --icon='#{full_icon}' --print-id "Battery Charged:" "Unplug charger"`.strip
     end
 
     sleep(60 * 5)
