@@ -54,7 +54,7 @@ when 'watch'
         next
       end
 
-      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg  "Battery!" "Plug in charger: #{batt.to_number}%"`
+      `notify-send --app-name=battery.monitor --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg  "Battery!" "Plug in charger: #{batt.to_number}%"`
       if batt.to_number < 15
         sleep(60)
         next
@@ -65,7 +65,7 @@ when 'watch'
     end
 
     if batt.charging? && batt.to_number > 95
-      `notify-send --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-full-charging.svg  "Battery Charged:" "Unplug charger: #{batt.to_number}%"`
+      `notify-send --app-name=battery.monitor --icon=/usr/share/icons/hicolor/scalable/apps/xfce4-battery-full-charging.svg  "Battery Charged:" "Unplug charger: #{batt.to_number}%"`
     end
 
     sleep(60 * 5)
