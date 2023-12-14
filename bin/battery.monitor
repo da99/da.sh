@@ -3,6 +3,48 @@
 #
 cmd = ARGV.map(&:strip).join(' ')
 
+class BatteryNotify
+  class << self
+    @msg_id = nil
+    def send(icon, title, body)
+      cmd = ['notify-send']
+      cmd << "--replace-id='#{@msg_id}'" unless @msg_id.nil?
+      cmd << "--app-name='battery.monitor'"
+      cmd << "--icon='#{icon}'"
+      cmd << '--print-id'
+      cmd << "--urgency='critical'"
+      cmd << title.inspect
+      cmd << body.inspect
+      full_cmd = cmd.join ' '
+      warn "Running @ #{Time.now}: #{full_cmd}"
+        @msg_id = `#{full_cmd}`.strip
+      warn "Message id: #{@msg_id}"
+      @msg_id
+    end
+
+    def low(title, body)
+      send('/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg', title, body)
+    end
+
+    def full(title, body)
+      send '/usr/share/icons/hicolor/scalable/apps/xfce4-battery-full-charging.svg', title, body
+    end
+
+    def visible?
+      !@msg_id.nil?
+    end
+
+    def clear
+      return nil unless visible?
+
+      `gdbus call --session -d org.freedesktop.Notifications -o /org/freedesktop/Notifications -m  org.freedesktop.Notifications.CloseNotification #{@msg_id} `
+      old_msg_id = @msg_id
+      @msg_id = nil
+      old_msg_id
+    end
+  end # class << self
+end # class
+
 class Battery
   attr_reader :info
 
@@ -46,33 +88,28 @@ when 'status'
   puts "#{batt.state} #{batt.to_number}"
 
 when 'watch'
-  msg_id = nil
-  low_icon = '/usr/share/icons/hicolor/scalable/apps/xfce4-battery-low.svg'
-  full_icon = '/usr/share/icons/hicolor/scalable/apps/xfce4-battery-full-charging.svg'
-  msg_app_name = 'battery.monitor'
   Kernel.loop do
     batt = Battery.new
-    if batt.discharging? && batt.to_number < 25
+    if batt.discharging? && batt.to_number < 35
       if batt.to_number < 12
         `loginctl suspend`
         next
       end
 
-      msg_id = `notify-send --replace-id='#{msg_id || 10000}' --app-name='#{msg_app_name}' --icon='#{low_icon}' --print-id  "BATTERY!" "PLUG IN"`.strip
-      if batt.to_number < 15
-        sleep(60)
-        next
-      end
-
-      sleep(60 * 5)
+      BatteryNotify.low("LOW battery: #{batt.to_number}%", 'Plug in charger.')
+      sleep(15)
       next
-    end
+    end # if discharging?
 
-    if batt.charging? && batt.to_number > 95
-      msg_id = `notify-send --replace-id='#{msg_id || 10000}' --app-name=#{msg_app_name} --icon='#{full_icon}' --print-id "Battery Charged:" "Unplug charger"`.strip
-    end
-
-    sleep(60 * 5)
+    if batt.charging?
+      if batt.to_number > 95
+        BatteryNotify.full("Battery Charged: #{batt.to_number}", 'Unplug charger.')
+        sleep 15
+      else
+        BatteryNotify.clear
+        sleep 120
+      end
+    end # if charging?
   end # Kernel.loop
 else
   raise "Unknown option: #{cmd}"
