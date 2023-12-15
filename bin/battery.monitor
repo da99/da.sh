@@ -90,7 +90,7 @@ when 'status'
 when 'watch'
   Kernel.loop do
     batt = Battery.new
-    if batt.discharging? && batt.to_number < 35
+    if batt.discharging? && batt.to_number < 23
       if batt.to_number < 12
         `loginctl suspend`
         next
