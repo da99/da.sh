@@ -27,7 +27,7 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd bspwm config"
     echo "       Runs command BSPwm config optiosn via bspc."
     echo
-    echo "$cmd install progs"
+    echo "$cmd install progs|bun.sh"
     echo "$cmd progs list"
     echo
     echo "$cmd mobile-repos"
@@ -220,6 +220,26 @@ case "$(echo "$@" | xargs)" in
       sudo apt update
       sudo apt upgrade
     fi
+    ;;
+
+  "install bun.sh")
+    if command -v bun ; then
+      echo "=== Already installed bun: $(bun -v)" >&2
+      exit 0
+    fi
+    if ! test -e /progs/bin ; then
+      echo "!!! /progs/bin not setup" >&2
+      exit 1
+    fi
+    echo "=== Installing bun to /progs/bin" >&2
+    set -x
+    cd /tmp
+    file_url="https://github.com/oven-sh/bun/releases/latest/download/bun-linux-x64.zip"
+    wget "$file_url"
+    unzip "$(basename "$file_url")"
+    cd "$(basename "$file_url" .zip)"
+    mv bun /progs/bin/
+    bun -v
     ;;
 
   "install progs")
