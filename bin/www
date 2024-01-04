@@ -6,6 +6,20 @@ require 'json'
 cmd = ARGV.join(' ')
 prog = __FILE__.split('/').last
 
+# Uses templates/ dir.
+class Template
+  DIR = File.join File.dirname(File.dirname(__FILE__)), 'templates'
+  class << self
+    def compile(name, pairs)
+      template_content = File.read(File.join(Template::DIR, name))
+      pairs.each_pair do |k, v|
+        template_content = template_content.gsub("$#{k}", v)
+      end
+      template_content
+    end
+  end # class << self
+end # class Template
+
 # Represents a file in the public directory.
 class PublicFile
   class << self
@@ -41,7 +55,7 @@ class PublicFile
 
     def write_manifest(raw_dir)
       json = manifest(raw_dir).to_json
-      File.write('files.mjs', %(const a = #{json} ;\nexport default a;\n))
+      File.write 'files.mjs', Template.compile('file.mjs', { 'JSON' => json })
       puts '=== Wrote: files.mjs'
       File.write('files.json', json)
       puts '=== Wrote: files.json'
@@ -125,6 +139,14 @@ when '-h', '--help', 'help'
   puts "#{prog} upload public [dir] to [bucket]"
   puts "#{prog} write file manifest for [dir]"
   puts "#{prog} set src to [domain]"
+  puts "#{prog} info"
+
+when 'info'
+  puts "__FILE__ :     #{__FILE__}"
+  puts "file dir:      #{File.dirname __FILE__}"
+  puts "templates dir: #{Template::DIR}"
+  puts "dir:       #{Dir.pwd}"
+  puts "prog:      #{prog}"
 
 when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
   `touch bucket_files.json`
