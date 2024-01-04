@@ -1,31 +1,31 @@
 #!/usr/bin/env ruby
 
-require "open3"
+require 'open3'
 
 pid = false
 puts "#{$PROGRAM_NAME} pid #{Process.pid}"
 
-Signal.trap("INT") { Process.kill("INT", pid) if pid }
-Signal.trap("TERM") { Process.kill("INT", pid) if pid }
+Signal.trap('INT') { Process.kill('INT', pid) if pid }
+Signal.trap('TERM') { Process.kill('INT', pid) if pid }
 
-cmd  = ARGV.dup
+cmd = ARGV.dup
 genmon = cmd.shift
 puts cmd.inspect
 
 old_line = '-!-'
-Open3.popen2(*cmd) do |i, o, stat|
+Open3.popen2(*cmd) do |_i, o, stat|
   puts "#{cmd.first} PID: #{stat.pid}"
   pid = stat.pid
-  o.each_line { |line|
-    if old_line == line && cmd.first === "xtitle"
+  o.each_line do |line|
+    if old_line == line && cmd.first == 'xtitle'
       warn "=== skipping: #{line.inspect}"
       next
     end
     old_line = line
     warn "=== running: #{line.inspect}"
-    warn   "xfce4-panel    --plugin-event=genmon-#{genmon}:refresh:bool:true"
-    system "xfce4-panel", "--plugin-event=genmon-#{genmon}:refresh:bool:true" rescue nil
-  }
+    warn "xfce4-panel    --plugin-event=genmon-#{genmon}:refresh:bool:true"
+    system('xfce4-panel', "--plugin-event=genmon-#{genmon}:refresh:bool:true")
+  end
   puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
 end
 
