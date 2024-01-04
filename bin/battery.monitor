@@ -17,7 +17,7 @@ class BatteryNotify
       cmd << body.inspect
       full_cmd = cmd.join ' '
       warn "Running @ #{Time.now}: #{full_cmd}"
-        @msg_id = `#{full_cmd}`.strip
+      @msg_id = `#{full_cmd}`.strip
       warn "Message id: #{@msg_id}"
       @msg_id
     end
@@ -57,11 +57,11 @@ class Battery
   end
 
   def charging?
-    state === 'charging'
+    state == 'charging'
   end
 
   def discharging?
-    state === 'discharging'
+    state == 'discharging'
   end
 
   def find(str)
@@ -90,26 +90,37 @@ when 'status'
 when 'watch'
   Kernel.loop do
     batt = Battery.new
-    if batt.discharging? && batt.to_number < 23
-      if batt.to_number < 12
-        `loginctl suspend`
-        next
-      end
-
-      BatteryNotify.low("LOW battery: #{batt.to_number}%", 'Plug in charger.')
-      sleep(15)
-      next
-    end # if discharging?
 
     if batt.charging?
       if batt.to_number > 95
         BatteryNotify.full("Battery Charged: #{batt.to_number}", 'Unplug charger.')
-        sleep 15
-      else
-        BatteryNotify.clear
-        sleep 120
+        sleep 5
+        next
       end
+
+      BatteryNotify.clear
+      sleep 120
+      next
     end # if charging?
+
+    if batt.to_number < 12
+      `loginctl suspend`
+      sleep 5
+      next
+    end
+
+    if batt.to_number < 23
+      BatteryNotify.low("LOW battery: #{batt.to_number}%", 'Plug in charger.')
+      sleep(5)
+      next
+    end
+
+    if batt.to_number > 92
+      BatteryNotify.clear
+      sleep 60
+    end
+
+    next
   end # Kernel.loop
 else
   raise "Unknown option: #{cmd}"

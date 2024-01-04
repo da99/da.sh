@@ -97,28 +97,25 @@ class Bucket
     @files = txt.empty? ? [] : JSON.parse(txt)
   end # def
 
+  def upload_file(new_file)
+    cmd = %( bunx wrangler r2 object put "#{File.join(bucket, new_file.public_path)}" --file="#{new_file.path}" )
+    puts "\n--- Uploading: #{cmd}"
+    exit(1) unless system(cmd)
+    new_file.summary
+  end
+
   def upload
     old_etags = files.map { |x| x['etag'] }
 
     summarys = PublicFile.all(dir).map do |new_file|
-      next if old_etags.include?(new_file.etag)
-
-      cmd = %( bunx wrangler r2 object put "#{File.join(bucket, new_file.public_path)}" --file="#{new_file.path}" )
-      puts "\n--- Uploading: #{cmd}"
-      exit(1) unless system(cmd)
-      new_file.summary
+      upload_file(new_file) unless old_etags.include?(new_file.etag)
     end
 
-    if summarys.empty?
-      puts '=== No new files to upload. ==='
-      return false
-    end
+    return false if summarys.empty?
 
     @files.concat(summarys)
-    puts '=== Finished uploading.'
-    puts "=== Saving to: #{self.class.file_json}"
+    puts "=== Finished uploading. Saving to: #{self.class.file_json}"
     File.write(self.class.file_json, @files.to_json)
-    true
   end # def
 end # class
 
