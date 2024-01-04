@@ -99,7 +99,7 @@ when 'watch'
       end
 
       BatteryNotify.clear
-      sleep 120
+      sleep 30
       next
     end # if charging?
 
