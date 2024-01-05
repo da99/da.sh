@@ -502,11 +502,19 @@ case "$(echo "$@" | xargs)" in
   "pipewire install")
     set -x
     sudo xbps-install -S pipewire wireplumber libspa-bluetooth
+
+    set +x
     : "${XDG_CONFIG_HOME:=${HOME}/.config}"
-    mkdir -p "${XDG_CONFIG_HOME}/pipewire"
-    sed '/path.*=.*pipewire-media-session/s/{/#{/' /usr/share/pipewire/pipewire.conf > "${XDG_CONFIG_HOME}/pipewire/pipewire.conf"
-    mkdir -p "${XDG_CONFIG_HOME}/pipewire/pipewire.conf.d"
-    echo 'context.exec = [ { path = "/usr/bin/wireplumber" args = "" } ]' > "${XDG_CONFIG_HOME}/pipewire/pipewire.conf.d/10-wireplumber.conf"
+    conf_d="${XDG_CONFIG_HOME}/pipewire/pipewire.conf.d"
+    mkdir -p "${conf_d}"
+    for x in /usr/share/examples/wireplumber/10-wireplumber.conf /usr/share/examples/pipewire/20-pipewire-pulse.conf ; do
+      new_loc="${conf_d}/$(basename "$x")"
+      if test -e "$new_loc" ; then
+        echo "--- Skipping: $new_loc"
+      else
+        ln -s "${x}" "${conf_d}"
+      fi
+    done
     ;;
 
   "install openbox theme")
