@@ -105,18 +105,18 @@ case "$@" in
     cd "$(dirname "$0")"/..
     set -x
     sudo xbps-install -S $("$0" list packages devel | tr '\n' ' ')
-    rtx use --global go@latest
-    rtx use --global julia@latest
-    rtx use --global perl@latest
-    rtx use --global java@latest
+    mise use --global go@latest
+    mise use --global julia@latest
+    mise use --global perl@latest
+    mise use --global java@latest
     if ! which node; then
-      rtx use --global nodejs@latest
+      mise use --global nodejs@latest
     fi
     if ! which ruby ; then
       echo
       echo
       echo "=== This is going to take about 8 minutes..."
-      rtx use --global ruby@latest
+      mise use --global ruby@latest
     fi
     ;;
 

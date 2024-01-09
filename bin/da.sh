@@ -68,7 +68,7 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd font setup"
     echo
-    echo "$cmd rtx upgrade all"
+    echo "$cmd mise upgrade all"
     ;;
 
   "check fs")
@@ -602,11 +602,11 @@ case "$(echo "$@" | xargs)" in
     fi
   ;;
 
-"rtx upgrade all")
+"mise upgrade all")
   while read -r LINE ; do
     echo "=== Checking $LINE"
-    rtx use --global "$LINE"@latest
-  done < <( rtx ls | cut -d' ' -f1 )
+    mise use --global "$LINE"@latest
+  done < <( mise ls | cut -d' ' -f1 )
   ;;
 
 "font setup")
