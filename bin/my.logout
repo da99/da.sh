@@ -6,7 +6,7 @@ set -u -e -o pipefail
 case "$@" in
   "Power Off")
     if windows list is empty; then
-      coproc ( loginctl poweroff  > /dev/null  2>&1 )
+      coproc ( loginctl poweroff > /dev/null  2>&1 )
     else
       notify-send "Power Off Failed" "Windows open: $(windows list count)"
     fi
@@ -17,6 +17,9 @@ case "$@" in
     else
       notify-send "Reboot Failed" "Windows open: $(windows list count)"
     fi
+    ;;
+  "Sleep")
+    coproc ( loginctl suspend > /dev/null  2>&1 )
     ;;
   "Quit Window Manager")
     if windows list is empty; then
@@ -29,16 +32,17 @@ case "$@" in
     coproc ( da.sh screen sleep 2  > /dev/null  2>&1 )
     ;;
   "menu")
-    if windows list is empty ; then
+    # if windows list is empty ; then
       rofi -modes "logout:my.logout" -show logout
-    else
-      notify-send "Error:" "Windows open: $(windows list count)"
-    fi
+    # else
+    #   notify-send "Error:" "Windows open: $(windows list count)"
+    # fi
     ;;
   "")
     echo "Screen Sleep"
     echo "Power Off"
     echo "Reboot"
+    echo "Sleep"
     echo "Quit Window Manager"
     ;;
   *)
