@@ -152,8 +152,10 @@ case "$@" in
 
   "upgrade packages")
     set -x
-    sudo xbps-install -u xbps
-    sudo xbps-install -Su
+    sudo xbps-install -Su || {
+      sudo xbps-install -u xbps;
+      sudo xbps-install -Su;
+    }
     ;;
 
   "cleanup")
