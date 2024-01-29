@@ -136,7 +136,7 @@ case "$@" in
     ;;
 
   "upgrade void-packages")
-    cd /progs/void-packages
+    cd /progs/void-packages || return 0
     git pull
     # https://github.com/void-linux/void-packages
     # xcheckmypkgs
