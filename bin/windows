@@ -619,7 +619,6 @@ class Left
 end # class
 
 class Right
-
   class << self
     include Position
     def x
@@ -694,6 +693,8 @@ class Right_Top_Stamp
     end
 
     def w
+      return (1920 * 0.20).to_i if Geo.widescreen?
+
       (Geo.w * 0.20).to_i
     end
 
@@ -715,6 +716,8 @@ class Right_Bottom_Stamp
     end
 
     def w
+      return (1920 * 0.15).to_i if Geo.widescreen?
+
       (Geo.w * 0.15).to_i
     end
 
@@ -727,9 +730,8 @@ end # class
 class Geo
   POSITIONS = [Left, Right_Top, Right_Bottom, Right, Maximize, Right_Bottom_Stamp, Right_Top_Stamp]
   class << self
-
     def _init
-      re_init if not defined? @raw_area
+      re_init unless defined? @raw_area
       @raw_area
     end
 
@@ -777,6 +779,10 @@ class Geo
     def h
       _init
       @screen_h
+    end
+
+    def widescreen?
+      w == 2560 && h == 1080
     end
 
   end # class self
