@@ -9,6 +9,7 @@ case "$@" in
     echo "  $cmd hud available packages"
     echo "  $cmd [list|install] packages [devel]"
     echo "  $cmd setup"
+    echo "  $cmd upgrade"
     echo "  $cmd upgrade packages"
     echo "  $cmd upgrade void-packages"
     echo "     Updates /progs/void-packages"
@@ -109,6 +110,8 @@ case "$@" in
     mise use --global julia@latest
     mise use --global perl@latest
     mise use --global java@latest
+    mise use --global crystal@latest
+    mise use --global node@latest
     if ! which node; then
       mise use --global nodejs@latest
     fi
@@ -133,6 +136,16 @@ case "$@" in
   "list packages devel")
     cd "$(dirname "$0")"/..
     cat config/void.packages.devel.txt | tr '\n' ' '
+    ;;
+
+  "upgrade")
+    "$0" upgrade packages
+    if test -e /progs/void-packages ; then
+      "$0" upgrade void-packages
+    fi
+    if command -v mise ; then
+      mise upgrade
+    fi
     ;;
 
   "upgrade void-packages")

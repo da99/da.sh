@@ -14,12 +14,18 @@ case "$*" in
 
   "setup"|"upgrade")
     void_linux install packages devel
+
     if which gem && ! { gem list | grep neovim ; } ; then
       gem install --user-install neovim
     fi
 
     if which npm && ! { npm list --global | grep neovim ; } ; then
       npm install -g neovim
+    fi
+
+    if ! command -v mise ; then
+      echo "!!! mise command not found."
+      exit 1
     fi
 
     mkdir -p /progs/tmp/nvim

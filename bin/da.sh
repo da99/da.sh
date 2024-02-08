@@ -67,8 +67,6 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd ssh port [local port] [remote port] [remote name]"
     echo
     echo "$cmd font setup"
-    echo
-    echo "$cmd mise upgrade all"
     ;;
 
   "check fs")
@@ -602,40 +600,33 @@ case "$(echo "$@" | xargs)" in
     fi
   ;;
 
-"mise upgrade all")
-  while read -r LINE ; do
-    echo "=== Checking $LINE"
-    mise use --global "$LINE"@latest
-  done < <( mise ls | cut -d' ' -f1 )
-  ;;
+  "font setup")
+    dir="$HOME/.local/share/fonts"
+    mkdir -p "$dir"
 
-"font setup")
-  dir="$HOME/.local/share/fonts"
-  mkdir -p "$dir"
-  
-  install_font () {
-    cd "$dir"
-    url="$1"
-    file="$(basename "$url")"
-    fname="$(basename "$file" ".zip")"
-    if test -e "$fname" ; then
-      echo "=== $fname ($file) is setup."
-    else
-      echo "=== Installing $fname font:"
-      mkdir "$fname"
-      cd "$fname"
-      wget "$url"
-      unzip "$file"
-      rm "$file"
-    fi
-  }
+    install_font () {
+      cd "$dir"
+      url="$1"
+      file="$(basename "$url")"
+      fname="$(basename "$file" ".zip")"
+      if test -e "$fname" ; then
+        echo "=== $fname ($file) is setup."
+      else
+        echo "=== Installing $fname font:"
+        mkdir "$fname"
+        cd "$fname"
+        wget "$url"
+        unzip "$file"
+        rm "$file"
+      fi
+    }
 
-  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SourceCodePro.zip"
-  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SpaceMono.zip"
-  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.0/JetBrainsMono.zip"
-  install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.0/UbuntuMono.zip"
-  set -x
-  fc-cache
+    install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SourceCodePro.zip"
+    install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/SpaceMono.zip"
+    install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.0/JetBrainsMono.zip"
+    install_font "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.0/UbuntuMono.zip"
+    set -x
+    fc-cache
   ;;
 
 
