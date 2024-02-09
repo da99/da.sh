@@ -120,7 +120,12 @@ cd () {
 
 if test -f /tmp/last.cd ;
 then
-  builtin cd "$(cat /tmp/last.cd)"
+  local _last_cd="$(cat /tmp/last.cd)"
+  if test -e "$_last_cd" ; then
+    builtin cd "$_last_cd"
+  else
+    rm /tmp/last.cd
+  fi
 fi
 # =================================================================
 
