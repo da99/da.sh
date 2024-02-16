@@ -67,7 +67,6 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd ssh port [local port] [remote port] [remote name]"
     echo
     echo "$cmd font setup"
-    echo "$cmd every [time] [cmd...]"
     ;;
 
   "check fs")
@@ -630,21 +629,6 @@ case "$(echo "$@" | xargs)" in
     fc-cache
   ;;
 
-  "every "*)
-    shift
-    duration="$1"
-    shift
-    cmd="$*"
-    do_run="true"
-    while ! test -z "$do_run" ; do
-      $*
-      echo "--- sleeping $(date): $duration"
-      sleep "$duration"
-    done
-    # while true ; do
-    #
-    # done
-    ;;
 
   *)
     "$THIS_NODE_RB" $*
