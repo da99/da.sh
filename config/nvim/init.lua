@@ -482,9 +482,13 @@ lspconfig.lua_ls.setup{
 -- From: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#denols
 -- NOTE: To appropriately highlight codefences returned from denols:
 vim.g.markdown_fenced_languages = { "ts=typescript" }
-lspconfig.denols.setup{
+-- lspconfig.denols.setup{
+--   capabilities = capabilities,
+--   root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
+-- }
+lspconfig.tsserver.setup{
   capabilities = capabilities,
-  root_dir = util.root_pattern('deno.json', 'deno.jsonc', '.git', '.'),
+  root_dir = util.root_pattern('tsconfig.json', '.git', '.'),
 }
 
 lspconfig.html.setup{

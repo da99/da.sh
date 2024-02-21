@@ -102,7 +102,7 @@ local function headless_mason()
     ensure_installed = {
       "crystalline",
       "bash-language-server", "shellcheck", "bashls",
-      "deno",
+      "deno", "typescript-language-server",
       "json-lsp", "html-lsp",
       "css-lsp", "solargraph",
       "emmet-ls", "prettierd",
