@@ -149,8 +149,13 @@ case "$@" in
     ;;
 
   "upgrade void-packages")
-    cd /progs/void-packages || return 0
+    if ! test -e /progs/void-packages ; then
+      return 0
+    fi
+
+    cd /progs/void-packages
     git pull
+
     # https://github.com/void-linux/void-packages
     # xcheckmypkgs
     if which flatpak >/dev/null ; then
