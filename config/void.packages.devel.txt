@@ -14,3 +14,4 @@ fuse-sshfs
 lua54 luarocks-lua54
 python3-neovim
 ruby ruby-devel
+inotify-tools
