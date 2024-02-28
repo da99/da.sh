@@ -6,6 +6,11 @@ require 'json'
 cmd = ARGV.join(' ')
 prog = __FILE__.split('/').last
 
+def run_cmd(s_cmd)
+  warn "--- Running: #{s_cmd}"
+  `#{s_cmd}`.strip
+end
+
 # Uses templates/ dir.
 class Template
   DIR = File.join File.dirname(File.dirname(__FILE__)), 'templates'
@@ -139,6 +144,7 @@ when '-h', '--help', 'help'
   puts "#{prog} upload public [dir] to [bucket]"
   puts "#{prog} write file manifest for [dir]"
   puts "#{prog} set src to [domain]"
+  puts "#{prog} build mjs"
   puts "#{prog} info"
 
 when 'info'
@@ -154,6 +160,24 @@ when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
   domain = Regexp.last_match(2)
   b = Bucket.new(dir, domain)
   b.upload
+
+when 'build mjs'
+  raw_files = `find Public/section -type f -name index.mts`.strip.split("\n")
+  case raw_files.size
+  when 0
+    warn '--- No .mts scripts found.'
+  when 1
+    raw = raw_files.first
+    run_cmd %( bun build "#{raw}" > "#{raw.sub('.mts', '.mjs')}" )
+    run_cmd %( rm "#{raw}")
+  else
+    run_cmd %( bun build Public/section/*/index.mts --splitting --outdir=Public/section --outbase=./ )
+    raw_files.each do |x|
+      run_cmd "mv #{x.sub('.mts', '.js')} #{x.sub('.mts', '.mjs')}"
+      File.unlink(x)
+      warn "--- File removed: #{x}"
+    end
+  end
 
 when %r{^write file manifest for ([./0-9A-Z]+)$}i
   PublicFile.write_manifest(Regexp.last_match(1))
