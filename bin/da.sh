@@ -276,7 +276,7 @@ case "$(echo "$@" | xargs)" in
     ;;
 
   mobile-repos)
-    for x in alegria laser.store slides dom.ts html.js da.sh my_uni my_dev01 my_bdrm jaki.club ; do
+    for x in alegria slides pictures laser.store dom.ts html.js da.sh my_uni my_dev01 my_bdrm jaki.club ; do
       if test -e "/apps/$x" ; then
         echo "/apps/$x"
       fi
