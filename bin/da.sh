@@ -32,7 +32,7 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd mobile-repos"
     echo "$cmd upgrade progs"
-    echo "$cmd upgrade repos"
+    echo "$cmd upgrade repos [additional repo names]"
     echo
     echo "$cmd node latest"
     echo "$cmd node latest install"
@@ -292,6 +292,20 @@ case "$(echo "$@" | xargs)" in
       echo -n "=== $PWD: "
       git pull
     done < <("$0" mobile-repos)
+    ;;
+
+  "upgrade repos "*)
+    "$0" upgrade repos
+    shift; shift
+    for dir in "$@"; do
+      {
+        cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" || {
+          echo "!!! Not found: $dir"; exit 1;
+        };
+      } 2>/dev/null
+      echo -n "=== $PWD: "
+      git pull
+    done
     ;;
 
   "check dirs") # check dirs
