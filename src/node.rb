@@ -20,7 +20,6 @@ def node_latest_version
   end
 end
 
-
 case cmd
 when 'node latest'
   latest = node_latest_version
