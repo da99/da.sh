@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 # Manage a files for a Bucket.
@@ -40,3 +41,23 @@ class Bucket
     File.write(self.class.file_json, @files.to_json)
   end # def
 end # class
+
+if $PROGRAM_NAME == __FILE__
+  cmd = $ARGV.join(' ')
+  case cmd
+  when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
+    `touch bucket_files.json`
+    dir = Regexp.last_match(1)
+    domain = Regexp.last_match(2)
+    b = Bucket.new(dir, domain)
+    b.upload
+
+  when %r{^write file manifest for ([./0-9A-Z]+)$}i
+    PublicFile.write_manifest(Regexp.last_match(1))
+
+
+  else
+    warn "!!! Unknown command: #{cmd}"
+    exit 1
+  end
+end

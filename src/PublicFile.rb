@@ -71,3 +71,60 @@ class PublicFile
     )
   end # def
 end # class
+
+if $PROGRAM_NAME == __FILE__
+  cmd = $ARGV.join(' ')
+  case cmd
+
+  when 'build mjs'
+    raw_files = `find Public/section -type f -name index.mts`.strip.split("\n")
+    case raw_files.size
+    when 0
+      warn '--- No .mts scripts found.'
+    when 1
+      raw = raw_files.first
+      run_cmd %( bun build "#{raw}" > "#{raw.sub('.mts', '.mjs')}" )
+      run_cmd %( rm "#{raw}")
+    else
+      run_cmd %( bun build Public/section/*/index.mts --splitting --outdir=Public/section --outbase=./ )
+      raw_files.each do |x|
+        run_cmd "mv #{x.sub('.mts', '.js')} #{x.sub('.mts', '.mjs')}"
+        File.unlink(x)
+        warn "--- File removed: #{x}"
+      end
+    end
+
+  when /^set src to (.+)$/i
+    dir = 'dist'
+    domain = Regexp.last_match(1)
+    manifest = PublicFile.manifest(dir)
+    files = `find "#{dir}" -type f -name '*.html'`.strip.split('\n')
+    if files.empty?
+      puts "--- No files found for: setting #{dir}"
+    else
+      puts "--- Setting #{dir} to https://#{domain}..."
+    end
+    files.each do |raw|
+      origin = File.read(raw)
+      new_body = origin.gsub(/(src|href)="([^"]+)"/) do |match|
+        attr = Regexp.last_match(1)
+        new_val = manifest[Regexp.last_match(2)]
+        if new_val
+          %(#{attr}="https://#{File.join domain, new_val['public_path']}")
+        else
+          match
+        end
+      end # .gsub
+      if origin == new_body
+        warn "--- Skipping: #{raw}"
+          next
+      end
+      warn "=== Updated: #{raw}"
+        File.write(raw, new_body)
+    end # files.each
+
+  else
+    warn "!!! Unknown command: #{cmd}"
+    exit 1
+  end
+end
