@@ -176,7 +176,7 @@ set_keymap('n', '<Leader><TAB>', '<CMD>tabnext<CR>', {noremap=true, silent=true}
 set_keymap('n', '<Leader>ol', '<CMD>:call ToggleLocationList()<CR>', {})
 set_keymap('n', '<Leader>op', '<CMD>:call ToggleQuickfixList()<CR>', {})
 
-set_keymap('n', '<Leader>ee', '<CMD>Neotree<CR>', {})
+set_keymap('n', '<Leader>ee', '<CMD>Neotree filesystem reveal left<CR>', {})
 
 set_keymap('n', '<Leader>bb', '<CMD>bnext<CR>', {})
 set_keymap('n', '<Leader>bd', ':bdelete<CR>', {})
@@ -671,3 +671,7 @@ cmp.setup.cmdline(':', {
   )
 })
 
+if vim.fn.argc() == 1 and vim.fn.isdirectory(vim.v.argv[3]) ~= 0  then
+  require("neo-tree").setup({
+  })
+end

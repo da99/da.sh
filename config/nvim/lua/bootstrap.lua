@@ -20,7 +20,6 @@ local function packages()
     "karb94/neoscroll.nvim",
     "hedyhli/outline.nvim",
     "rcarriga/nvim-notify",
-    'MunifTanjim/nui.nvim',
     "folke/noice.nvim",
     "rktjmp/lush.nvim",
     "olimorris/onedarkpro.nvim",
