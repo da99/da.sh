@@ -10,6 +10,8 @@ THIS_NODE_RB="$THIS_DIR/src/node.rb"
 case "$(echo "$@" | xargs)" in
   --help|help|-h)
     cmd="da.sh"
+    echo "$cmd backup"
+    echo "       Backup data to ~/backup/ to move to another PC."
     echo "$cmd check fs"
     echo "       Lists all things that need to be done."
     echo "$cmd check check fs"
@@ -69,6 +71,24 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd font setup"
     ;;
 
+  "backup")
+    cd $HOME
+    mkdir -p backup
+    cd backup
+    if test -e ~/secrets ; then
+      echo "!!! ~/secrets exist."
+    fi
+    if ! test -z "$(da.sh repo list dirty)" ; then
+      echo "!!! repos are not clean."
+      da.sh repo list dirty
+    fi
+    set -x
+    cd ~/backup
+    cp -f /etc/fstab ./
+    ls -1 /var/service > list.sv.txt
+    xpkg -m > packages.txt
+    groups > groups.txt
+    ;;
   "check fs")
     is_fine="yes"
     for dir in /apps /progs ; do

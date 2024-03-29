@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require_relative './PublicFile'
+require_relative './Template'
+require 'json'
+
 # Manage a files for a Bucket.
 class Bucket
   class << self
@@ -43,7 +47,7 @@ class Bucket
 end # class
 
 if $PROGRAM_NAME == __FILE__
-  cmd = $ARGV.join(' ')
+  cmd = ARGV.join(' ')
   case cmd
   when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
     `touch bucket_files.json`

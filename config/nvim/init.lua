@@ -671,7 +671,13 @@ cmp.setup.cmdline(':', {
   )
 })
 
-if vim.fn.argc() == 1 and vim.fn.isdirectory(vim.v.argv[3]) ~= 0  then
-  require("neo-tree").setup({
-  })
-end
+require("neo-tree").setup({
+  filesystem = {
+    filtered_items = {
+      visible = true,
+      hide_dotfiles = false,
+    }
+  }
+})
+-- if vim.fn.argc() == 1 and vim.fn.isdirectory(vim.v.argv[3]) ~= 0  then
+-- end
