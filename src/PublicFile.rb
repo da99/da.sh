@@ -1,4 +1,10 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
+
+def run_cmd(s_cmd)
+  warn "--- Running: #{s_cmd}"
+  `#{s_cmd}`.strip
+end
 
 # Represents a file in the public directory.
 class PublicFile
@@ -74,7 +80,7 @@ class PublicFile
 end # class
 
 if $PROGRAM_NAME == __FILE__
-  cmd = $ARGV.join(' ')
+  cmd = ARGV.join(' ')
   case cmd
 
   when 'build mjs'
