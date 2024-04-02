@@ -79,11 +79,22 @@ class PublicFile
   end # def
 end # class
 
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 if $PROGRAM_NAME == __FILE__
   cmd = ARGV.join(' ')
   case cmd
 
   when 'build mjs'
+    # bun build \
+    #   --target browser \
+    #   --outdir "$PWD"/Public/section \
+    #   --splitting \
+    #   --entry-naming "[dir]/[name].mjs" \
+    #   $index_mts
+    # rm $index_mts
+
     raw_files = `find Public/section -type f -name index.mts`.strip.split("\n")
     case raw_files.size
     when 0
