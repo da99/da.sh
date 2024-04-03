@@ -8,6 +8,7 @@ case "$*" in
   echo "$cmd upload public [dir] to [bucket]"
   echo "$cmd write file manifest for [dir]"
   echo "$cmd set src to [domain]"
+  echo "$cmd prune uploaded files"
   echo "$cmd build mjs"
   echo "$cmd serve"
   ;;
@@ -26,6 +27,11 @@ case "$*" in
 
   "build mjs")
     "$THIS_DIR"/src/PublicFile.rb build mjs
+  ;;
+
+  "prune uploaded files")
+    # if test -z "$()"
+    # "$THIS_DIR"/src/PublicFile.rb build mjs
   ;;
 
   *)
