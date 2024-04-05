@@ -56,24 +56,23 @@ class PublicFile
   end
   # --- class << self
 
-  attr_reader :dir, :raw, :etag, :path, :created_at
+  attr_reader :dir, :raw, :etag, :path, :created_at, :public_path
 
   ETAG_SIZE = 8
 
-  def initialize(dir, raw)
+  def initialize(raw_dir, raw)
+    @dir = PublicFile.normalize_dir(raw_dir)
     @raw = raw
-    @path = raw
-    @dir = PublicFile.normalize_dir(dir)
+    @path = raw.sub(@dir, '')
     @etag = `sha256sum "#{raw}"`.split.first
     @created_at = `stat -c "%W" "#{raw}"`.strip
+    @public_path = begin
+      pieces = path.split('.')
+      pieces[pieces.size - 1] = "#{etag[0..ETAG_SIZE]}.#{pieces.last}"
+      pieces.join('.').sub(@dir, '')
+    end
   end
   # --- def
-
-  def public_path
-    pieces = path.split('.')
-    pieces[pieces.size - 1] = "#{etag[0..ETAG_SIZE]}.#{pieces.last}"
-    pieces.join('.').sub(dir, '')
-  end
 
   def summary
     Hash.new(
