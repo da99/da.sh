@@ -11,6 +11,7 @@ case "$*" in
   echo "$cmd prune uploaded files"
   echo "$cmd build mjs"
   echo "$cmd serve"
+  echo "$cmd public_file setup|prune|update"
   ;;
 
   "upload public "*" to "*)
@@ -25,13 +26,13 @@ case "$*" in
     "$THIS_DIR"/src/PublicFile.rb "$@"
     ;;
 
-  "build mjs")
+  'build mjs')
     "$THIS_DIR"/src/PublicFile.rb build mjs
   ;;
 
-  "prune uploaded files")
-    # if test -z "$()"
-    # "$THIS_DIR"/src/PublicFile.rb build mjs
+  'public_file '*)
+    shift
+    bun run "$THIS_DIR"/src/Public_File.mts "$@"
   ;;
 
   *)

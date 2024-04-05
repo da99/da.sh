@@ -12,11 +12,12 @@ class PublicFile
     def all(raw_dir)
       dir = normalize_dir(raw_dir)
       PublicFile.dir_exist!(dir)
-      `find #{dir} -type f | xargs sha256sum`
+      `find #{dir} -type f`
         .strip
         .split("\n")
-        .map { |l| PublicFile.new(dir, l) }
-    end # def
+        .map { |l| PublicFile.new(dir, l.strip) }
+    end
+    # --- def
 
     def normalize_dir(raw)
       raw.sub(%r{^\.?/}, '')
@@ -34,7 +35,12 @@ class PublicFile
     def manifest(raw_dir)
       dir = normalize_dir(raw_dir)
       all(dir).inject({}) do |memo, new_file|
-        memo[new_file.path.sub(dir, '')] = { 'public_path' => new_file.public_path, 'etag' => new_file.etag[0..8] }
+        memo[new_file.path.sub(dir, '')] = {
+          'local_path' => new_file.path,
+          'public_path' => new_file.public_path,
+          'etag' => new_file.etag[0..ETAG_SIZE],
+          'created_at' => new_file.created_at
+        }
         memo
       end
     end
@@ -47,27 +53,26 @@ class PublicFile
       File.write('files.json', json)
       puts '=== Wrote: files.json'
     end
-  end # class << self
-
-  attr_reader :dir, :raw, :etag, :path
-
-  def initialize(dir, raw)
-    @raw = raw
-    @dir = PublicFile.normalize_dir(dir)
-    pieces = raw.split
-    @etag = pieces.shift
-    if pieces.size != 1
-      warn "!!! Invalid file path: #{path.join(' ')}"
-      exit 2
-    end
-    @path = pieces.shift
-  end # def
-
-  def public_path
-    pieces = path.split('.')
-    pieces[pieces.size - 1] = "#{etag[0..5]}.#{pieces.last}"
-    pieces.join('.').sub(dir, '')
   end
+  # --- class << self
+
+  attr_reader :dir, :raw, :etag, :path, :created_at, :public_path
+
+  ETAG_SIZE = 8
+
+  def initialize(raw_dir, raw)
+    @dir = PublicFile.normalize_dir(raw_dir)
+    @raw = raw
+    @path = raw.sub(@dir, '')
+    @etag = `sha256sum "#{raw}"`.split.first
+    @created_at = `stat -c "%W" "#{raw}"`.strip
+    @public_path = begin
+      pieces = path.split('.')
+      pieces[pieces.size - 1] = "#{etag[0..ETAG_SIZE]}.#{pieces.last}"
+      pieces.join('.').sub(@dir, '')
+    end
+  end
+  # --- def
 
   def summary
     Hash.new(
@@ -76,8 +81,9 @@ class PublicFile
       'public_path' => public_path,
       'etag' => etag
     )
-  end # def
-end # class
+  end
+end
+# --- class
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
