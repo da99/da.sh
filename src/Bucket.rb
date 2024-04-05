@@ -50,7 +50,7 @@ if $PROGRAM_NAME == __FILE__
   cmd = ARGV.join(' ')
   case cmd
   when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
-    `touch bucket_files.json`
+    `touch #{Bucket.file_json}`
     dir = Regexp.last_match(1)
     domain = Regexp.last_match(2)
     b = Bucket.new(dir, domain)

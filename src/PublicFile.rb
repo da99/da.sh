@@ -50,8 +50,8 @@ class PublicFile
       json = JSON.pretty_generate(the_manifest)
       File.write 'files.mjs', Template.compile('file.mjs', { 'JSON' => json })
       puts '=== Wrote: files.mjs'
-      File.write('files.json', json)
-      puts '=== Wrote: files.json'
+      File.write('public_files.json', json)
+      puts '=== Wrote: public_files.json'
     end
   end
   # --- class << self
