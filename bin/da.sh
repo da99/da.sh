@@ -69,6 +69,7 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd ssh port [local port] [remote port] [remote name]"
     echo
     echo "$cmd font setup"
+    echo "$cmd ping time"
     ;;
 
   "backup")
@@ -663,6 +664,9 @@ case "$(echo "$@" | xargs)" in
     fc-cache
   ;;
 
+  "ping time")
+    { ping -c1 8.8.8.8 | grep 'time=' | cut -d' ' -f7- | cut -d= -f2-; } || echo 'ERROR'
+  ;;
 
   *)
     "$THIS_NODE_RB" $*
