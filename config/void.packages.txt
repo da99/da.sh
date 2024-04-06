@@ -25,3 +25,4 @@ mate-icon-theme mate-icon-theme-faenza
 liberation-fonts-ttf
 gthumb xtools
 arc-theme xfce4-screenshooter
+
