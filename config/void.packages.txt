@@ -11,9 +11,6 @@ qlipper network-manager-applet pa-applet
 exfatprogs
 xorg-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-ttf noto-fonts-ttf-extra
 xdg-desktop-portal
-xdg-desktop-portal-gnome
-xdg-desktop-portal-gtk
-xdg-desktop-portal-kde
 libX11-devel libXcursor-devel
 bluez blueman bluedevil
 gdk-pixbuf-devel gdk-pixbuf-xlib-devel pango-devel cairo-devel libgcc-devel

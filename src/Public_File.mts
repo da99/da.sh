@@ -34,14 +34,15 @@ switch (THE_CMD) {
     await setup();
     await cmd(`www write file manifest for ${PUBLIC_FOLDER}`)
     const current_files = await Bun.file("public_files.json").json();
+    const db = new_database();
     for (const k in current_files) {
       const f = current_files[k] as JSON_FILE;
-      const is_up = await is_uploaded(f);
+      const is_up = await is_uploaded(db, f);
       if (is_up) {
         console.warn(`--- Already uploaded: ${f}`)
       } else {
         console.warn(`--- Uploading file: ${f}`)
-        await upload_file(f);
+        await upload_file(db, f);
       }
     }
     break;
@@ -51,14 +52,13 @@ switch (THE_CMD) {
     process.exit(1);
 } // switch
 
-function new_database() {
+function new_database(): Database {
   const db = new Database(DB_FILE, { create: true });
   db.exec('PRAGMA journal_mode = WAL;');
   return db;
 } // function
 
-async function is_uploaded(f: JSON_FILE) {
-  const db = new_database();
+async function is_uploaded(db: Database, f: JSON_FILE) {
   const q = db.query(`SELECT local_path FROM files WHERE local_path = $lp;`);
   const row = await q.get({ $lp: f.local_path, $stat: NOT_UPLOADED}) as | FILE_ROW;
   if (!row)
@@ -90,4 +90,7 @@ async function cmd(...raw: string[]) {
   return Bun.spawn(cmd_args).exited
 }
 
-async function upload_file
+async function upload_file(db: Database, f: JSON_FILE) {
+  console.warn(`--- Upload file to R2 here: ${f.local_path} => ${f.public_path}`);
+  db.query(`INSERT INTO `);
+}
