@@ -28,7 +28,11 @@ class PlayerCTL
     streams.map do |s|
       next unless s.playing?
 
-      s.stop
+      if s.name[/^chrom/]
+        s.pause
+      else
+        s.stop
+      end
       $stdout.puts "Stopped: #{s.name}"
       File.write(PLAYER_MEMO, s.name)
     end
