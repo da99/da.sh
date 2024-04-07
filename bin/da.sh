@@ -70,6 +70,9 @@ case "$(echo "$@" | xargs)" in
     echo
     echo "$cmd font setup"
     echo "$cmd ping time"
+    echo
+    echo "$cmd system report"
+    echo "$cmd is ok"
     ;;
 
   "backup")
@@ -668,6 +671,9 @@ case "$(echo "$@" | xargs)" in
     { ping -c1 8.8.8.8 | grep 'time=' | cut -d' ' -f7- | cut -d= -f2-; } || echo 'ERROR'
   ;;
 
+  "system report"|"is ok")
+    "$THIS_DIR"/src/OS_Trouble.rb "$@"
+    ;;
   *)
     "$THIS_NODE_RB" $*
     ;;
