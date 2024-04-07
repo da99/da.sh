@@ -94,3 +94,26 @@ async function upload_file(db: Database, f: JSON_FILE) {
   console.warn(`--- Upload file to R2 here: ${f.local_path} => ${f.public_path}`);
   db.query(`INSERT INTO `);
 }
+
+class DB {
+  static FILE = 'public_files.sqlite';
+  static base_sql = '/apps/da.sh/templates/public_file.sql';
+  constructor(do_create: boolean) {
+  }
+
+  async setup() {
+    const db_exists = await Bun.file(DB.FILE).exists();
+    if (db_exists) {
+      console.warn(`--- File already exists: ${DB.FILE}`);
+      return false;
+    }
+    const db = new_database();
+    const raw_meta_sql = await Bun.file(DB.base_sql).text();
+    const meta_sql = raw_meta_sql.split(/--\ +SPLIT\ +--/);
+    for (const q of meta_sql) {
+      console.warn(`-- Running: ${q.slice(0,15).trim()}...`)
+      console.warn(db.query(q).all());
+    }
+    return true;
+  }
+}

@@ -1,118 +1,59 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
-require 'forwardable'
-
-cmd = ARGV.join(' ')
-prog = __FILE__.split('/').last
-
-class PlayerCTL
-  PLAYER_MEMO = '/tmp/my.media.memo.txt'
-
-  # === class self
-  #
-  attr_reader :streams
-
-  def initialize
-    @streams = `playerctl --list-all`.strip.split("\n").map { |x| Stream.new(x) }
-  end
-
-  def stop
-    streams.map do |s|
-      next unless s.playing?
-
-      s.stop
-      $stdout.puts "Stopped: #{s.name}"
-      File.write(PLAYER_MEMO, s.name)
-    end
-  end
-
-  def pause
-    streams.map do |s|
-      next unless s.playing?
-
-      s.pause
-      $stdout.puts "Paused: #{s.name}"
-      File.write(PLAYER_MEMO, s.name)
-    end
-  end
-
-  def last_stream
-    return nil unless File.exist?(PLAYER_MEMO)
-
-    File.read(PLAYER_MEMO).strip
-  end
-
-  def play
-    target = last_stream
-    return nil unless target
-
-    warn target
-    streams.map do |s|
-      next unless s.name == target
-
-      s.play
-      $stdout.puts "Playing again: #{s.name}"
-      File.unlink(PLAYER_MEMO)
-    end
-  end
-
-  class Stream
-    attr_reader :name
-
-    def initialize(raw_name)
-      @name = raw_name
-    end
-
-    def cmd(raw_cmd)
-      new_cmd = "playerctl --player=#{name} #{raw_cmd}".strip
-      warn new_cmd
-      `#{new_cmd}`.strip
-    end
-
-    def status
-      cmd('status')
-    end
-
-    def play
-      cmd('play')
-    end
-
-    def playing?
-      status == 'Playing'
-    end
-
-    def stopped?
-      status == 'Stopped'
-    end
-
-    def pause
-      cmd('pause')
-    end
-
-    def stop
-      cmd('stop')
-    end
-  end
-
-  # === class
-end
-# === class
+#!/usr/bin/env bash
 #
-case cmd
-when '-h', '--help', 'help'
-  puts "#{prog} -h|--help|help  --  Show this message."
-  puts "#{prog} list|play|pause|status"
-when 'status'
-  PlayerCTL.new.streams.map { |x| puts "#{x.name}: #{x.status}" }
-when 'list'
-  PlayerCTL.new.streams.map { |x| puts x.name }
-when 'play'
-  PlayerCTL.new.play
-when 'pause'
-  PlayerCTL.new.pause
-when 'stop'
-  PlayerCTL.new.stop
-else
-  warn "!!! Unknown command: #{cmd}"
-  exit 1
-end # case
+#
+set -u -e -o pipefail
+
+
+THIS_DIR="$(realpath "$(dirname "$0")"/..)"
+case "$*" in
+  "-h"|"--help"|"help")
+    echo "$0 -h|--help|help -- Show this message."
+    echo "$0 list|play|pause|status"
+    echo "$0 is [playing|stopped]"
+    echo "$0 [stop] watch playing"
+    echo
+    ;;
+
+  "watch playing")
+    # Inspiration: https://unix.stackexchange.com/questions/674127/is-there-a-way-to-run-a-hook-i-e-shell-script-etc-when-an-audio-device-is-op
+    pactl subscribe | while read -r x event y type num; do
+    case "$type" in
+      source)
+        # Certain streams take time to load because of network traffic,
+        # preventing the status to change to 'Playing',
+        # so we wait:
+        if my.media is stopped ; then
+          max_count=25
+          count=0
+          while test "$count" -lt "$max_count" ; do
+            if { playerctl -a status | grep Playing; } ; then
+              count="$max_count"
+            else
+              sleep 0.1
+            fi
+            count=$((count + 1))
+          done
+        fi
+        echo "---------- Processed: $x $event $y $type $num"
+        if playerctl -a status | grep Playing ; then
+          my.keyboard playing
+        else
+          my.keyboard off
+        fi
+        ;;
+      *)
+        echo "--- skipping: $x $event $y $type $num"
+        ;;
+    esac
+    done
+    ;;
+
+  "stop watch playing")
+    set -x
+    pkill -f "pactl subscribe"
+    ;;
+
+  *)
+    "$THIS_DIR"/src/PlayerCTL.rb "$@"
+    ;;
+esac
