@@ -98,6 +98,7 @@ async function upload_file(db: Database, f: JSON_FILE) {
 class DB {
   static FILE = 'public_files.sqlite';
   static base_sql = '/apps/da.sh/templates/public_file.sql';
+
   constructor(do_create: boolean) {
   }
 
