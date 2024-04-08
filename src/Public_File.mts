@@ -1,9 +1,17 @@
 
 import { Database } from 'bun:sqlite';
+import { $ } from "bun";
+import path from 'node:path';
 
 const NOT_UPLOADED = 0
 const UPLOADED = 1
 const PRUNED = 2
+
+type SITE_SETTINGS = {
+  static_dir: string,
+  bucket_name: string,
+  public_files: { [index: string]: JSON_FILE },
+}
 
 type JSON_FILE = {
   local_path: string,
@@ -23,28 +31,108 @@ type FILE_ROW = {
 const THE_CMD = Bun.argv.slice(2).join(' ');
 const DB_FILE = 'public_files.sqlite';
 
-const PUBLIC_FOLDER = 'Public';
+
+// ==========================================================================
+class DB {
+  static FILE = 'public_files.sqlite';
+  static base_sql = '/apps/da.sh/templates/public_file.sql';
+
+  static async is_file_exists() {
+    return Bun.file(DB.FILE).exists();
+  }
+
+  static async site_settings() {
+    return Bun.file('settings.json').json() as Promise<SITE_SETTINGS>;
+  }
+
+  db: Database;
+
+  constructor() {
+    this.db = new Database(DB_FILE, { create: true });
+    this.db.exec('PRAGMA journal_mode = WAL;');
+  }
+
+  async setup() {
+    const raw_meta_sql = await Bun.file(DB.base_sql).text();
+    const meta_sql = raw_meta_sql.split(/--\ +SPLIT\ +--/);
+    for (const q of meta_sql) {
+      console.warn(`-- Running: ${q.slice(0,15).trim()}...`)
+      console.warn(this.db.query(q).all());
+    }
+    return true;
+  }
+
+  async upload(settings: SITE_SETTINGS) {
+    const this_db = this;
+    const files = Object.values(settings.public_files);
+    const f_paths: string[] = files.map((f) => f.public_path);
+    const q = this_db.db.query(`SELECT public_path FROM files WHERE public_path in ( ${Array(files.length).fill('?').map((_x,i) => `?${i+1}`)} ) ORDER BY public_path;`);
+    const old_files = q.all(...f_paths).map((x) => (x as Partial<JSON_FILE>)['public_path']);
+    const new_files = files.filter((f) => !old_files.includes(f.public_path));
+    return Promise.allSettled(
+      new_files
+      .map(async function (f: JSON_FILE) {
+        return this_db.upload_file(f);
+      })
+    );
+    // return Promise.allSettled(proms);
+  }
+
+  // === method
+  //
+  // async is_uploaded(f: JSON_FILE) {
+  //   const q = this.db.query(`SELECT local_path FROM files WHERE local_path = $lp;`);
+  //   const row = await q.get({ $lp: f.local_path, $stat: NOT_UPLOADED}) as | FILE_ROW;
+  //   if (!row)
+  //     return false;
+  //   return row.status === UPLOADED;
+  // } // === method
+
+  async upload_file(f: JSON_FILE) {
+
+    const this_db = this;
+    const bucket_path = path.join(THE_SITE_SETTINGS.bucket_name, THE_SITE_SETTINGS.static_dir, f.public_path)
+    const local_path  = path.join(THE_SITE_SETTINGS.static_dir, f.local_path);
+    const prom = $`bun x wrangler r2 object put "${bucket_path}" --file="${local_path}"`;
+    return prom.then(async function (x) {
+      if (x.exitCode !== 0) {
+        console.warn(`!!! Failed to upload: ${f.local_path}`);
+        return false;
+      }
+      console.warn(`--- Uploaded file: ${bucket_path} (${local_path})`);
+      const q = this_db.db.query(`INSERT INTO files(public_path, local_path, etag, created_at, status)
+                    VALUES($pp, $lp, $etag, $created_at, $status)
+                    ON CONFLICT(public_path) DO UPDATE SET status=$status;`);
+      return q.get({
+        $pp: f.public_path, $lp: f.local_path,
+        $etag: f.etag, $created_at: f.created_at, $status: UPLOADED
+      })
+    });
+  } // === method
+
+  close() {
+    this.db.close();
+  }
+}
+// === class
+// ==========================================================================
+
+const THE_DB = new DB();
+const THE_SITE_SETTINGS = await DB.site_settings();
 
 switch (THE_CMD) {
-  case "setup":
-    await setup();
+  case "setup bucket":
+    await THE_DB.setup();
+    THE_DB.close();
     break;
 
-  case "upload":
-    await setup();
-    await cmd(`www write file manifest for ${PUBLIC_FOLDER}`)
-    const current_files = await Bun.file("public_files.json").json();
-    const db = new_database();
-    for (const k in current_files) {
-      const f = current_files[k] as JSON_FILE;
-      const is_up = await is_uploaded(db, f);
-      if (is_up) {
-        console.warn(`--- Already uploaded: ${f}`)
-      } else {
-        console.warn(`--- Uploading file: ${f}`)
-        await upload_file(db, f);
-      }
-    }
+  case "upload to bucket":
+    const results = await THE_DB.upload(THE_SITE_SETTINGS);
+    if (results.length === 0)
+      console.warn('--- No files uploaded.');
+    THE_DB.close();
+    await Bun.write('settings.json', JSON.stringify(THE_SITE_SETTINGS));
+    console.warn('--- Updated: settings.json')
     break;
 
   default:
@@ -52,69 +140,12 @@ switch (THE_CMD) {
     process.exit(1);
 } // switch
 
-function new_database(): Database {
-  const db = new Database(DB_FILE, { create: true });
-  db.exec('PRAGMA journal_mode = WAL;');
-  return db;
-} // function
 
-async function is_uploaded(db: Database, f: JSON_FILE) {
-  const q = db.query(`SELECT local_path FROM files WHERE local_path = $lp;`);
-  const row = await q.get({ $lp: f.local_path, $stat: NOT_UPLOADED}) as | FILE_ROW;
-  if (!row)
-    return false;
-  return row.status === UPLOADED;
-} // function
-
-async function setup() {
-  const db_exists = await Bun.file(DB_FILE).exists();
-  if (db_exists) {
-    console.warn(`--- File already exists: ${DB_FILE}`);
-    return false;
-  }
-  const db = new_database();
-  const raw_meta_sql = await Bun.file('/apps/da.sh/templates/public_file.sql').text();
-  const meta_sql = raw_meta_sql.split(/--\ +SPLIT\ +--/);
-  for (const q of meta_sql) {
-    console.warn(`-- Running: ${q.slice(0,15).trim()}...`)
-    console.warn(db.query(q).all());
-  }
-  return true;
-} // function
-
-async function cmd(...raw: string[]) {
-  let cmd_args = raw;
-  if (cmd_args.length === 1)
-    cmd_args = cmd_args[0].trim().split(/\s+/);
-  console.warn(`=== ${cmd_args.join(' ')}`);
-  return Bun.spawn(cmd_args).exited
-}
-
-async function upload_file(db: Database, f: JSON_FILE) {
-  console.warn(`--- Upload file to R2 here: ${f.local_path} => ${f.public_path}`);
-  db.query(`INSERT INTO `);
-}
-
-class DB {
-  static FILE = 'public_files.sqlite';
-  static base_sql = '/apps/da.sh/templates/public_file.sql';
-
-  constructor(do_create: boolean) {
-  }
-
-  async setup() {
-    const db_exists = await Bun.file(DB.FILE).exists();
-    if (db_exists) {
-      console.warn(`--- File already exists: ${DB.FILE}`);
-      return false;
-    }
-    const db = new_database();
-    const raw_meta_sql = await Bun.file(DB.base_sql).text();
-    const meta_sql = raw_meta_sql.split(/--\ +SPLIT\ +--/);
-    for (const q of meta_sql) {
-      console.warn(`-- Running: ${q.slice(0,15).trim()}...`)
-      console.warn(db.query(q).all());
-    }
-    return true;
-  }
-}
+// async function cmd(...raw: string[]) {
+//   let cmd_args = raw;
+//   if (cmd_args.length === 1)
+//     cmd_args = cmd_args[0].trim().split(/\s+/);
+//   console.warn(`=== ${cmd_args.join(' ')}`);
+//   return Bun.spawn(cmd_args).exited
+// }
+//

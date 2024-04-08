@@ -11,18 +11,17 @@ class Bucket
     def file_json
       'bucket_files.json'
     end
-  end # class << self
+  end
+  # === class << self
 
   attr_reader :dir, :files, :bucket
 
-  def initialize(raw_dir, bucket)
-    @bucket = bucket
-    @dir = PublicFile.normalize_dir(raw_dir)
-
-    `touch "#{self.class.file_json}"`
-    txt = File.read(self.class.file_json).strip
-    @files = txt.empty? ? [] : JSON.parse(txt)
-  end # def
+  def initialize(settings)
+    @bucket = settings['bucket_api_url']
+    @dir = PublicFile.normalize_dir(settings['static_dir'])
+    @files = settings['public_files']
+  end
+  # === def
 
   def upload_file(new_file)
     cmd = %( bunx wrangler r2 object put "#{File.join(bucket, new_file.public_path)}" --file="#{new_file.path}" )
@@ -43,21 +42,22 @@ class Bucket
     @files.concat(summarys)
     puts "=== Finished uploading. Saving to: #{self.class.file_json}"
     File.write(self.class.file_json, @files.to_json)
-  end # def
-end # class
+  end
+  # === def
+end
+# === class
 
 if $PROGRAM_NAME == __FILE__
   cmd = ARGV.join(' ')
   case cmd
-  when %r{^upload public ([./0-9A-Z]+) to (\w+)$}i
-    `touch #{Bucket.file_json}`
-    dir = Regexp.last_match(1)
-    domain = Regexp.last_match(2)
-    b = Bucket.new(dir, domain)
+  when 'upload to bucket'
+    settings = JSON.parse(File.read('settings.json'))
+    b = Bucket.new(settings)
     b.upload
 
-  when %r{^write file manifest for ([./0-9A-Z]+)$}i
-    PublicFile.write_manifest(Regexp.last_match(1))
+  when 'write file manifest'
+    j = JSON.parse(File.read('settings.json'))
+    PublicFile.write_manifest(j)
 
 
   else

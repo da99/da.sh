@@ -45,13 +45,11 @@ class PublicFile
       end
     end
 
-    def write_manifest(raw_dir)
-      the_manifest = manifest(raw_dir)
-      json = JSON.pretty_generate(the_manifest)
-      File.write 'files.mjs', Template.compile('file.mjs', { 'JSON' => json })
-      puts '=== Wrote: files.mjs'
-      File.write('public_files.json', json)
-      puts '=== Wrote: public_files.json'
+    def write_manifest(settings)
+      settings['public_files'] = manifest(settings['static_dir'])
+      json = JSON.pretty_generate(settings)
+      File.write('settings.json', json)
+      puts '=== Wrote: settings.json'
     end
   end
   # --- class << self

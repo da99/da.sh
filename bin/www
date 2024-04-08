@@ -5,20 +5,19 @@ THIS_DIR="$(dirname "$0")/.."
 case "$*" in
   --help|help|-h)
   cmd="$(basename "$0")"
-  echo "$cmd upload public [dir] to [bucket]"
-  echo "$cmd write file manifest for [dir]"
-  echo "$cmd set src to [domain]"
-  echo "$cmd prune uploaded files"
+  echo "$cmd upload to bucket"
+  echo "$cmd setup bucket"
+  echo "$cmd write file manifest"
   echo "$cmd build mjs"
   echo "$cmd serve"
   echo "$cmd public_file setup|prune|update"
   ;;
 
-  "upload public "*" to "*)
-    "$THIS_DIR"/src/Bucket.rb upload "$3" to "$4"
+  "upload to bucket"|"setup bucket")
+    bun run "$THIS_DIR"/src/Public_File.mts "$@"
   ;;
 
-  "write file manifest for "*)
+  "write file manifest")
     "$THIS_DIR"/src/Bucket.rb "$@"
   ;;
 
