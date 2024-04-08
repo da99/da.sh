@@ -131,8 +131,6 @@ switch (THE_CMD) {
     if (results.length === 0)
       console.warn('--- No files uploaded.');
     THE_DB.close();
-    await Bun.write('settings.json', JSON.stringify(THE_SITE_SETTINGS));
-    console.warn('--- Updated: settings.json')
     break;
 
   default:
