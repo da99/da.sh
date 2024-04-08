@@ -11,7 +11,7 @@ case "$*" in
   echo "$cmd build mjs"
   echo "$cmd serve"
   echo "$cmd list old|new files"
-  echo "$cmd public_file setup|prune|update"
+  echo "$cmd prune files"
   ;;
 
   "upload to bucket"|"setup bucket")
@@ -36,6 +36,10 @@ case "$*" in
 
   'public_file '*)
     shift
+    bun run "$THIS_DIR"/src/Public_File.mts "$@"
+  ;;
+
+  'prune files')
     bun run "$THIS_DIR"/src/Public_File.mts "$@"
   ;;
 

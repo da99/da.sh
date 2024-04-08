@@ -13,6 +13,8 @@ type SITE_SETTINGS = {
   public_files: { [index: string]: JSON_FILE },
 }
 
+const THE_SITE_SETTINGS = await (Bun.file('settings.json').json() as Promise<SITE_SETTINGS>);
+
 type JSON_FILE = {
   local_path: string,
   public_path: string,
@@ -35,6 +37,7 @@ const DB_FILE = 'public_files.sqlite';
 // ==========================================================================
 class DB {
   static FILE = 'public_files.sqlite';
+  static BUCKET_PATH = path.join(THE_SITE_SETTINGS.bucket_name, THE_SITE_SETTINGS.static_dir)
   static base_sql = '/apps/da.sh/templates/public_file.sql';
 
   static async is_file_exists() {
@@ -42,7 +45,7 @@ class DB {
   }
 
   static async site_settings() {
-    return Bun.file('settings.json').json() as Promise<SITE_SETTINGS>;
+    return 
   }
 
   db: Database;
@@ -80,17 +83,17 @@ class DB {
 
   old_files() {
     const this_db = this;
-    const files = Object.values(THE_SITE_SETTINGS.public_files);
-    const f_paths: string[] = files.map((f) => f.public_path);
+    const current_files = Object.values(THE_SITE_SETTINGS.public_files);
+    const current_public_paths: string[] = current_files.map((f) => f.public_path);
     const q = this_db.db.query(`
-        SELECT public_path
+        SELECT *
         FROM files
-        WHERE public_path
+        WHERE status = '${UPLOADED}'
+          AND public_path NOT IN ( ${Array(current_public_paths.length).fill('?').map((_x,i) => `?${i+1}`)} )
         ORDER BY public_path;
     `);
-    const known_files = q.all().map((x) => (x as JSON_FILE)['public_path']);
-    const old_paths = known_files.filter((x: string) => !f_paths.includes(x))
-    return files.filter((f) => old_paths.includes(f.public_path));
+    const old_files = q.all(...current_public_paths);
+    return old_files as FILE_ROW[];
   }
 
   async upload() {
@@ -102,6 +105,35 @@ class DB {
       })
     );
     // return Promise.allSettled(proms);
+  }
+
+  async prune() {
+    const this_db = this;
+    const old_files = this.old_files();
+    if (old_files.length === 0)
+      return old_files;
+
+    const q = this_db.db.query(`
+        UPDATE files
+        SET status = ?1
+        WHERE public_path = ?2;
+    `);
+    return Promise.allSettled(old_files.map(async function (f) {
+      const r2_object = path.join(DB.BUCKET_PATH, f.public_path);
+      // console.warn(`--- Deleting: ${cmd}`);
+      const prom = $`bun x wrangler r2 object delete ${r2_object}`;
+      return prom.then(function (so) {
+        if (so.exitCode !== 0)
+          return false;
+        console.warn('--- updating db')
+        return q.values(PRUNED, f.public_path);
+      }).then(function (x) {
+        if (x)
+          return f;
+        else
+          return false;
+      });
+    }));
   }
 
   // === method
@@ -116,7 +148,7 @@ class DB {
 
   async upload_file(f: JSON_FILE) {
     const this_db = this;
-    const bucket_path = path.join(THE_SITE_SETTINGS.bucket_name, THE_SITE_SETTINGS.static_dir, f.public_path)
+    const bucket_path = path.join(DB.BUCKET_PATH, f.public_path)
     const local_path  = path.join(THE_SITE_SETTINGS.static_dir, f.local_path);
     const prom = $`bun x wrangler r2 object put "${bucket_path}" --file="${local_path}"`;
     return prom.then(async function (x) {
@@ -142,12 +174,19 @@ class DB {
 // === class
 // ==========================================================================
 
-const THE_SITE_SETTINGS = await DB.site_settings();
 const THE_DB = new DB();
 
 switch (THE_CMD) {
   case "setup bucket":
     await THE_DB.setup();
+    THE_DB.close();
+    break;
+
+  case 'prune files':
+    const old_files = await THE_DB.prune();
+    if (old_files.length === 0) {
+      console.warn(`--- No old files to prune.`)
+    }
     THE_DB.close();
     break;
 
@@ -164,7 +203,7 @@ switch (THE_CMD) {
     break;
 
   case 'list old files':
-    THE_DB.old_files().forEach(x => console.log(x.public_path));
+    THE_DB.old_files().forEach(x => console.log(`${x.public_path} -> ${x.local_path}`));
     THE_DB.close()
     break;
 
