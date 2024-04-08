@@ -7,7 +7,7 @@ THIS_DIR="$(dirname "$0")/.."
 THIS_NODE_RB="$THIS_DIR/src/node.rb"
 # THIS_SRC="$THIS_DIR/src"
 
-case "$(echo "$@" | xargs)" in
+case "$*" in
   --help|help|-h)
     cmd="da.sh"
     echo "$cmd backup"
@@ -48,6 +48,7 @@ case "$(echo "$@" | xargs)" in
     echo "$cmd repo list dirty"
     echo "$cmd repo list"
     echo "$cmd repo cmd [my cmd with args]"
+    echo "$cmd repo hud"
     echo
     echo "$cmd wallpaper loop (cmd)"
     echo
@@ -506,11 +507,18 @@ case "$(echo "$@" | xargs)" in
   "repo cmd "*)
     shift
     shift
-    for x in $($0 repo list); do
+    for x in $("$0" repo list); do
       cd "$x"
-      $*
+      "$@"
     done
     ;;
+
+  "repo hud")
+    list=$("$0" repo list dirty | tr '\n' ' ')
+    echo "${list/\/apps/}"
+    ;;
+
+    # =============================================================================
 
   "wallpaper loop "*)
     shift
