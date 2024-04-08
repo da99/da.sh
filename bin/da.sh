@@ -73,7 +73,8 @@ case "$*" in
     echo "$cmd ping time"
     echo
     echo "$cmd system report"
-    echo "$cmd is ok"
+    echo "$cmd system is ok"
+    echo "$cmd system hud is ok"
     ;;
 
   "backup")
@@ -679,8 +680,16 @@ case "$*" in
     { ping -c1 8.8.8.8 | grep 'time=' | cut -d' ' -f7- | cut -d= -f2-; } || echo 'ERROR'
   ;;
 
-  "system report"|"is ok")
+  "system report"|"system is ok")
     "$THIS_DIR"/src/OS_Trouble.rb "$@"
+    ;;
+
+  "system hud is ok")
+    if "$0" system is ok ; then
+      echo "✔️"
+    else
+      echo " ❌"
+    fi
     ;;
   *)
     "$THIS_NODE_RB" $*

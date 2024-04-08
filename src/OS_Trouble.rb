@@ -67,7 +67,7 @@ when 'system report'
   memory_report
   network_report
   cpu_report
-when 'is ok'
+when 'system is ok'
   exit 0 if ok?
   exit 1
 else
