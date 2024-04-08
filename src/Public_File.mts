@@ -62,15 +62,41 @@ class DB {
     return true;
   }
 
-  async upload(settings: SITE_SETTINGS) {
+  new_files() {
     const this_db = this;
-    const files = Object.values(settings.public_files);
+    const files = Object.values(THE_SITE_SETTINGS.public_files);
     const f_paths: string[] = files.map((f) => f.public_path);
-    const q = this_db.db.query(`SELECT public_path FROM files WHERE public_path in ( ${Array(files.length).fill('?').map((_x,i) => `?${i+1}`)} ) ORDER BY public_path;`);
-    const old_files = q.all(...f_paths).map((x) => (x as Partial<JSON_FILE>)['public_path']);
-    const new_files = files.filter((f) => !old_files.includes(f.public_path));
+    const q = this_db.db.query(`
+        SELECT public_path
+        FROM files
+        WHERE public_path in ( ${Array(files.length).fill('?').map((_x,i) => `?${i+1}`)} )
+        ORDER BY public_path;
+    `);
+    const old_files = q
+    .all(...f_paths)
+    .map((x) => (x as Partial<JSON_FILE>)['public_path']);
+    return files.filter((f) => !old_files.includes(f.public_path));
+  }
+
+  old_files() {
+    const this_db = this;
+    const files = Object.values(THE_SITE_SETTINGS.public_files);
+    const f_paths: string[] = files.map((f) => f.public_path);
+    const q = this_db.db.query(`
+        SELECT public_path
+        FROM files
+        WHERE public_path
+        ORDER BY public_path;
+    `);
+    const known_files = q.all().map((x) => (x as JSON_FILE)['public_path']);
+    const old_paths = known_files.filter((x: string) => !f_paths.includes(x))
+    return files.filter((f) => old_paths.includes(f.public_path));
+  }
+
+  async upload() {
+    const this_db = this;
     return Promise.allSettled(
-      new_files
+      this.new_files()
       .map(async function (f: JSON_FILE) {
         return this_db.upload_file(f);
       })
@@ -89,7 +115,6 @@ class DB {
   // } // === method
 
   async upload_file(f: JSON_FILE) {
-
     const this_db = this;
     const bucket_path = path.join(THE_SITE_SETTINGS.bucket_name, THE_SITE_SETTINGS.static_dir, f.public_path)
     const local_path  = path.join(THE_SITE_SETTINGS.static_dir, f.local_path);
@@ -117,8 +142,8 @@ class DB {
 // === class
 // ==========================================================================
 
-const THE_DB = new DB();
 const THE_SITE_SETTINGS = await DB.site_settings();
+const THE_DB = new DB();
 
 switch (THE_CMD) {
   case "setup bucket":
@@ -127,14 +152,25 @@ switch (THE_CMD) {
     break;
 
   case "upload to bucket":
-    const results = await THE_DB.upload(THE_SITE_SETTINGS);
+    const results = await THE_DB.upload();
     if (results.length === 0)
       console.warn('--- No files uploaded.');
     THE_DB.close();
     break;
 
+  case 'list new files':
+    THE_DB.new_files().forEach(x => console.log(`${x.local_path} -> ${x.public_path}`));
+    THE_DB.close()
+    break;
+
+  case 'list old files':
+    THE_DB.old_files().forEach(x => console.log(x.public_path));
+    THE_DB.close()
+    break;
+
   default:
     console.warn(`!!! Unknown command: ${THE_CMD}`)
+    THE_DB.close();
     process.exit(1);
 } // switch
 

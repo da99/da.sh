@@ -10,6 +10,7 @@ case "$*" in
   echo "$cmd write file manifest"
   echo "$cmd build mjs"
   echo "$cmd serve"
+  echo "$cmd list old|new files"
   echo "$cmd public_file setup|prune|update"
   ;;
 
@@ -29,12 +30,18 @@ case "$*" in
     "$THIS_DIR"/src/PublicFile.rb build mjs
   ;;
 
+  'list new files'|'list old files')
+    bun run "$THIS_DIR"/src/Public_File.mts "$@"
+  ;;
+
   'public_file '*)
     shift
     bun run "$THIS_DIR"/src/Public_File.mts "$@"
   ;;
 
   *)
+    echo "!!! Unknown command: $*" >&2
+    exit 1
   ;;
 esac
 
