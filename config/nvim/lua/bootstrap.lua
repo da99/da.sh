@@ -52,6 +52,8 @@ local function packages()
     'nvim-tree/nvim-web-devicons',
     { 'echasnovski/mini.nvim', branch = 'main' },
 
+    'duane9/nvim-rg',
+
     -- telescope
     'burntsushi/ripgrep',
     { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
