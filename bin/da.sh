@@ -32,10 +32,6 @@ case "$*" in
     echo "$cmd install progs|bun.sh"
     echo "$cmd progs list"
     echo
-    echo "$cmd mobile-repos"
-    echo "$cmd upgrade progs"
-    echo "$cmd upgrade repos [additional repo names]"
-    echo
     echo "$cmd node latest"
     echo "$cmd node latest install"
     echo "$cmd node latest remote file"
@@ -49,6 +45,10 @@ case "$*" in
     echo "$cmd repo list"
     echo "$cmd repo cmd [my cmd with args]"
     echo "$cmd repo hud"
+    echo
+    echo "$cmd mobile-repos"
+    echo "$cmd upgrade progs"
+    echo "$cmd upgrade repos [additional repo names]"
     echo
     echo "$cmd wallpaper loop (cmd)"
     echo
