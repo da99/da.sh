@@ -90,6 +90,8 @@ case "$*" in
     fi
     set -x
     cd ~/backup
+    cp -r "$HOME/.config/xfce4" ./
+    cp -r "$HOME/.config/smplayer" ./
     cp -f /etc/fstab ./
     ls -1 /var/service > list.sv.txt
     xpkg -m > packages.txt
