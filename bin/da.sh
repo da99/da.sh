@@ -92,6 +92,9 @@ case "$*" in
     fi
     set -x
     cd ~/backup
+    if test -e /var/service/cronie ; then
+      crontab -l > crontab_e
+    fi
     cp -r "$HOME/.config/xfce4" ./
     cp -r "$HOME/.config/smplayer" ./
     cp -f /etc/fstab ./
