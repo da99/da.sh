@@ -529,6 +529,7 @@ case "$*" in
     ;;
 
   "repo backup to "*)
+    test "$USER" != "root" || { echo "--- Can't be root."; exit 1; }
     remote="$4"
     echo "=== Backing up to $remote"
     for dirty in www jaki.club da.sh; do
