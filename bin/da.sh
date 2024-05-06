@@ -43,6 +43,8 @@ case "$*" in
     echo "$cmd repo is clean"
     echo "$cmd repo list dirty"
     echo "$cmd repo list"
+    echo "$cmd repo backup to [NAME]"
+    echo "     Backup repos to remote [NAME]"
     echo "$cmd repo cmd [my cmd with args]"
     echo "$cmd repo hud"
     echo
@@ -526,6 +528,16 @@ case "$*" in
     echo "${list//\/apps\// }"
     ;;
 
+  "repo backup to "*)
+    remote="$4"
+    echo "=== Backing up to $remote"
+    while read -r dirty ; do
+      cd "$dirty"
+      set -x
+      rsync -zaP --delete "$PWD" "$remote":/machines/"$(hostname)"/apps
+      set +x
+    done < <(da.sh repo list dirty)
+    ;;
     # =============================================================================
 
   "wallpaper loop "*)
