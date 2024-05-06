@@ -503,6 +503,11 @@ case "$*" in
       if test -e /media-lib ; then
         dirs+=(/media-lib)
       fi
+      if test -e /machines ; then
+        while read -r rdir ; do
+          dirs+=("$rdir")
+        done < <(find -L "/machines" -mindepth 3 -maxdepth 3 -type d -not -path '*/.*' 2>/dev/null)
+      fi
       find -L "${dirs[@]}" -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
     } | sort
     ;;
