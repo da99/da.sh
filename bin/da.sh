@@ -531,12 +531,12 @@ case "$*" in
   "repo backup to "*)
     remote="$4"
     echo "=== Backing up to $remote"
-    while read -r dirty ; do
-      cd "$dirty"
+    for dirty in www jaki.club da.sh; do
+      cd /apps/"$dirty"
       set -x
       rsync -zaP --delete "$PWD" "$remote":/machines/"$(hostname)"/apps
       set +x
-    done < <(da.sh repo list dirty)
+    done
     ;;
     # =============================================================================
 
