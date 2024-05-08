@@ -77,6 +77,8 @@ case "$*" in
     echo "$cmd system report"
     echo "$cmd system is ok"
     echo "$cmd system hud is ok"
+    echo
+    echo "$cmd wait until [HOUR](AM|PM)"
     ;;
 
   "backup")
@@ -713,6 +715,9 @@ case "$*" in
     else
       echo " ❌"
     fi
+    ;;
+  "wait until "*)
+    "$THIS_DIR"/src/Wait.rb "$@"
     ;;
   *)
     "$THIS_NODE_RB" $*
