@@ -101,7 +101,7 @@ case "$*" in
     cp -r "$HOME/.config/smplayer" ./
     cp -f /etc/fstab ./
     ls -1 /var/service > list.sv.txt
-    xpkg -m > packages.txt
+    xpkg -m | sort > packages.txt
     groups > groups.txt
     ;;
   "check fs")
