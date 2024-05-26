@@ -716,9 +716,15 @@ case "$*" in
       echo " ❌"
     fi
     ;;
+
   "wait until "*)
     "$THIS_DIR"/src/Wait.rb "$@"
     ;;
+
+  "every "*)
+    "$THIS_DIR"/src/Wait.rb "$@"
+    ;;
+
   *)
     "$THIS_NODE_RB" $*
     ;;
