@@ -1,5 +1,5 @@
 exa fish-shell neovim alacritty
-jq rsync cronie
+jq rsync
 wget xcolor rofi bind-utils
 tree git gitk curl ripgrep tree zsh htop
 streamlink smplayer playerctl ffmpeg
