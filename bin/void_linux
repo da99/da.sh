@@ -169,6 +169,10 @@ case "$@" in
     ;;
 
   "upgrade packages")
+    if test -e "$HOME/bin/secrets" ; then
+      chmod go-rwX "$HOME/bin/secrets"
+    fi
+
     set -x
     sudo xbps-install -Su || {
       sudo xbps-install -u xbps;
