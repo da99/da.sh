@@ -303,11 +303,11 @@ case "$*" in
           continue
           ;;
         *)
-          echo -n "=== git pull in $PWD: "
-          git pull || read -s -k '?Press any key to continue.'
+          git pull >/dev/null &
           ;;
       esac
     done < <(find /progs/ -mindepth 2 -maxdepth 2 -type d -name .git)
+    wait
     ;;
 
   mobile-repos)
