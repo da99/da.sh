@@ -143,8 +143,8 @@ set_keymap('n', 'ga', '<Plug>(EasyAlign)', {noremap = true})
 -- =============================================================================
 -- Comments:
 -- =============================================================================
-set_keymap('n', '<Leader>div', 'A<CR><ESC><Leader>ko=<ESC>v"9y76pgcco<ESC>gcc', {noremap=false, silent=true})
-set_keymap('n', '<Leader>blo', '<Leader>div<Leader>div<UP><UP>i<BS><CR>', {noremap=false, silent=true})
+set_keymap('n', '<Leader>div', 'A<CR>=<ESC>v"9y76pgcco<ESC>gcc', {noremap=false, silent=true})
+set_keymap('n', '<Leader>ddiv', '<Leader>div<UP>V"9y<DOWN>p<UP>i', {noremap=false, silent=true})
 
 set_keymap('n', '<Leader>hy', ':! xdg-open https://www.google.com/search?q=<C-r><C-w>', {noremap=true, silent=false})
 
