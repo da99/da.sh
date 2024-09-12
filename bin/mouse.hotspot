@@ -5,9 +5,6 @@ set -u -e -o pipefail
 
 action="$(mouse.pointer.location current)"
 
-
-set -x
-
 case "$action" in
   left_top_window_corner)
     left_top_window_corner || notify-send "Error:" "left_top_window_corner -> $?"
