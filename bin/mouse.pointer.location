@@ -107,7 +107,7 @@ class UI
       mouse.x > (window.end_x - window.corner_length - window.column_w) &&
         mouse.x < (window.end_x - window.corner_length)
     end
-    
+ 
     def top_edge?
       mouse.y > window.y &&
         mouse.y < (window.y + (window.corner_length * 2))
@@ -117,7 +117,7 @@ class UI
       mouse.y < window.end_y &&
         mouse.y > (window.end_y - (window.corner_length * 2))
     end
-    
+
     def left_edge?
       mouse.x > window.x &&
         mouse.x <= (window.x + (window.corner_length * 1))
