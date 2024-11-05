@@ -82,7 +82,7 @@ case "$*" in
     ;;
 
   "backup")
-    cd $HOME
+    cd "$HOME"
     mkdir -p backup
     cd backup
     if test -e ~/secrets ; then
@@ -99,6 +99,7 @@ case "$*" in
     fi
     cp -r "$HOME/.config/xfce4" ./
     cp -r "$HOME/.config/smplayer" ./
+    rm -rf smplayer/file_settings
     cp -f /etc/fstab ./
     ls -1 /var/service > list.sv.txt
     xpkg -m | sort > packages.txt
@@ -495,8 +496,10 @@ case "$*" in
     for x in $($0 repo list); do
       (
         cd "$x"
-        if ! "$0" repo is clean; then
-          echo "$x"
+        if ! test -e .ignore ; then
+          if ! "$0" repo is clean; then
+            echo "$x"
+          fi
         fi
       ) &
     done
