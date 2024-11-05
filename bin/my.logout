@@ -6,14 +6,14 @@ set -u -e -o pipefail
 case "$@" in
   "Power Off")
     if windows list is empty; then
-      coproc ( loginctl poweroff > /dev/null  2>&1 )
+      coproc ( "$(hostname)" poweroff > /dev/null  2>&1 )
     else
       notify-send "Power Off Failed" "Windows open: $(windows list count)"
     fi
     ;;
   "Reboot")
     if windows list is empty; then
-      coproc ( loginctl reboot  > /dev/null  2>&1 )
+      coproc ( "$(hostname)" reboot > /dev/null  2>&1 )
     else
       notify-send "Reboot Failed" "Windows open: $(windows list count)"
     fi
