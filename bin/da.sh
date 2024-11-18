@@ -513,8 +513,14 @@ case "$*" in
         dirs+=(/media-lib)
       fi
       while read -r gitdir ; do
-        if ! test -e "$gitdir"/.ignore ; then
+        if test -e "$gitdir"/.git ; then
           echo "$gitdir"
+        else
+          if test -e "$gitdir"/.ignore; then
+            :
+          else
+            echo "$gitdir"
+          fi
         fi
       done < <(find -L "${dirs[@]}" -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null)
     } | sort
