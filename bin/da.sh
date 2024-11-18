@@ -105,6 +105,7 @@ case "$*" in
     xpkg -m | sort > packages.txt
     groups > groups.txt
     ;;
+
   "check fs")
     is_fine="yes"
     for dir in /apps /progs ; do
@@ -496,10 +497,8 @@ case "$*" in
     for x in $($0 repo list); do
       (
         cd "$x"
-        if ! test -e .ignore ; then
-          if ! "$0" repo is clean; then
-            echo "$x"
-          fi
+        if ! "$0" repo is clean; then
+          echo "$x"
         fi
       ) &
     done
@@ -513,12 +512,11 @@ case "$*" in
       if test -e /media-lib ; then
         dirs+=(/media-lib)
       fi
-      if test -e /machines ; then
-        while read -r rdir ; do
-          dirs+=("$rdir")
-        done < <(find -L "/machines" -mindepth 2 -maxdepth 2 -type d -not -path '*/.*' 2>/dev/null)
-      fi
-      find -L "${dirs[@]}" -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null
+      while read -r gitdir ; do
+        if ! test -e "$gitdir"/.ignore ; then
+          echo "$gitdir"
+        fi
+      done < <(find -L "${dirs[@]}" -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2>/dev/null)
     } | sort
     ;;
 
