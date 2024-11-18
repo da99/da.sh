@@ -103,7 +103,7 @@ when 'watch'
       next
     end # if charging?
 
-    if batt.to_number < 12
+    if batt.to_number < 15
       `loginctl suspend`
       sleep 5
       next
@@ -111,7 +111,7 @@ when 'watch'
 
     if batt.to_number < 23
       BatteryNotify.low("LOW battery: #{batt.to_number}%", 'Plug in charger.')
-      sleep(5)
+      sleep(60)
       next
     end
 
