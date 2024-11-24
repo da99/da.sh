@@ -12,24 +12,21 @@ class Player
 
     def all
       @all ||= begin
-                 first_pass = all_names
-                   .reverse
-                   .map { |name|
-                     p = Player.new name
-                     Window.all.detect { |w|
-                       next unless p.pid 
-                       if p.pid == w.pid
-                         w.player_name = name
-                         p.window = w
-                       end
-                     }
-                     p
-                   }.select(&:playing?)
-                 second_pass = first_pass.map { |p|
+                 first_pass = all_names.reverse.map do |name|
+                   p = Player.new name
+                   Window.all.detect do |w|
+                     next unless p.pid
+
+                     if p.pid == w.pid
+                       w.player_name = name
+                       p.window = w
+                     end
+                   end
+                   p
+                 end.select(&:playing?)
+                 first_pass.map do |p|
                    if !p.pid
-                     w = Window.all.detect { |w|
-                       !w.player_name && w.wm_class == p.main_name
-                     }
+                     w = Window.all.detect { |win| !win.player_name && win.wm_class == p.main_name }
                      if w
                        w.player_name = p.name
                        p.window = w
@@ -37,7 +34,7 @@ class Player
                      end
                    end
                    p
-                 }
+                 end # map
                end
     end
   end # class
@@ -120,7 +117,6 @@ class Window
     @title = title_pieces.join(' ')
     @player_name = nil
   end
-
 end
 # === class
 
@@ -131,7 +127,6 @@ when '-h', '--help', 'help'
   puts '  list playing titles'
   puts '  hud list playing titles'
   puts '  summary'
-
 
 when 'list titles'
   Player.all.each { |p| puts p.title }
