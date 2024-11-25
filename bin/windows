@@ -33,7 +33,6 @@ def hex_str(x)
 end
 
 class Window
-
   attr_reader :win_id, :wm_class, :wm_instance, :title, :user_time,
     :position, :previous_position,
     :x, :y, :w, :h
@@ -131,16 +130,16 @@ class Window
     @detected_position = false
 
     case wm_class
-    when "smplayer"
+    when 'smplayer'
       newly_max = d == Maximize && current_position != Maximize.nickname
       un_max = d != Maximize && current_position == Maximize.nickname
-      going_into_stamp = d.stamp? && !(current_position || "")["_stamp"]
-      out_of_stamp = !d.stamp? && (current_position || "")["_stamp"]
+      going_into_stamp = d.stamp? && !(current_position || '')['_stamp']
+      out_of_stamp = !d.stamp? && (current_position || '')['_stamp']
 
       # orig_pos is used to make sure smplayer is here
       # because it was moved, not because it was placed here automatically
       # when the window first opened.
-      if !re_move?
+      unless re_move?
         toggle_stamp = going_into_stamp || out_of_stamp
         stamp_to_max = out_of_stamp && newly_max
         max_to_stamp = un_max && going_into_stamp
@@ -148,12 +147,12 @@ class Window
         if toggle_stamp && !stamp_to_max && !max_to_stamp
           # Add `sleep 0.1` in case this sxhkd is holding the key event:
           # https://bbs.archlinux.org/viewtopic.php?pid=2020445#p2020445
-          run "xdotool sleep 0.1 key --clearmodifiers ctrl+c"
+          run 'xdotool sleep 0.1 key --clearmodifiers ctrl+c'
         end
         if going_into_stamp
-          run "wmctrl -b add,above -i -r #{win_id}" 
+          run "wmctrl -b add,above -i -r #{win_id}"
         else
-          run "wmctrl -b remove,above -i -r #{win_id}" 
+          run "wmctrl -b remove,above -i -r #{win_id}"
         end
       end
 
