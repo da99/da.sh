@@ -13,6 +13,11 @@ cmd = ARGV.dup
 genmon = cmd.shift
 puts cmd.inspect
 
+def update_plugin(num)
+  warn "xfce4-panel    --plugin-event=genmon-#{num}:refresh:bool:true"
+  system('xfce4-panel', "--plugin-event=genmon-#{num}:refresh:bool:true")
+end
+
 old_line = '-!-'
 Open3.popen2(*cmd) do |_i, o, stat|
   puts "#{cmd.first} PID: #{stat.pid}"
@@ -24,10 +29,10 @@ Open3.popen2(*cmd) do |_i, o, stat|
     end
     old_line = line
     warn "=== running: #{line.inspect}"
-    warn "xfce4-panel    --plugin-event=genmon-#{genmon}:refresh:bool:true"
-    system('xfce4-panel', "--plugin-event=genmon-#{genmon}:refresh:bool:true")
+    update_plugin(genmon)
   end
   puts "ended #{cmd.first}: #{stat.value.success?.inspect}"
+  update_plugin(genmon)
 end
 
 puts "Done: #{$PROGRAM_NAME} #{cmd.inspect}"
