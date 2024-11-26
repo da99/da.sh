@@ -99,9 +99,14 @@ when 'watch'
       end
 
       BatteryNotify.clear
-      sleep 30
+      sleep 60
       next
     end # if charging?
+
+    if batt.to_number > 25
+      sleep 60
+      next
+    end
 
     if batt.to_number < 15
       `loginctl suspend`
@@ -119,8 +124,6 @@ when 'watch'
       BatteryNotify.clear
       sleep 60
     end
-
-    next
   end # Kernel.loop
 else
   raise "Unknown option: #{cmd}"
