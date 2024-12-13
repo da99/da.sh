@@ -131,7 +131,7 @@ fi
 
 # Put bindings on last to prevent issues with Ubuntu:
 # https://jdhao.github.io/2019/06/13/zsh_bind_keys/
-bindkey -v # turn on VI bindings
+# bindkey -v # turn on VI bindings
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 bindkey "^[[H" beginning-of-line

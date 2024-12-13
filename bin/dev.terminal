@@ -4,8 +4,8 @@
 
 require "open3"
 
-USR1 = "/tmp/usr1.sh"
-USR2 = "/tmp/usr2.sh"
+USR1 = '/tmp/usr1.sh'.freeze
+USR2 = '/tmp/usr2.sh'.freeze
 
 def dev_pid
   pid = `pgrep -f '^alacritty.+dev.terminal run$'`.strip
@@ -16,8 +16,10 @@ end # def
 def win_id
   pid = dev_pid
   return nil unless pid
+
   raw = `wmctrl -lp | tr -s ' ' | cut -d' ' -f1,3 | grep -P ' #{pid}$'`.strip.split.first
   return nil if raw && raw.empty?
+
   raw
 end
 
@@ -25,9 +27,9 @@ def focus_window
   wid = win_id
   if wid
     `wmctrl -i -a #{wid}` 
-    STDERR.puts "#{wid}"
+    warn wid.to_s
   end
-  STDERR.puts "No window found." if !wid
+  warn 'No window found.' unless wid
 end
 
 def usr(i)
@@ -78,27 +80,27 @@ cmd = ARGV.map(&:strip).join(' ')
 
 case cmd
 
-when "-h", "--help", "help"
-  c = $PROGRAM_NAME || "dev.terminal"
-  puts "#{c}"
-  puts "    Open Alacritty in a new window and runs a development loop."
+when '-h', '--help', 'help'
+  c = $PROGRAM_NAME || 'dev.terminal'
+  puts c
+  puts '    Open Alacritty in a new window and runs a development loop.'
   puts "#{c} USR1|USR2"
   puts "#{c} window id"
   puts "#{c} focus window"
 
-when "USR1"
+when 'USR1'
   exit usr(1).exitstatus
-  
-when "USR2"
+
+when 'USR2'
   exit usr(2).exitstatus
 
-when "window id"
+when 'window id'
   puts win_id
 
-when "focus window"
+when 'focus window'
   focus_window
-  
-when ""
+
+when ''
   if dev_pid
     focus_window
   else
@@ -114,7 +116,7 @@ when ""
         end
       end
     }
-    system("alacritty",  "-e", $PROGRAM_NAME, "run")
+    system('alacritty',  '-e', $PROGRAM_NAME, 'run')
   end
 
 when "run"
@@ -126,17 +128,17 @@ when "run"
   already_run = true
   STDERR.puts "#{$PROGRAM_NAME} pid #{Process.pid}"
 
-  Signal.trap("INT") { keep_running = false; Process.kill("INT", pid) if pid }
-  Signal.trap("TERM") { keep_running = false; Process.kill("INT", pid) if pid }
-  Signal.trap("USR1") { already_run = false; cmd = USR1 }
-  Signal.trap("USR2") { already_run = false; cmd = USR2 }
+  Signal.trap('INT') { keep_running = false; Process.kill('INT', pid) if pid }
+  Signal.trap('TERM') { keep_running = false; Process.kill('INT', pid) if pid }
+  Signal.trap('USR1') { already_run = false; cmd = USR1 }
+  Signal.trap('USR2') { already_run = false; cmd = USR2 }
 
   while keep_running
     if already_run
       sleep 0.5
       next
     end
-    puts ""
+    puts ''
     puts "-------------- #{Time.now} ------------------"
     already_run = true
     Open3.popen3(cmd) do |i, o, e, stat|
