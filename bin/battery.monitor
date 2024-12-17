@@ -114,13 +114,13 @@ when 'watch'
       next
     end
 
-    if batt.to_number < 23
+    if batt.to_number < 27
       BatteryNotify.low("LOW battery: #{batt.to_number}%", 'Plug in charger.')
       sleep(60)
       next
     end
 
-    if batt.to_number > 92
+    if batt.to_number > 91
       BatteryNotify.clear
       sleep 60
     end
