@@ -328,7 +328,7 @@ case "$*" in
       (
         cd "$dir"
         echo -n "=== $PWD: "
-        git pull || { echo "!!! FAILED: $dir" >&2; }
+        git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
       ) &
     done < <("$0" mobile-repos)
     wait
@@ -338,14 +338,16 @@ case "$*" in
     "$0" upgrade repos
     shift; shift
     for dir in "$@"; do
-      {
-        cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" || {
-          echo "!!! Not found: $dir"; exit 1;
+      (
+        { cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" ; } &>/dev/null || {
+          echo -e "!!! \033[1;31mNot found: $dir\033[0m";
+          exit 1;
         };
-      } 2>/dev/null
-      echo -n "=== $PWD: "
-      git pull
+        echo -n "=== $PWD: "
+        git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
+      ) &
     done
+    wait
     ;;
 
   "check dirs") # check dirs
