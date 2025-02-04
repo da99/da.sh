@@ -325,10 +325,13 @@ case "$*" in
 
   "upgrade repos")
     while read -r dir ; do
-      cd "$dir"
-      echo -n "=== $PWD: "
-      git pull
+      (
+        cd "$dir"
+        echo -n "=== $PWD: "
+        git pull || { echo "!!! FAILED: $dir" >&2; }
+      ) &
     done < <("$0" mobile-repos)
+    wait
     ;;
 
   "upgrade repos "*)
