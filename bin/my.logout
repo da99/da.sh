@@ -18,6 +18,9 @@ case "$@" in
       notify-send "Reboot Failed" "Windows open: $(windows list count)"
     fi
     ;;
+  "Hibernate")
+    coproc ( loginctl hibernate > /dev/null  2>&1 )
+    ;;
   "Sleep")
     coproc ( loginctl suspend > /dev/null  2>&1 )
     ;;
@@ -43,6 +46,9 @@ case "$@" in
     echo "Power Off"
     echo "Reboot"
     echo "Sleep"
+    if ! test -z "$(swapon -s)"; then
+      echo "Hibernate"
+    fi
     echo "Quit Window Manager"
     ;;
   *)
