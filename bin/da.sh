@@ -313,8 +313,14 @@ case "$*" in
 
   "upgrade repos "*)
     shift; shift
+    dirty_list="$(da.sh repo list dirty)"
+    if ! test -z "$dirty_list"; then
+      echo "!!! Not clean:" >&2
+      echo "$dirty_list" >&2
+      exit 1
+    fi
     for dir in "$@"; do
-      (
+      # (
         { cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" ; } &>/dev/null || {
           echo -e "!!! \033[1;31mNot found: $dir\033[0m";
           exit 1;
@@ -325,7 +331,7 @@ case "$*" in
         else
           git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
         fi
-      ) &
+      # ) &
     done
     wait
     ;;
@@ -465,6 +471,12 @@ case "$*" in
   # =========================================================================
 
   "repo pull all") # repo pull all
+    dirty_list="$(da.sh repo list dirty)"
+    if ! test -z "$dirty_list"; then
+      echo "!!! Not clean:" >&2
+      echo "$dirty_list" >&2
+      exit 1
+    fi
     for dir in $($0 repo list) ; do
       cd "$dir"
       echo -n "=== git pull in $PWD: " >&2
