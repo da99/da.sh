@@ -312,30 +312,7 @@ case "$*" in
     wait
     ;;
 
-  mobile-repos)
-    for x in da alegria www da.sh my_uni my_dev01 my_bdrm jaki.club ; do
-      if test -e "/apps/$x" ; then
-        echo "/apps/$x"
-      fi
-    done
-    if test -e "$HOME/.git" ; then
-      echo "$HOME"
-    fi
-  ;;
-
-  "upgrade repos")
-    while read -r dir ; do
-      (
-        cd "$dir"
-        echo -n "=== $PWD: "
-        git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
-      ) &
-    done < <("$0" mobile-repos)
-    wait
-    ;;
-
   "upgrade repos "*)
-    "$0" upgrade repos
     shift; shift
     for dir in "$@"; do
       (
@@ -344,7 +321,11 @@ case "$*" in
           exit 1;
         };
         echo -n "=== $PWD: "
-        git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
+        if ! da.sh repo is clean ; then
+          echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
+        else
+          git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
+        fi
       ) &
     done
     wait
