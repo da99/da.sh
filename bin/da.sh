@@ -48,9 +48,8 @@ case "$*" in
     echo "$cmd repo cmd [my cmd with args]"
     echo "$cmd repo hud"
     echo
-    echo "$cmd mobile-repos"
     echo "$cmd upgrade progs"
-    echo "$cmd upgrade repos [additional repo names]"
+    echo "$cmd upgrade repos [...repo names]"
     echo
     echo "$cmd wallpaper loop (cmd)"
     echo
