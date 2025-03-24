@@ -758,12 +758,12 @@ class Geo
 
     def current_name
       case "#{w} #{h}"
-      when "2560 1440"
-        "2k"
-      when "1920 1080"
-        "1080p"
-      when "3840 2160"
-        "4k"
+      when '2560 1440'
+        '2k'
+      when '1920 1080'
+        '1080p'
+      when '3840 2160'
+        '4k'
       else
         raise "Unknown resolution: #{w} #{h}"
       end
@@ -782,10 +782,8 @@ class Geo
     def widescreen?
       w == 2560 && h == 1080
     end
-
   end # class self
 end # class
-
 
 case cmd
 when "help", "-h", "--help"
