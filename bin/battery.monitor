@@ -79,6 +79,30 @@ class Battery
 end # class
 
 case cmd
+
+when '-h', '--help', 'help'
+  puts 'battery.monitor -h|--help|help  - Show this message.'
+  puts 'battery.monitor current         - Outputs an integer.'
+  puts 'battery.monitor status          - Outputs: charging | discharging'
+  puts 'battery.monitor watch'
+  puts 'battery.monitor has battery'
+  puts 'battery.monitor is charging'
+
+when 'has battery'
+  if `upower -e`['battery_BAT']
+    exit 0
+  else
+    exit 1
+  end
+
+when 'is charging'
+  batt = Battery.new
+  if batt.state == 'charging'
+    exit 0
+  else
+    exit 1
+  end
+
 when 'current'
   batt = Battery.new
   puts batt.to_number
