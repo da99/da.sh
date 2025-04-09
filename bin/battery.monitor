@@ -83,7 +83,7 @@ case cmd
 when '-h', '--help', 'help'
   puts 'battery.monitor -h|--help|help  - Show this message.'
   puts 'battery.monitor current         - Outputs an integer.'
-  puts 'battery.monitor status          - Outputs: charging | discharging'
+  puts 'battery.monitor status          - Outputs combined charging status and integer.'
   puts 'battery.monitor watch'
   puts 'battery.monitor has battery'
   puts 'battery.monitor is charging'
