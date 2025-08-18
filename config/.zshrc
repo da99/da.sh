@@ -136,7 +136,7 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 bindkey "^[[H" beginning-of-line
 bindkey "^[[F" end-of-line
-bindkey "^W" forward-word
+bindkey "^[[1;5C" forward-word
 # bindkey '^[[1;5A' history-substring-search-up
 # bindkey '^[[1;5B' history-substring-search-down
 # bindkey "$terminfo[kcuu1]" history-substring-search-up
