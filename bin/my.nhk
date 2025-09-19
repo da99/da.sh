@@ -10,7 +10,7 @@ class Show
 
   class << self
     def list
-      raw = `curl -sL https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
+      raw = `curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0" https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
       o = JSON.parse(raw)
       o["channel"]["item"].map { |s| Show.new(s) }
     end
@@ -163,6 +163,10 @@ when "inspect"
     show = Show.new(r)
     puts "#{show.running?} : #{show.minutes_left} : #{show.minutes_to_begin} #{show.title}"
   }
+when "--help", '-h', 'help'
+  STDERR.puts "record next ..."
+  STDERR.puts "list"
+  STDERR.puts "inspect"
 else
   STDERR.puts "Invalid arguments: #{ARGV.inspect}"
   exit 1
