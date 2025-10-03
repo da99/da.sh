@@ -10,9 +10,12 @@ class Show
 
   class << self
     def list
-      raw = `curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0" https://nwapi.nhk.jp/nhkworld/epg/v7b/world/now.json`.strip
+      date_file = Time.now.strftime('%Y%m%d')
+      url = "https://masterpl.hls.nhkworld.jp/epg/w/#{date_file}.json"
+      STDERR.puts "=== Getting: #{url}"
+      raw = `curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0" #{url}`.strip
       o = JSON.parse(raw)
-      o["channel"]["item"].map { |s| Show.new(s) }
+      o["data"].map { |s| Show.new(s) }
     end
   end # class
 
