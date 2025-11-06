@@ -113,6 +113,7 @@ when 'status'
 
 when 'watch'
   Kernel.loop do
+    sleep 10
     batt = Battery.new
 
     if batt.charging?
