@@ -332,8 +332,10 @@ case "$*" in
           echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
           echo "$dir : REPO NOT CLEAN" >> "$errs"
         else
-          git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
-          echo "$dir : Failed to update." >> "$errs"
+          git pull || {
+            echo "$dir : Failed to update." >> "$errs"
+            echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2;
+          }
         fi
       ) &
     done
