@@ -342,8 +342,7 @@ case "$*" in
     wait
     err_body="$(cat "$errs")"
     if test -z "$err_body" ; then
-      echo "=== DONE UPDATING ===" >&2
-      echo -e "=== \033[1;31mDONE UPDATING[0m ===" >&2
+      echo -e "=== \033[1;32mDONE UPDATING\033[0m ===" >&2
     else
       cat "$errs"
       exit 1
