@@ -330,10 +330,10 @@ case "$*" in
         echo -n "=== $PWD: "
         if ! da.sh repo is clean ; then
           echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
-          echo "$errs\n$dir : REPO NOT CLEAN" >> "$errs"
+          echo "$dir : REPO NOT CLEAN" >> "$errs"
         else
           git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
-          echo "$errs\n$dir : Failed to update." >> "$errs"
+          echo "$dir : Failed to update." >> "$errs"
         fi
       ) &
     done
