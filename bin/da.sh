@@ -319,8 +319,10 @@ case "$*" in
       echo "$dirty_list" >&2
       exit 1
     fi
+    errs="/tmp/upgrade_repos_errs.txt"
+    echo "" > "$errs"
     for dir in "$@"; do
-      # (
+      (
         { cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" ; } &>/dev/null || {
           echo -e "!!! \033[1;31mNot found: $dir\033[0m";
           exit 1;
@@ -328,12 +330,21 @@ case "$*" in
         echo -n "=== $PWD: "
         if ! da.sh repo is clean ; then
           echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
+          echo "$errs\n$dir : REPO NOT CLEAN" >> "$errs"
         else
           git pull || { echo -e "!!! \033[1;31mFAILED: $dir\033[0m" >&2; }
+          errs="$errs\n$dir : Failed to update." >> "$errs"
         fi
-      # ) &
+      ) &
     done
     wait
+    err_body="$(cat "$errs")"
+    if test -z "$err_body" ; then
+      echo "=== DONE UPDATING" >&2
+    else
+      cat "$errs"
+      exit 1
+    fi
     ;;
 
   "check dirs") # check dirs
