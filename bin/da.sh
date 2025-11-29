@@ -313,6 +313,15 @@ case "$*" in
 
   "upgrade repos "*)
     shift; shift
+    for KNAME in alegria-grill gitlab github ; do
+      kfile="$HOME/.ssh/key.${KNAME}"
+      if test -e "${kfile}.pub" ; then
+        if ! ssh-add -T "${kfile}.pub" ; then
+          ssh-add "$kfile"
+        fi
+      fi
+    done
+
     dirty_list="$(da.sh repo list dirty)"
     if ! test -z "$dirty_list"; then
       echo "!!! Not clean:" >&2
