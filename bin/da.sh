@@ -493,19 +493,7 @@ case "$*" in
   # =========================================================================
 
   "repo pull all") # repo pull all
-    dirty_list="$(da.sh repo list dirty)"
-    if ! test -z "$dirty_list"; then
-      echo "!!! Not clean:" >&2
-      echo "$dirty_list" >&2
-      exit 1
-    fi
-    for dir in $($0 repo list) ; do
-      cd "$dir"
-      echo -n "=== git pull in $PWD: " >&2
-      git pull
-    done
-
-
+    "$0" upgrade repos $("$0" repo list)
     ;;
 
   "repo is clean")
