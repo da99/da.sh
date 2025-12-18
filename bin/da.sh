@@ -330,6 +330,7 @@ case "$*" in
     fi
     errs="/tmp/upgrade_repos_errs.txt"
     echo "" > "$errs"
+    mkdir -p /tmp/git_pull
     for dir in "$@"; do
       (
         { cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" ; } &>/dev/null || {
@@ -341,9 +342,10 @@ case "$*" in
           echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
           echo "$dir : REPO NOT CLEAN" >> "$errs"
         else
-          git pull || {
-            echo "$dir : Failed to update." >> "$errs"
-            echo -e "!!! \032[1;31mFAILED: $dir\033[0m" >&2;
+          git pull &> "/tmp/git_pull/$dir.git" || {
+            echo "$dir : Failed to update. Check: /tmp/git_pull/$dir.git" >> "$errs"
+            # echo -e "!!! \032[1;31mFAILED: $dir\033[0m" >&2;
+            echo -e "!!! FAILED: $dir" >&2;
           }
         fi
       ) &
