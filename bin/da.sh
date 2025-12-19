@@ -328,9 +328,16 @@ case "$*" in
       echo "$dirty_list" >&2
       exit 1
     fi
+
+    if test -e /tmp/git_pull ; then
+      rm -f /tmp/git_pull/*
+    else
+      mkdir -p /tmp/git_pull
+    fi
+
     errs="/tmp/upgrade_repos_errs.txt"
     echo "" > "$errs"
-    mkdir -p /tmp/git_pull
+
     for dir in "$@"; do
       err_file="/tmp/git_pull/$(basename "$dir")"
       (
@@ -352,9 +359,18 @@ case "$*" in
         fi
       ) &
     done
+
     wait
     err_body="$(cat "$errs")"
     if test -z "$err_body" ; then
+      while read -r LOG_FILE ; do
+        if test "$(cat "$LOG_FILE")" != "Already up to date." ; then
+          echo
+          echo "============= $LOG_FILE ==============="
+          bat "$LOG_FILE" || cat "$LOG_FILE"
+          echo "======================================================"
+        fi
+      done < <(find /tmp/git_pull/ -maxdepth 1 -mindepth 1 -type f)
       echo
       echo -e "=== \033[1;32mDONE UPDATING\033[0m ===" >&2
     else
