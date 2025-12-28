@@ -11,4 +11,5 @@ Host *
   IdentitiesOnly yes
   AddKeysToAgent yes
   PreferredAuthentications publickey,password
+  GSSAPIAuthentication no
 
