@@ -98,7 +98,7 @@ source /progs/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /progs/zsh-history-substring-search/zsh-history-substring-search.zsh
 # =================================================================
 autoload -U colors && colors
-PROMPT=$'\n''%{$fg[green]%}%n%{$reset_color%}@%{$fg[green]%}%m%{$reset_color%} %{$fg[yellow]%}%~%{$reset_color%} ${git_prompt}%(?.. %S%F{9}$?%f%s )%{$reset_color%}'$'\n'
+PROMPT=$'\n''%{$fg[green]%}%n%{$reset_color%}@%{$fg[green]%}%m%{$reset_color%} %{$fg[yellow]%}%~%{$reset_color%} ${git_prompt}%(?.. %S%F{9}$?%f%s )%{$reset_color%}'$'\n'' ↳ '
 # =================================================================
 
 # =================================================================
