@@ -1,7 +1,7 @@
 
 
 fpath=(/progs/da.sh/zsh-functions $fpath)
-autoload -Uz /apps/da.sh/zsh-functions/*
+autoload -Uz /progs/da.sh/zsh-functions/*
 export KEYTIMEOUT=1
 cursor_mode
 
