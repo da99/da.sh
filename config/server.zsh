@@ -5,6 +5,13 @@ autoload -Uz /progs/da.sh/zsh-functions/*
 export KEYTIMEOUT=1
 cursor_mode
 
+if test -e "$HOME/config/zsh-functions" ; then
+  fpath=($HOME/config/zsh-functions $fpath)
+  autoload -Uz $HOME/config/zsh-functions/*
+  export KEYTIMEOUT=1
+  cursor_mode
+fi
+
 # =================================================================
 # History
 HISTFILE=~/.zsh.histfile
@@ -133,3 +140,26 @@ bindkey "^[[1;5C" forward-word
 # bindkey "$terminfo[kcuu1]" history-substring-search-up
 # bindkey "$terminfo[kcud1]" history-substring-search-down
 # =================================================================
+
+
+# =================================================================
+# When starting a new terminal, CD into the last known directory.
+# =================================================================
+test -e "$HOME/tmp" || mkdir "$HOME/tmp"
+cd () {
+  builtin cd "$@"
+  echo $PWD > "$HOME/tmp/last.cd"
+}
+
+if test -f "$HOME/tmp/last.cd" ;
+then
+  local _last_cd="$(cat "$HOME"/tmp/last.cd)"
+  if test -e "$_last_cd" ; then
+    builtin cd "$_last_cd"
+  else
+    rm "$HOME"/tmp/last.cd
+  fi
+fi
+# =================================================================
+
+
