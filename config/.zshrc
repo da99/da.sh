@@ -114,18 +114,19 @@ PROMPT='%{$fg[green]%}%n%{$reset_color%}@%{$fg[green]%}%m%{$reset_color%} %{$fg[
 # =================================================================
 # When starting a new terminal, CD into the last known directory.
 # =================================================================
+test -e "$HOME/tmp" || mkdir "$HOME/tmp"
 cd () {
   builtin cd "$@"
-  echo $PWD > /tmp/last.cd
+  echo $PWD > "$HOME/tmp/last.cd"
 }
 
-if test -f /tmp/last.cd ;
+if test -f "$HOME/tmp/last.cd" ;
 then
-  local _last_cd="$(cat /tmp/last.cd)"
+  local _last_cd="$(cat "$HOME"/tmp/last.cd)"
   if test -e "$_last_cd" ; then
     builtin cd "$_last_cd"
   else
-    rm /tmp/last.cd
+    rm "$HOME"/tmp/last.cd
   fi
 fi
 # =================================================================
