@@ -333,6 +333,7 @@ case "$*" in
       rm -f /tmp/git_pull/*
     else
       mkdir -p /tmp/git_pull
+      chmod go-rwx /tmp/git_pull
     fi
 
     errs="/tmp/upgrade_repos_errs.txt"
@@ -367,7 +368,7 @@ case "$*" in
         if test "$(cat "$LOG_FILE")" != "Already up to date." ; then
           echo
           echo "============= $LOG_FILE ==============="
-          bat "$LOG_FILE" || cat "$LOG_FILE"
+          bat --paging=never "$LOG_FILE" || cat "$LOG_FILE"
           echo "======================================================"
         fi
       done < <(find /tmp/git_pull/ -maxdepth 1 -mindepth 1 -type f)
