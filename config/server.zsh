@@ -141,6 +141,9 @@ bindkey "^[[1;5C" forward-word
 # bindkey "$terminfo[kcud1]" history-substring-search-down
 # =================================================================
 
+if type mise &>/dev/null ; then
+  eval "$(mise activate zsh)"
+fi
 
 # =================================================================
 # When starting a new terminal, CD into the last known directory.
