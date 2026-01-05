@@ -97,6 +97,7 @@ alias grep="grep --color=always"
 alias ls="exa -aF --icons --color=always --group-directories-first"
 alias yl="yt-dlp --list-formats "
 alias rgg="rg --no-ignore --smart-case"
+alias "tree"="/usr/bin/tree -al"
 # =================================================================
 
 
