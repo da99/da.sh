@@ -7,9 +7,17 @@ export LC_ALL="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 export TERM='xterm-256color'
+export EDITOR="nvim"
+export SXHKD_SHELL="/bin/sh"
 
-PATH+=":/apps/void/bin"
+if which xbps-install &>/dev/null ; then
+  PATH+=":/apps/void/bin"
+fi
+
 PATH+=":/apps/alpine/bin"
+PATH+=":/progs/bin"
+PATH+=":/apps/da/bin"
+PATH+=":/apps/da.sh/bin"
 
 fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
@@ -98,6 +106,7 @@ alias gtypo="git commit -am \"Typo.\""
 alias grep="grep --color=always"
 alias ls="exa -aF --icons --color=always --group-directories-first"
 alias yl="yt-dlp --list-formats "
+alias rg="/usr/bin/rg --no-ignore --smart-case"
 alias rgg="rg --no-ignore --smart-case"
 alias "tree"="/usr/bin/tree -al"
 # =================================================================
