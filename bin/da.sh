@@ -323,7 +323,7 @@ case "$*" in
     for KNAME in alegria-grill gitlab github ; do
       kfile="$HOME/.ssh/key.${KNAME}"
       test -e "${kfile}.pub" || continue
-      issh-add -T "${kfile}.pub" || ssh-add "$kfile"
+      ssh-add -T "${kfile}.pub" || ssh-add "$kfile"
     done
 
     dirty_list="$(da.sh repo list dirty)"
