@@ -39,7 +39,6 @@ case "$*" in
     echo
     echo "$cmd install openbox theme"
     echo
-    echo "$cmd repo pull all"
     echo "$cmd repo is clean"
     echo "$cmd repo list dirty"
     echo "$cmd repo list"
@@ -49,7 +48,7 @@ case "$*" in
     echo "$cmd repo hud"
     echo
     echo "$cmd upgrade progs"
-    echo "$cmd upgrade repos [...repo names]"
+    echo "$cmd upgrade repos [all|...repo names]"
     echo
     echo "$cmd wallpaper loop (cmd)"
     echo
@@ -87,10 +86,14 @@ case "$*" in
     if test -e ~/secrets ; then
       echo "!!! ~/secrets exist."
     fi
-    if ! test -z "$(da.sh repo list dirty)" ; then
+
+    dirty_repos="$(da.sh repo list dirty)"
+    if ! test -z "$dirty_repos" ; then
       echo "!!! repos are not clean."
-      da.sh repo list dirty
+      echo "$dirty_repos"
+      exit 1
     fi
+
     set -x
     cd ~/backup
     if test -e /var/service/cronie ; then
@@ -311,15 +314,16 @@ case "$*" in
     wait
     ;;
 
+  "upgrade repos all") # repo pull all
+    "$0" upgrade repos $("$0" repo list)
+    ;;
+
   "upgrade repos "*)
     shift; shift
     for KNAME in alegria-grill gitlab github ; do
       kfile="$HOME/.ssh/key.${KNAME}"
-      if test -e "${kfile}.pub" ; then
-        if ! ssh-add -T "${kfile}.pub" ; then
-          ssh-add "$kfile"
-        fi
-      fi
+      test -e "${kfile}.pub" || continue
+      issh-add -T "${kfile}.pub" || ssh-add "$kfile"
     done
 
     dirty_list="$(da.sh repo list dirty)"
@@ -513,10 +517,6 @@ case "$*" in
   # =========================================================================
   # GIT
   # =========================================================================
-
-  "repo pull all") # repo pull all
-    "$0" upgrade repos $("$0" repo list)
-    ;;
 
   "repo is clean")
     test -z "$(git status --porcelain --ignore-submodules)" && [[ "$(git status)" = *"Your branch is up to date with 'origin/"* ]]
