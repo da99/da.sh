@@ -10,10 +10,6 @@ export TERM='xterm-256color'
 export EDITOR="nvim"
 export SXHKD_SHELL="/bin/sh"
 
-if which xbps-install &>/dev/null ; then
-  PATH+=":/apps/void/bin"
-fi
-
 PATH+=":/apps/alpine/bin"
 PATH+=":/progs/bin"
 PATH+=":/apps/da/bin"
