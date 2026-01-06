@@ -8,6 +8,8 @@ export LANGUAGE="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 export TERM='xterm-256color'
 
+PATH+=":/apps/void/bin"
+PATH+=":/apps/alpine/bin"
 
 fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
@@ -51,7 +53,7 @@ echo_git_prompt() {
   fi
 }
 
-setopt CORRECT # suggest correct commands
+# setopt CORRECT # suggest correct commands
 setopt PROMPT_SUBST
 
 autoload -U add-zsh-hook
