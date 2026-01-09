@@ -1,3 +1,13 @@
 #/usr/bin/env zsh
 
-bin/__ "$@"
+_bin="bin/$(basename "$PWD")"
+if test -e "$_bin" ; then
+  "$_bin" "$@"
+else
+  if test -e "bin/__" ; then
+    bin/__ "$@"
+  else
+    echo "!!! Command not found: $_bin , bin/__"
+  fi
+fi
+
