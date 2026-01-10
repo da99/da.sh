@@ -1,0 +1,11 @@
+
+if test -e bin/__ ; then
+  nvim bin/__
+else
+  _name="$(basename "$PWD")"
+  if test -e bin/"$_name" ; then
+    nvim bin/"$_name"
+  else
+    tree bin || ls -1 bin
+  fi
+fi
