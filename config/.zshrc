@@ -102,8 +102,9 @@ alias gtypo="git commit -am \"Typo.\""
 alias grep="grep --color=always"
 alias ls="exa -aF --icons --color=always --group-directories-first"
 alias yl="yt-dlp --list-formats "
-alias rg="/usr/bin/rg --no-ignore --smart-case"
-alias rgg="rg --no-ignore --smart-case"
+alias rg="/usr/bin/rg --smart-case --no-ignore"
+alias rgi="/usr/bin/rg --smart-case"
+alias rgg="rg --smart-case --no-ignore"
 alias "tree"="/usr/bin/tree -al"
 # =================================================================
 
