@@ -344,8 +344,8 @@ case "$*" in
     echo "" > "$errs"
 
     for dir in "$@"; do
+      err_file="/tmp/git_pull/$(basename "$dir")"
       (
-        err_file="/tmp/git_pull/$(basename "$dir")"
         { { echo "$dir" | grep -q '/'; } && cd "$dir" ; } || \
           cd /apps/"$dir" || \
           cd /media/"$dir" ; &>/dev/null || \
@@ -361,7 +361,7 @@ case "$*" in
         else
           git pull || { echo "$dir : Failed to update. Check: $err_file" >> "$errs"; }
         fi
-      ) &>"$errs" &
+      ) &>"$err_file" &
     done
 
     wait
