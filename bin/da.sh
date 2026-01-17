@@ -334,7 +334,7 @@ case "$*" in
     fi
 
     if test -e /tmp/git_pull ; then
-      rm -f /tmp/git_pull/* &>/dev/null
+      rm -f /tmp/git_pull/*
     else
       mkdir -p /tmp/git_pull
       chmod go-rwx /tmp/git_pull
