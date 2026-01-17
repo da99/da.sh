@@ -328,7 +328,7 @@ case "$*" in
 
     dirty_list="$(da.sh repo list dirty)"
     if ! test -z "$dirty_list"; then
-      echo "!!! Not clean:" >&2
+      echo "!!! \033[1;31mNot clean\033[0m:" >&2
       echo "$dirty_list" >&2
       exit 1
     fi
@@ -355,13 +355,13 @@ case "$*" in
         echo -n "=== $PWD: "
         if ! da.sh repo is clean ; then
           # echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
-          echo -e "!!! REPO not clean: $dir" >&2
+          # echo -e "!!! REPO not clean: $dir" >&2
           echo "$dir : REPO NOT CLEAN" >> "$errs"
         else
           pwd &> "$err_file"
           git pull &>> "$err_file" || {
             echo "$dir : Failed to update. Check: $err_file" >> "$errs"
-            echo -e "!!! FAILED: $dir" >&2;
+            # echo -e "!!! FAILED: $dir" >&2;
           }
         fi
       ) &
