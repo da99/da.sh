@@ -360,7 +360,6 @@ case "$*" in
           pwd &> "$err_file"
           git pull &>> "$err_file" || {
             echo "$dir : Failed to update. Check: $err_file" >> "$errs"
-            # echo -e "!!! \032[1;31mFAILED: $dir\033[0m" >&2;
             echo -e "!!! FAILED: $dir" >&2;
           }
         fi
