@@ -346,25 +346,22 @@ case "$*" in
     for dir in "$@"; do
       (
         err_file="/tmp/git_pull/$(basename "$dir")"
-        { { { echo "$dir" | grep -q '/'; } && cd "$dir" ; } || \
+        { { echo "$dir" | grep -q '/'; } && cd "$dir" ; } || \
           cd /apps/"$dir" || \
-          cd /media/"$dir" ; } &>/dev/null || {
-          echo -e "!!! \033[1;31mNot found: $dir\033[0m";
-          exit 1;
-        };
-        echo -n "=== $PWD: "
+          cd /media/"$dir" ; &>/dev/null || \
+          {
+            echo -e "!!! \033[1;31mNot found: $dir\033[0m";
+            exit 1;
+          }
+        echo "=== $PWD: "
         if ! da.sh repo is clean ; then
           # echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
           # echo -e "!!! REPO not clean: $dir" >&2
-          echo "$dir : REPO NOT CLEAN" >> "$errs"
+          echo "$dir : REPO NOT CLEAN"
         else
-          pwd &> "$err_file"
-          git pull &>> "$err_file" || {
-            echo "$dir : Failed to update. Check: $err_file" >> "$errs"
-            # echo -e "!!! FAILED: $dir" >&2;
-          }
+          git pull || { echo "$dir : Failed to update. Check: $err_file" >> "$errs"; }
         fi
-      ) &
+      ) &>"$errs" &
     done
 
     wait
