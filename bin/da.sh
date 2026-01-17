@@ -375,7 +375,7 @@ case "$*" in
       rg \
         --files-without-match \
         --multiline \
-        '\nAlready up to date.' \
+        '\nAlready up to date.\n\z' \
         /tmp/git_pull/ | while read -r LOG_FILE ; do
         echo
         echo "============= $LOG_FILE ==============="
