@@ -344,8 +344,8 @@ case "$*" in
     echo "" > "$errs"
 
     for dir in "$@"; do
-      err_file="/tmp/git_pull/$(basename "$dir")"
       (
+        err_file="/tmp/git_pull/$(basename "$dir")"
         { cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" ; } &>/dev/null || {
           echo -e "!!! \033[1;31mNot found: $dir\033[0m";
           exit 1;
@@ -356,7 +356,6 @@ case "$*" in
           echo -e "!!! REPO not clean: $dir" >&2
           echo "$dir : REPO NOT CLEAN" >> "$errs"
         else
-          sleep 0.1
           pwd &> "$err_file"
           git pull &>> "$err_file" || {
             echo "$dir : Failed to update. Check: $err_file" >> "$errs"
