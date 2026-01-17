@@ -346,7 +346,9 @@ case "$*" in
     for dir in "$@"; do
       (
         err_file="/tmp/git_pull/$(basename "$dir")"
-        { cd "$dir" || cd /apps/"$dir" || cd /media/"$dir" ; } &>/dev/null || {
+        { { { echo "$dir" | grep -q '/'; } && cd "$dir" ; } || \
+          cd /apps/"$dir" || \
+          cd /media/"$dir" ; } &>/dev/null || {
           echo -e "!!! \033[1;31mNot found: $dir\033[0m";
           exit 1;
         };
