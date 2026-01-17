@@ -371,7 +371,7 @@ case "$*" in
     err_body="$(cat "$errs")"
     if test -z "$err_body" ; then
       find /tmp/git_pull/ -maxdepth 1 -mindepth 1 -type f | while read -r LOG_FILE ; do
-        if ! grep -zoP '\nAlready up to date.\Z' "$LOG_FILE" ; then
+        if ! grep -zoP '\nAlready up to date.\Z' "$LOG_FILE" >/dev/null ; then
           echo
           echo "============= $LOG_FILE ==============="
           bat --paging=never "$LOG_FILE" || cat "$LOG_FILE"
