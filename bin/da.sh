@@ -370,14 +370,14 @@ case "$*" in
     wait
     err_body="$(cat "$errs")"
     if test -z "$err_body" ; then
-      while read -r LOG_FILE ; do
-        if test "$(cat "$LOG_FILE")" != "Already up to date." ; then
+      find /tmp/git_pull/ -maxdepth 1 -mindepth 1 -type f | while read -r LOG_FILE ; do
+        if ! grep -zoP '\nAlready up to date.\Z' "$LOG_FILE" ; then
           echo
           echo "============= $LOG_FILE ==============="
           bat --paging=never "$LOG_FILE" || cat "$LOG_FILE"
           echo "======================================================"
         fi
-      done < <(find /tmp/git_pull/ -maxdepth 1 -mindepth 1 -type f)
+      done
       echo
       echo -e "=== \033[1;32mDONE UPDATING\033[0m ===" >&2
     else
