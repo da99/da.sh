@@ -340,51 +340,45 @@ case "$*" in
       chmod go-rwx /tmp/git_pull
     fi
 
-    errs="/tmp/upgrade_repos_errs.txt"
-    echo "" > "$errs"
-
     for dir in "$@"; do
       err_file="/tmp/git_pull/$(basename "$dir")"
       (
-        { { echo "$dir" | grep -q '/'; } && cd "$dir" ; } || \
-          cd /apps/"$dir" || \
-          cd /media/"$dir" ; &>/dev/null || \
-          {
-            echo -e "!!! \033[1;31mNot found: $dir\033[0m";
-            exit 1;
-          }
+        if echo "$dir" | grep -q '/' ; then # Is this a directory path?
+          cd "$dir" || { echo "Not found: $dir"; exit 1; }
+        else
+          cd /apps/"$dir" || cd /media/"$dir" || cd /progs/"$dir" || { echo "Not found: $dir"; exit 1; }
+        fi
         echo "=== $PWD: "
         if ! da.sh repo is clean ; then
-          # echo -e "!!! \033[1;31mREPO not clean\033[0m: $dir" >&2
-          # echo -e "!!! REPO not clean: $dir" >&2
           echo "$dir : REPO NOT CLEAN"
         else
-          git pull || { echo "$dir : Failed to update. Check: $err_file" >> "$errs"; }
+          git pull
         fi
       ) &>"$err_file" &
     done
 
     wait
-    err_body="$(cat "$errs")"
-    if test -z "$err_body" ; then
-      cd /tmp/git_pull
 
-      rg \
-        --files-without-match \
-        --multiline \
-        '\nAlready up to date.\n\z' \
-        /tmp/git_pull/ | while read -r LOG_FILE ; do
-        echo
-        echo "============= $LOG_FILE ==============="
-        bat --paging=never "$LOG_FILE" || cat "$LOG_FILE"
-        echo "======================================================"
-      done
+    cd /tmp/git_pull
 
+    has_errors=""
+    rg \
+      --files-without-match \
+      --multiline \
+      '\nAlready up to date.\n\z' \
+      /tmp/git_pull/ | while read -r LOG_FILE ; do
       echo
+      echo "============= $LOG_FILE ==============="
+      bat --paging=never "$LOG_FILE" || cat "$LOG_FILE"
+      echo "======================================================"
+      has_errors="yes"
+    done
+
+    echo
+    if test -z "$has_errors" ; then
       echo -e "=== \033[1;32mDONE UPDATING\033[0m ===" >&2
     else
-      cat "$errs"
-      exit 1
+      echo -e "=== \033[1;31mErrors Found:\033[0m in updating repos. ===" >&2
     fi
     ;;
 
