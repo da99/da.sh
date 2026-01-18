@@ -326,12 +326,12 @@ case "$*" in
       ssh-add -T "${kfile}.pub" || ssh-add "$kfile"
     done
 
-    dirty_list="$(da.sh repo list dirty)"
-    if ! test -z "$dirty_list"; then
-      echo "!!! \033[1;31mNot clean\033[0m:" >&2
-      echo "$dirty_list" >&2
-      exit 1
-    fi
+    # dirty_list="$(da.sh repo list dirty)"
+    # if ! test -z "$dirty_list"; then
+    #   echo "!!! \033[1;31mNot clean\033[0m:" >&2
+    #   echo "$dirty_list" >&2
+    #   exit 1
+    # fi
 
     if test -e /tmp/git_pull ; then
       rm -f /tmp/git_pull/*
@@ -340,13 +340,17 @@ case "$*" in
       chmod go-rwx /tmp/git_pull
     fi
 
+    cdq() {
+      cd "$@" &>/dev/null
+    }
+
     for dir in "$@"; do
       err_file="/tmp/git_pull/$(basename "$dir")"
       (
         if echo "$dir" | grep -q '/' ; then # Is this a directory path?
-          cd "$dir" || { echo "Not found: $dir"; exit 1; }
+          cdq "$dir" || { echo "Not found: $dir"; exit 1; }
         else
-          cd /apps/"$dir" || cd /media/"$dir" || cd /progs/"$dir" || { echo "Not found: $dir"; exit 1; }
+          cdq /apps/"$dir" || cdq /media/"$dir" || cdq /progs/"$dir" || { echo "Not found: $dir"; exit 1; }
         fi
         echo "=== $PWD: "
         if ! da.sh repo is clean ; then
