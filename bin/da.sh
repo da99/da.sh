@@ -356,7 +356,7 @@ case "$*" in
         if ! da.sh repo is clean ; then
           echo "$dir : REPO NOT CLEAN"
         else
-          git pull
+          git pull || echo "ERROR: $?"
         fi
       ) &>"$err_file" &
     done
@@ -375,6 +375,9 @@ case "$*" in
       echo "============= $LOG_FILE ==============="
       bat --paging=never "$LOG_FILE" || cat "$LOG_FILE"
       echo "======================================================"
+    done
+
+    rg "ERROR: " /tmp/git_pull | while read -r LOG_FILE ; do
       has_errors="yes"
     done
 
