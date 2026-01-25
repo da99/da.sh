@@ -354,7 +354,7 @@ case "$*" in
         fi
         echo "=== $PWD: "
         if ! da.sh repo is clean ; then
-          echo "$dir : REPO NOT CLEAN"
+          echo "$dir: ERROR: REPO NOT CLEAN"
         else
           git pull || echo "ERROR: $?"
         fi
