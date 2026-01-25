@@ -380,7 +380,7 @@ case "$*" in
       rm not_found.txt
     fi
 
-    has_errors=""
+    # Print out any results that are not already up to date:
     rg \
       --files-without-match \
       --multiline \
@@ -392,11 +392,13 @@ case "$*" in
       echo "======================================================"
     done
 
+    has_errors=""
     rg "ERROR: " /tmp/git_pull | while read -r LOG_FILE ; do
       has_errors="yes"
     done
 
     echo
+
     if test -z "$has_errors" ; then
       echo -e "=== \033[1;32mDONE UPDATING\033[0m ===" >&2
     else
