@@ -345,13 +345,21 @@ case "$*" in
     }
 
     for dir in "$@"; do
-      err_file="/tmp/git_pull/$(basename "$dir")"
-      (
+      {
         if echo "$dir" | grep -q '/' ; then # Is this a directory path?
-          cdq "$dir" || { echo "Not found: $dir"; exit 1; }
+          cdq "$dir" || { echo "ERROR: Not found: $dir"; continue; }
         else
-          cdq /apps/"$dir" || cdq /media/"$dir" || cdq /progs/"$dir" || { echo "Not found: $dir"; exit 1; }
+          cdq /apps/"$dir" || \
+            cdq /media/"$dir" || \
+            cdq /progs/"$dir" || \
+            { echo "ERROR: Not found: $dir"; continue; }
         fi
+      } &>"/tmp/git_pull/_all.txt"
+
+      up_dir="$(dirname "$PWD")"
+      up_dirname="$(basename "$up_dir")"
+      err_file="/tmp/git_pull/${up_dirname}_$(basename "$PWD")"
+      (
         echo "=== $PWD: "
         if ! da.sh repo is clean ; then
           echo "$dir: ERROR: REPO NOT CLEAN"
