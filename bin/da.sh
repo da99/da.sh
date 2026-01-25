@@ -354,7 +354,7 @@ case "$*" in
             cdq /progs/"$dir" || \
             { echo "ERROR: Not found: $dir"; continue; }
         fi
-      } &>"/tmp/git_pull/_all.txt"
+      } &>"/tmp/git_pull/not_found.txt"
 
       up_dir="$(dirname "$PWD")"
       up_dirname="$(basename "$up_dir")"
@@ -372,6 +372,13 @@ case "$*" in
     wait
 
     cd /tmp/git_pull
+
+    # If not_found.txt is empty, delete it
+    #   to prevent taking up space in the next
+    #   section's print out.
+    if [ ! -s not_found.txt ]; then
+      rm not_found.txt
+    fi
 
     has_errors=""
     rg \
