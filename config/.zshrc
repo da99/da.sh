@@ -106,6 +106,7 @@ alias rg="/usr/bin/rg --smart-case"
 alias rgi="/usr/bin/rg --smart-case"
 alias rgg="/usr/bin/rg --smart-case --no-ignore"
 alias "tree"="/usr/bin/tree -al"
+alias yy='yt-dlp -f "bestvideo+bestaudio/best" --merge-output-format mkv'
 # =================================================================
 
 
