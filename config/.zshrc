@@ -1,19 +1,10 @@
 
-TRAPUSR1() { rehash }
 
-export EDITOR="nvim"
-export LANG="en_US.UTF-8"
-export LC_ALL="en_US.UTF-8"
-export LANGUAGE="en_US.UTF-8"
-export LC_CTYPE="en_US.UTF-8"
+# =================================================================
+# alacritty and other programs override this after .zprofile
+# loads.
 export TERM='xterm-256color'
-export EDITOR="nvim"
-export SXHKD_SHELL="/bin/sh"
-
-PATH+=":/apps/alpine/bin"
-PATH+=":/progs/bin"
-PATH+=":/apps/da/bin"
-PATH+=":/apps/da.sh/bin"
+# =================================================================
 
 fpath=(/apps/da.sh/zsh-functions $fpath)
 autoload -Uz /apps/da.sh/zsh-functions/*
@@ -107,6 +98,17 @@ alias rgi="/usr/bin/rg --smart-case"
 alias rgg="/usr/bin/rg --smart-case --no-ignore"
 alias "tree"="/usr/bin/tree -al"
 alias yy='yt-dlp -f "bestvideo+bestaudio/best" --merge-output-format mkv'
+
+alias pq="xbps-query -Rs "
+alias pi="sudo xbps-install -S "
+alias pu="bdrm upgrade "
+alias pr="sudo xbps-remove -Rv "
+alias eu="e /apps/my_uni/MyLife/MyRecipes/main.txt"
+
+alias '?'="da.sh repo list dirty"
+alias 'b'="bat --paging=never"
+
+
 # =================================================================
 
 
@@ -154,3 +156,5 @@ bindkey "^[[1;5C" forward-word
 # bindkey "$terminfo[kcuu1]" history-substring-search-up
 # bindkey "$terminfo[kcud1]" history-substring-search-down
 # =================================================================
+#
+
